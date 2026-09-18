@@ -271,15 +271,128 @@ function exportJSON(){let blob=new Blob([JSON.stringify(state,null,2)],{type:'ap
 document.getElementById('jsonFile').addEventListener('change',e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>importJSON(r.result);r.readAsText(f);e.target.value=''});
 function importJSON(text){
  try{
-  let incoming=JSON.parse(text);let tx=incoming.transactions||incoming.data?.transactions||[];if(!Array.isArray(tx))throw Error('No transactions array found');
-  let existing=new Set(state.transactions.map(fingerprint)),dups=0,add=[];
-  tx.forEach(raw=>{let t={...raw,id:raw.id||id('t'),amount:Number(raw.amount||0)};if(!t.type||!t.walletId||!t.date||!t.amount)return;if(existing.has(fingerprint(t)))dups++;else{existing.add(fingerprint(t));add.push(t)}});
-  let msg=`Found ${tx.length} transaction(s). ${dups} possible duplicate(s), ${add.length} new transaction(s).\\n\\nImport the ${add.length} new record(s)?`;
-  if(!confirm(msg))return;state.transactions.push(...add);
-  if(Array.isArray(incoming.wallets))incoming.wallets.forEach(w=>{if(w.name&&!state.wallets.some(x=>x.id===w.id||x.name.toLowerCase()===w.name.toLowerCase()))state.wallets.push({...w,id:w.id||id('w')})});
-  if(Array.isArray(incoming.categories))incoming.categories.forEach(c=>{if(c.name&&!state.categories.some(x=>x.id===c.id||x.name.toLowerCase()===c.name.toLowerCase()))state.categories.push({...c,id:c.id||id('c')})});
-  save();toast(`Imported ${add.length} new transaction(s)`);
- }catch(e){toast('Invalid JSON: '+e.message)}
+  const incoming=JSON.parse(text);
+  const rawTx=Array.isArray(incoming.transactions)?incoming.transactions:(Array.isArray(incoming.data?.transactions)?incoming.data.transactions:[]);
+  const rawWallets=Array.isArray(incoming.wallets)?incoming.wallets:(Array.isArray(incoming.accounts)?incoming.accounts:[]);
+  const rawCats=Array.isArray(incoming.categories)?incoming.categories:[];
+  const incomeNames=Array.isArray(incoming.customIncomeCats)?incoming.customIncomeCats:[];
+  const expenseNames=Array.isArray(incoming.customExpenseCats)?incoming.customExpenseCats:[];
+  if(!rawTx.length && !rawWallets.length && !rawCats.length && !incomeNames.length && !expenseNames.length)
+    throw Error('No FlowTrack transactions, wallets/accounts, or categories were found');
+
+  // This importer supports both FlowTrack's native format and the
+  // xlsx-to-json format: accounts + category names + accountId/fromAccountId.
+  const iconForAccount=(a)=>{
+   const x=String(a?.icon||a?.type||'').toLowerCase();
+   if(x.includes('bank'))return '🏦';
+   if(x.includes('phone')||x.includes('mtn')||x.includes('telecel')||x.includes('vodafone')||x.includes('mobile'))return '📱';
+   if(x.includes('cash'))return '💵';
+   if(x.includes('saving'))return '💰';
+   return '👛';
+  };
+  const iconForCategory=(name,type)=>{
+   const x=String(name||'').toLowerCase();
+   if(x.includes('salary')||x.includes('income')||x.includes('interest')||x.includes('refund'))return '💰';
+   if(x.includes('food')||x.includes('meal')||x.includes('rice')||x.includes('waakye')||x.includes('kenkey'))return '🍔';
+   if(x.includes('transport')||x.includes('travel')||x.includes('uber')||x.includes('okada'))return '🚗';
+   if(x.includes('airtime')||x.includes('phone')||x.includes('data'))return '📱';
+   if(x.includes('bill')||x.includes('charge')||x.includes('subscription'))return '🧾';
+   if(x.includes('cloth'))return '🛍️';
+   if(x.includes('tool'))return '🔧';
+   if(x.includes('health'))return '🏥';
+   if(x.includes('gift')||x.includes('give'))return '🎁';
+   return type==='income'?'💵':'📦';
+  };
+  const colorForType=(type)=>type==='income'?'#0f9d67':'#dc4f5f';
+  const slug=(x)=>String(x||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'other';
+
+  // Build account/wallet mapping before transactions so imported account IDs
+  // are converted into the app's walletId fields.
+  const walletMap=new Map();
+  rawWallets.forEach(a=>{
+   if(!a)return;
+   const wid=a.id||id('w');
+   const name=String(a.name||a.label||'Unnamed wallet').trim();
+   walletMap.set(a.id||wid,wid);
+   let w=state.wallets.find(x=>x.id===wid)||state.wallets.find(x=>x.name.trim().toLowerCase()===name.toLowerCase());
+   if(!w){
+    w={id:wid,name,icon:iconForAccount(a),color:a.color||'#2563eb',savings:/saving/i.test(name+' '+(a.type||'')),balance:0,createdAt:a.createdAt||new Date().toISOString()};
+    state.wallets.push(w);
+   }else{
+    // Keep the user's existing wallet ID/name when names match, but retain
+    // imported icon/color/type details where useful.
+    walletMap.set(a.id||wid,w.id);
+    if(a.color)w.color=a.color;
+    if(a.icon)w.icon=iconForAccount(a);
+    if(/saving/i.test(name+' '+(a.type||'')))w.savings=true;
+   }
+  });
+
+  // Build category mapping from both explicit categories and custom category arrays.
+  const catMap=new Map();
+  const ensureCategory=(name,type,sourceId=null)=>{
+   name=String(name||'').trim(); if(!name)return null;
+   const key=type+'|'+name.toLowerCase();
+   if(catMap.has(key))return catMap.get(key);
+   let c=sourceId?state.categories.find(x=>x.id===sourceId):null;
+   if(!c)c=state.categories.find(x=>x.type===type&&x.name.trim().toLowerCase()===name.toLowerCase());
+   if(!c){
+    const cid=sourceId||('c-import-'+slug(type)+'-'+slug(name));
+    c={id:cid,name,icon:iconForCategory(name,type),color:colorForType(type),type,createdAt:new Date().toISOString()};
+    // Ensure the generated ID is unique if an unrelated category already uses it.
+    if(state.categories.some(x=>x.id===c.id))c.id=id('c');
+    state.categories.push(c);
+   }
+   catMap.set(key,c.id); if(sourceId)catMap.set(type+'|id|'+sourceId,c.id);
+   return c.id;
+  };
+  rawCats.forEach(c=>ensureCategory(c.name,c.type||'expense',c.id));
+  incomeNames.forEach(n=>ensureCategory(n,'income'));
+  expenseNames.forEach(n=>ensureCategory(n,'expense'));
+  state.categories.forEach(c=>catMap.set(c.type+'|'+c.name.trim().toLowerCase(),c.id));
+
+  const existing=new Set(state.transactions.map(fingerprint));
+  let dups=0, invalid=0, add=[];
+  rawTx.forEach(raw=>{
+   if(!raw)return;
+   const type=raw.type==='transfer'?'transfer':raw.type==='income'?'income':'expense';
+   const amount=Number(raw.amount);
+   if(!Number.isFinite(amount)||amount===0){invalid++;return;}
+   const sourceFrom=raw.walletId||raw.accountId||raw.fromAccountId;
+   const sourceTo=raw.toWalletId||raw.toAccountId;
+   const walletId=walletMap.get(sourceFrom)||sourceFrom;
+   const toWalletId=type==='transfer'?(walletMap.get(sourceTo)||sourceTo):null;
+   if(!walletId||!raw.date){invalid++;return;}
+   const categoryName=raw.categoryName||raw.category||'';
+   const categoryId=type==='transfer'?null:(raw.categoryId&&state.categories.some(c=>c.id===raw.categoryId)?raw.categoryId:ensureCategory(categoryName,type));
+   const description=String(raw.description??raw.note??'').trim();
+   let date;
+   try{date=new Date(raw.date).toISOString();}catch(e){invalid++;return;}
+   if(type==='transfer'&&!toWalletId){invalid++;return;}
+   const t=touchRecord({id:raw.id||id('t'),type,amount:Math.abs(amount),walletId,toWalletId,categoryId,date,description});
+   // Preserve source timestamps when present so future cross-device merge has stable ordering.
+   if(raw.updatedAt)t.updatedAt=Number(raw.updatedAt)||t.updatedAt;
+   if(raw.updatedBy)t.updatedBy=raw.updatedBy;
+   if(existing.has(fingerprint(t))){dups++;return;}
+   existing.add(fingerprint(t));add.push(t);
+  });
+
+  const sourceLabel=(Array.isArray(incoming.accounts)||incoming.customIncomeCats||incoming.customExpenseCats)?'account/category JSON':'FlowTrack JSON';
+  const msg=`${sourceLabel} detected.
+
+Transactions found: ${rawTx.length}
+New transactions: ${add.length}
+Possible duplicates: ${dups}
+Skipped invalid records: ${invalid}
+Wallets/accounts processed: ${rawWallets.length}
+Categories processed: ${rawCats.length+incomeNames.length+expenseNames.length}
+
+Import the new transactions and compatible wallet/category data?`;
+  if(!confirm(msg))return;
+  state.transactions.push(...add);
+  save();
+  toast(`Imported ${add.length} new transaction(s), ${rawWallets.length} wallet/account(s) and compatible categories`);
+ }catch(e){console.error(e);toast('Invalid or unsupported JSON: '+e.message)}
 }
 function saveSettings(){state.profile.name=document.getElementById('profileName').value.trim()||'My Finance';state.profile.currency=document.getElementById('currency').value||'₵';state.profile.clientId=FLOWTRACK_GOOGLE_CLIENT_ID;save();toast('Settings saved')}
 function resetData(){
