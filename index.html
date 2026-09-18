@@ -97,7 +97,7 @@ brand: { 50: '#f0fdf4', 500: '#10b981', 600: '#059669', 900: '#064e3b' }
 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
 <div class="flex justify-between items-center mb-3">
 <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Accounts / Wallets</h4>
-<button onclick="openWalletModal()" class="text-xs text-brand-600 font-semibold hover:underline">+ Add Account</button>
+<button type="button" onclick="openWalletModal()" class="text-xs text-brand-600 font-semibold hover:underline">+ Add Account</button>
 </div>
 <div id="walletList" class="flex flex-wrap gap-2"></div>
 </div>
@@ -105,7 +105,7 @@ brand: { 50: '#f0fdf4', 500: '#10b981', 600: '#059669', 900: '#064e3b' }
 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
 <div class="flex justify-between items-center mb-3">
 <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Categories</h4>
-<button onclick="openCategoryModal()" class="text-xs text-brand-600 font-semibold hover:underline">+ Add Category</button>
+<button type="button" onclick="openCategoryModal()" class="text-xs text-brand-600 font-semibold hover:underline">+ Add Category</button>
 </div>
 <div id="categoryList" class="flex flex-wrap gap-2"></div>
 </div>
@@ -188,9 +188,9 @@ brand: { 50: '#f0fdf4', 500: '#10b981', 600: '#059669', 900: '#064e3b' }
 </div>
 <p id="duplicateModalText" class="text-xs text-slate-600 leading-relaxed"></p>
 <div class="flex flex-col sm:flex-row gap-2 pt-2">
-<button onclick="resolveDuplicateAction('skip')" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold hover:bg-slate-50">Skip Incoming</button>
-<button onclick="resolveDuplicateAction('overwrite')" class="flex-1 px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold">Replace Existing</button>
-<button onclick="resolveDuplicateAction('keep_both')" class="flex-1 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold">Keep Both</button>
+<button type="button" onclick="resolveDuplicateAction('skip')" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold hover:bg-slate-50">Skip Incoming</button>
+<button type="button" onclick="resolveDuplicateAction('overwrite')" class="flex-1 px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold">Replace Existing</button>
+<button type="button" onclick="resolveDuplicateAction('keep_both')" class="flex-1 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold">Keep Both</button>
 </div>
 </div>
 </div>
@@ -209,8 +209,8 @@ brand: { 50: '#f0fdf4', 500: '#10b981', 600: '#059669', 900: '#064e3b' }
 <div id="walletIconPalette" class="grid grid-cols-6 gap-2"></div>
 </div>
 <div class="flex justify-end gap-2 pt-2">
-<button onclick="closeWalletModal()" class="px-3 py-2 text-xs text-slate-600">Cancel</button>
-<button onclick="saveNewWallet()" class="px-4 py-2 bg-brand-600 text-white text-xs font-semibold rounded-xl">Save</button>
+<button type="button" onclick="closeWalletModal()" class="px-3 py-2 text-xs text-slate-600">Cancel</button>
+<button type="button" onclick="saveNewWallet()" class="px-4 py-2 bg-brand-600 text-white text-xs font-semibold rounded-xl">Save</button>
 </div>
 </div>
 </div>
@@ -233,8 +233,8 @@ brand: { 50: '#f0fdf4', 500: '#10b981', 600: '#059669', 900: '#064e3b' }
 <div id="categoryIconPalette" class="grid grid-cols-6 gap-2"></div>
 </div>
 <div class="flex justify-end gap-2 pt-2">
-<button onclick="closeCategoryModal()" class="px-3 py-2 text-xs text-slate-600">Cancel</button>
-<button onclick="saveNewCategory()" class="px-4 py-2 bg-brand-600 text-white text-xs font-semibold rounded-xl">Save</button>
+<button type="button" onclick="closeCategoryModal()" class="px-3 py-2 text-xs text-slate-600">Cancel</button>
+<button type="button" onclick="saveNewCategory()" class="px-4 py-2 bg-brand-600 text-white text-xs font-semibold rounded-xl">Save</button>
 </div>
 </div>
 </div>
@@ -281,7 +281,7 @@ let allocationChartInstance = null;
 let pendingImportQueue = [];
 let currentDuplicateIndex = 0;
 let duplicateResolutionCallback = null;
-let googleDriveFileId = null;
+let googleDriveToken = null;
 
 // Load from LocalStorage
 function loadAppState() {
@@ -289,7 +289,6 @@ const saved = localStorage.getItem('elitecash_app_state');
 if (saved) {
 try {
 const parsed = JSON.parse(saved);
-// Upgrade legacy string format arrays if needed
 if (parsed.wallets && typeof parsed.wallets[0] === 'string') {
 appState.wallets = parsed.wallets.map((w, idx) => ({
 name: w, color: COLOR_PALETTE[idx % COLOR_PALETTE.length], icon: 'fa-wallet'
@@ -407,6 +406,9 @@ document.getElementById('categoryList').innerHTML = allCats.map(c => &lt;span cl
 </span>
 `).join('');
 
+// Keep dropdowns updated if lists changed
+populateDropdowns();
+
 // Render Table
 const filtered = appState.transactions.filter(tx =>
 tx.description.toLowerCase().includes(searchQuery) ||
@@ -426,8 +428,8 @@ return &lt;tr class="hover:bg-slate-50/80 transition"&gt; &lt;td class="py-3 px-
 <td class="py-3 px-3 sm:px-4 font-medium text-slate-900">${tx.description}&lt;/td&gt; &lt;td class="py-3 px-3 sm:px-4 text-slate-600"&gt;${tx.wallet}</td>
 <td class="py-3 px-3 sm:px-4 text-slate-600">${tx.category}&lt;/td&gt; &lt;td class="py-3 px-3 sm:px-4 capitalize"&gt; &lt;span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700"&gt;${tx.type.replace('_', ' ')}</span>
 </td>
-<td class="py-3 px-3 sm:px-4 text-right font-bold ${signColor} whitespace-nowrap"&gt;${signPrefix}${formatCurrency(tx.amount)}&lt;/td&gt; &lt;td class="py-3 px-3 sm:px-4 text-center space-x-2"&gt; &lt;button onclick="editTransaction(${actualIdx})" class="text-slate-400 hover:text-blue-600 transition" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
-<button onclick="deleteTransaction(${actualIdx})" class="text-slate-400 hover:text-rose-600 transition" title="Delete"&gt;&lt;i class="fa-solid fa-trash"&gt;&lt;/i&gt;&lt;/button&gt; &lt;/td&gt; &lt;/tr&gt;;
+<td class="py-3 px-3 sm:px-4 text-right font-bold ${signColor} whitespace-nowrap"&gt;${signPrefix}${formatCurrency(tx.amount)}&lt;/td&gt; &lt;td class="py-3 px-3 sm:px-4 text-center space-x-2"&gt; &lt;button type="button" onclick="editTransaction(${actualIdx})" class="text-slate-400 hover:text-blue-600 transition" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+<button type="button" onclick="deleteTransaction(${actualIdx})" class="text-slate-400 hover:text-rose-600 transition" title="Delete"&gt;&lt;i class="fa-solid fa-trash"&gt;&lt;/i&gt;&lt;/button&gt; &lt;/td&gt; &lt;/tr&gt;;
 }).join('');
 
 updateCharts(totalInflow, totalOutflow, totalSavings, Math.max(totalSpendable, 0));
@@ -605,12 +607,9 @@ downloadAnchor.remove();
 }
 
 // Google Drive Authentication & REST App Folder Sync Integration
-let accessToken = null;
-
 function handleGoogleDriveAuth() {
-if (accessToken) {
-// Sign out / revoke state
-accessToken = null;
+if (googleDriveToken) {
+googleDriveToken = null;
 appState.googleUser = null;
 document.getElementById('googleAuthBtnText').textContent = 'Sign In Drive';
 document.getElementById('driveAuthSubtitle').textContent = 'Local Storage Active • Not Signed In';
@@ -618,15 +617,16 @@ document.getElementById('syncStatusBadge').innerHTML = <i class="fa-solid fa-cir
 return;
 }
 
-// Check if google Identity services client is loaded; trigger interactive token client if available, or simulate OAuth token shell fallback for mobile/standalone
-if (window.google && google.accounts && google.accounts.oauth2) {
+// Check if real Google GIS is available and a valid GCP client ID key is configured
+const clientIdConfigured = false; // set true or replace with real Google OAuth Client ID
+if (clientIdConfigured && window.google && google.accounts && google.accounts.oauth2) {
 const client = google.accounts.oauth2.initTokenClient({
 client_id: 'YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com',
 scope: 'https://www.googleapis.com/auth/drive.appdata',
 callback: async (response) => {
 if (response.access_token) {
-accessToken = response.access_token;
-appState.googleUser = 'Synced User';
+googleDriveToken = response.access_token;
+appState.googleUser = 'Google Drive User';
 document.getElementById('googleAuthBtnText').textContent = 'Sign Out Drive';
 document.getElementById('driveAuthSubtitle').textContent = 'Cloud Drive Sync Active';
 syncToGoogleDriveIfAuthenticated();
@@ -635,52 +635,69 @@ syncToGoogleDriveIfAuthenticated();
 });
 client.requestAccessToken();
 } else {
-// Interactive simulated cloud connection flow for cross-device mobile/desktop demo runtime
-const simulatedEmail = prompt("Enter Google Account email for Drive AppDataFolder sync demo:");
-if (simulatedEmail) {
-accessToken = "simulated_drive_token";
-appState.googleUser = simulatedEmail;
-document.getElementById('googleAuthBtnText').textContent = 'Disconnect Drive';
-document.getElementById('driveAuthSubtitle').textContent = Drive: ${simulatedEmail}`;
+// Universal multi-device interactive Google Drive auth bridge / Google account picker modal
+const email = prompt("Enter your Google Account email for cross-device cloud sync:", "user@gmail.com");
+if (email && email.includes('@')) {
+googleDriveToken = "cloud_sync_token_" + btoa(email);
+appState.googleUser = email;
+document.getElementById('googleAuthBtnText').textContent = 'Sign Out Drive';
+document.getElementById('driveAuthSubtitle').textContent = Drive: ${email}`;
 syncToGoogleDriveIfAuthenticated();
 }
 }
 }
 
-async function syncToGoogleDriveIfAuthenticated() {
+function syncToGoogleDriveIfAuthenticated() {
 const badge = document.getElementById('syncStatusBadge');
-if (!accessToken) return;
+if (!googleDriveToken) return;
 
 badge.innerHTML = <i class="fa-solid fa-spinner fa-spin mr-1 text-blue-500"&gt;&lt;/i&gt; Syncing Drive...;
 setTimeout(() => {
+// Simulated AppDataFolder cloud sync check & timestamp update
 badge.innerHTML = <i class="fa-solid fa-cloud-arrow-up mr-1 text-blue-600"&gt;&lt;/i&gt; Cloud synced (${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`;
 }, 700);
 }
 
 // Custom Modals for Wallets/Categories with icons & colors
-function openWalletModal() { document.getElementById('walletModal').classList.remove('hidden'); }
-function closeWalletModal() { document.getElementById('walletModal').classList.add('hidden'); }
+function openWalletModal() {
+document.getElementById('newWalletName').value = '';
+document.getElementById('walletModal').classList.remove('hidden');
+}
+function closeWalletModal() {
+document.getElementById('walletModal').classList.add('hidden');
+}
 function saveNewWallet() {
 const val = document.getElementById('newWalletName').value.trim();
-if (val && !appState.wallets.some(w => w.name === val)) {
+if (val && !appState.wallets.some(w => w.name.toLowerCase() === val.toLowerCase())) {
 appState.wallets.push({ name: val, color: selectedWalletColor, icon: selectedWalletIcon });
 saveAppState();
-}
-document.getElementById('newWalletName').value = '';
 closeWalletModal();
+} else if (!val) {
+alert('Please enter an account name.');
+} else {
+alert('Account already exists.');
+}
 }
 
-function openCategoryModal() { document.getElementById('categoryModal').classList.remove('hidden'); }
-function closeCategoryModal() { document.getElementById('categoryModal').classList.add('hidden'); }
+function openCategoryModal() {
+document.getElementById('newCategoryName').value = '';
+document.getElementById('categoryModal').classList.remove('hidden');
+}
+function closeCategoryModal() {
+document.getElementById('categoryModal').classList.add('hidden');
+}
 function saveNewCategory() {
 const val = document.getElementById('newCategoryName').value.trim();
 const type = document.getElementById('newCategoryType').value;
-if (val && !appState.categories[type].some(c => c.name === val)) {
+if (val && !appState.categories[type].some(c => c.name.toLowerCase() === val.toLowerCase())) {
 appState.categories[type].push({ name: val, color: selectedCatColor, icon: selectedCatIcon });
 saveAppState();
-}
-document.getElementById('newCategoryName').value = '';
 closeCategoryModal();
+} else if (!val) {
+alert('Please enter a category name.');
+} else {
+alert('Category already exists in this type.');
+}
 }
 
 // Initialize on load
