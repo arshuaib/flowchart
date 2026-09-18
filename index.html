@@ -1,1 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FlowTrack Pro — Cash Flow Manager</title>
+<meta name="description" content="Professional cash-flow, wallets, savings and analytics manager">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{--bg:#f5f7fb;--panel:#fff;--text:#18212f;--muted:#718096;--line:#e5e9f0;--primary:#2563eb;--primary2:#1d4ed8;--good:#0f9d67;--bad:#dc4f5f;--shadow:0 10px 30px rgba(20,34,55,.07);--radius:18px}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}button{cursor:pointer;border:0}.app{min-height:100vh;display:flex}
+.sidebar{width:250px;background:#101828;color:#d9e2f1;padding:22px 15px;position:fixed;inset:0 auto 0 0;z-index:20}
+.brand{display:flex;gap:10px;align-items:center;padding:8px 10px 25px;font-weight:800;font-size:20px}.brandmark{width:36px;height:36px;border-radius:11px;background:#2563eb;display:grid;place-items:center;color:#fff}
+.nav{display:grid;gap:5px}.nav button{background:transparent;color:#aebbd0;text-align:left;padding:12px 13px;border-radius:11px;display:flex;gap:12px;align-items:center}.nav button:hover,.nav button.active{background:#1d2939;color:#fff}.nav .ico{width:22px;text-align:center}
+.side-bottom{position:absolute;left:15px;right:15px;bottom:20px}.sync-pill{font-size:12px;color:#9fb0c9;background:#182337;padding:10px;border-radius:12px}
+.main{margin-left:250px;width:calc(100% - 250px);padding:28px;max-width:1600px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px}.title h1{margin:0;font-size:28px}.title p{margin:5px 0 0;color:var(--muted)}.actions{display:flex;gap:9px;flex-wrap:wrap}
+.btn{padding:10px 14px;border-radius:11px;background:#fff;border:1px solid var(--line);color:var(--text);box-shadow:0 2px 5px rgba(0,0,0,.02)}.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}.btn.danger{color:var(--bad)}.btn.small{padding:7px 10px;font-size:13px}
+.grid{display:grid;gap:16px}.stats{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:16px}.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:19px}.stat-label{font-size:13px;color:var(--muted);display:flex;justify-content:space-between}.stat-value{font-size:28px;font-weight:800;margin-top:9px}.positive{color:var(--good)}.negative{color:var(--bad)}
+.two{grid-template-columns:1.5fr 1fr}.three{grid-template-columns:1.1fr 1fr 1fr}.card h3{margin:0 0 16px;font-size:16px}.chart{height:280px;position:relative}.chart svg{width:100%;height:100%;overflow:visible}.legend{display:flex;gap:16px;font-size:12px;color:var(--muted);margin-top:6px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:12px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;white-space:nowrap}.table th{color:var(--muted);font-weight:600}.row-main{display:flex;align-items:center;gap:10px}.avatar{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:17px}.sub{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.page{display:none}.page.active{display:block}.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}.search{flex:1;min-width:180px}
+input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 11px;color:var(--text);outline:none}input:focus,select:focus,textarea:focus{border-color:#8eb1ff;box-shadow:0 0 0 3px #2563eb12}.field{margin-bottom:13px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.item-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.wallet,.cat{display:flex;align-items:center;gap:12px}.item-card{padding:15px}.item-card .meta{margin-left:auto;text-align:right}.item-card h4{margin:0 0 3px}.item-card p{margin:0;color:var(--muted);font-size:12px}
+.iconpick{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}.iconpick button,.colorpick button{height:35px;border-radius:9px;background:#f1f4f8}.iconpick button.selected{outline:2px solid var(--primary)}.colorpick{display:flex;gap:7px;flex-wrap:wrap}.colorpick button{width:30px;height:30px;border-radius:50%}.colorpick button.selected{outline:2px solid #111;outline-offset:2px}
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.48);display:none;align-items:center;justify-content:center;z-index:50;padding:15px}.modal-bg.open{display:flex}.modal{background:#fff;width:min(560px,100%);max-height:90vh;overflow:auto;border-radius:20px;padding:21px;box-shadow:0 30px 80px rgba(0,0,0,.25)}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.modal-head h2{margin:0;font-size:19px}.x{background:#eef1f5;border-radius:9px;width:34px;height:34px}.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}
+.toast{position:fixed;right:18px;bottom:18px;background:#101828;color:#fff;padding:12px 15px;border-radius:12px;box-shadow:var(--shadow);display:none;z-index:100;font-size:13px}.toast.show{display:block}
+.empty{text-align:center;color:var(--muted);padding:35px}.mobile-nav{display:none}
+@media(max-width:1050px){.stats{grid-template-columns:repeat(2,1fr)}.two,.three{grid-template-columns:1fr}.item-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.sidebar{display:none}.main{margin-left:0;width:100%;padding:16px 14px 85px}.topbar{align-items:flex-start}.title h1{font-size:22px}.actions .btn:nth-child(n+3){display:none}.stats{grid-template-columns:1fr 1fr;gap:10px}.stat-value{font-size:21px}.card{padding:15px}.item-grid{grid-template-columns:1fr}.mobile-nav{position:fixed;display:grid;grid-template-columns:repeat(5,1fr);bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);z-index:30;padding:7px 4px}.mobile-nav button{background:transparent;color:var(--muted);font-size:10px}.mobile-nav button.active{color:var(--primary);font-weight:700}.mobile-nav span{display:block;font-size:18px;margin-bottom:2px}.formgrid{grid-template-columns:1fr}.table th:nth-child(4),.table td:nth-child(4){display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="brandmark">₣</div> FlowTrack Pro</div>
+  <div class="nav" id="nav">
+    <button data-page="dashboard" class="active"><span class="ico">⌂</span>Dashboard</button>
+    <button data-page="transactions"><span class="ico">↕</span>Transactions</button>
+    <button data-page="wallets"><span class="ico">▣</span>Wallets</button>
+    <button data-page="categories"><span class="ico">◈</span>Categories</button>
+    <button data-page="analytics"><span class="ico">◒</span>Analytics</button>
+    <button data-page="settings"><span class="ico">⚙</span>Settings</button>
+  </div>
+  <div class="side-bottom"><div class="sync-pill">● <span id="syncText">Local data ready</span></div></div>
+</aside>
 
+<main class="main">
+<header class="topbar">
+ <div class="title"><h1 id="pageTitle">Dashboard</h1><p id="greeting">Your money at a glance.</p></div>
+ <div class="actions"><button class="btn" onclick="exportJSON()">Export JSON</button><button class="btn" onclick="document.getElementById('jsonFile').click()">Import JSON</button><button class="btn primary" onclick="openTransaction()">+ Add transaction</button><input id="jsonFile" type="file" accept=".json,application/json" hidden></div>
+</header>
+
+<section id="dashboard" class="page active">
+ <div class="grid stats">
+  <div class="card"><div class="stat-label">Total balance <span>◉</span></div><div class="stat-value" id="totalBalance">₵0.00</div></div>
+  <div class="card"><div class="stat-label">Savings <span>▰</span></div><div class="stat-value" id="savings">₵0.00</div></div>
+  <div class="card"><div class="stat-label">Spendable <span>✓</span></div><div class="stat-value positive" id="spendable">₵0.00</div></div>
+  <div class="card"><div class="stat-label">This month <span>↗</span></div><div class="stat-value" id="monthNet">₵0.00</div></div>
+ </div>
+ <div class="grid two">
+  <div class="card"><h3>Cash flow</h3><div class="chart" id="cashChart"></div><div class="legend"><span><i class="dot" style="background:#2563eb"></i>Income</span><span><i class="dot" style="background:#dc4f5f"></i>Expenses</span></div></div>
+  <div class="card"><h3>Wallets</h3><div id="walletSummary"></div></div>
+ </div>
+ <div class="card" style="margin-top:16px"><h3>Recent transactions</h3><div id="recent"></div></div>
+</section>
+
+<section id="transactions" class="page">
+ <div class="card">
+  <div class="toolbar"><input class="search" id="txSearch" placeholder="Search transactions…"><select id="txType"><option value="">All types</option><option>income</option><option>expense</option><option>transfer</option></select><select id="txWallet"><option value="">All wallets</option></select></div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Transaction</th><th>Wallet</th><th>Amount</th><th>Date</th><th>Actions</th></tr></thead><tbody id="txTable"></tbody></table></div>
+ </div>
+</section>
+
+<section id="wallets" class="page">
+ <div class="toolbar"><button class="btn primary" onclick="openWallet()">+ New wallet</button></div>
+ <div class="item-grid" id="walletGrid"></div>
+</section>
+
+<section id="categories" class="page">
+ <div class="toolbar"><button class="btn primary" onclick="openCategory()">+ New category</button></div>
+ <div class="item-grid" id="categoryGrid"></div>
+</section>
+
+<section id="analytics" class="page">
+ <div class="grid two">
+  <div class="card"><h3>Income vs expenses — 6 months</h3><div class="chart" id="barChart"></div></div>
+  <div class="card"><h3>Expenses by category</h3><div id="categoryAnalytics"></div></div>
+ </div>
+ <div class="card" style="margin-top:16px"><h3>Financial snapshot</h3><div id="snapshot"></div></div>
+</section>
+
+<section id="settings" class="page">
+ <div class="grid two">
+  <div class="card"><h3>Profile</h3><div class="field"><label>Profile name</label><input id="profileName"></div><div class="field"><label>Currency symbol</label><input id="currency" maxlength="4"></div><button class="btn primary" onclick="saveSettings()">Save profile</button></div>
+  <div class="card"><h3>Google Drive sync</h3>
+<div id="googleSignedOut">
+<p style="color:var(--muted);font-size:13px">Sign in with Google to connect this FlowTrack profile to Google Drive. You can choose which Gmail account to use.</p>
+<div class="field"><label>Google OAuth Client ID</label><input id="clientId" placeholder="xxxx.apps.googleusercontent.com"></div>
+<button class="btn primary" onclick="signInGoogle()">Continue with Google</button>
+<p id="driveStatusOut" class="sub"></p></div>
+<div id="googleSignedIn" style="display:none">
+<div class="row-main" style="margin-bottom:14px"><div class="avatar" id="googleAvatar">G</div><div><b id="googleEmail">Google account</b><span class="sub">Connected to FlowTrack</span></div></div>
+<button class="btn primary" onclick="driveSave()">Save to Google Drive</button>
+<button class="btn" onclick="driveLoad()">Load from Google Drive</button>
+<button class="btn danger" onclick="signOutGoogle()">Sign out</button>
+<p id="driveStatus" class="sub"></p>
+</div></div>
+ </div>
+ <div class="card" style="margin-top:16px"><h3>Data management</h3><button class="btn" onclick="exportJSON()">Backup JSON</button> <button class="btn danger" onclick="resetData()">Reset all data</button><p class="sub">Tip: keep a JSON backup before resetting or importing a large dataset.</p></div>
+</section>
+</main>
+</div>
+<nav class="mobile-nav" id="mobileNav">
+<button data-page="dashboard" class="active"><span>⌂</span>Home</button><button data-page="transactions"><span>↕</span>Transactions</button><button data-page="wallets"><span>▣</span>Wallets</button><button data-page="analytics"><span>◒</span>Analytics</button><button data-page="settings"><span>⚙</span>Settings</button>
+</nav>
+
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY='flowtrack_pro_v1';
+const ICONS=['💵','🏦','💳','👛','💰','📱','🏠','🚗','✈️','🎓','🛒','🍔','⚡','🔧','🎁','📦','💡','🧾','🎯','⭐','🛍️','🏥','🎵','☪️'];
+const COLORS=['#2563eb','#0f9d67','#dc4f5f','#f59e0b','#7c3aed','#0891b2','#db2777','#475569'];
+let state=JSON.parse(localStorage.getItem(KEY)||'null')||{
+ profile:{name:'My Finance',currency:'₵',clientId:''},
+ wallets:[
+  {id:'w1',name:'Cash',icon:'💵',color:'#0f9d67',balance:0,savings:false},
+  {id:'w2',name:'Bank',icon:'🏦',color:'#2563eb',balance:0,savings:false},
+  {id:'w3',name:'Savings',icon:'💰',color:'#7c3aed',balance:0,savings:true}
+ ],
+ categories:[
+  {id:'c1',name:'Salary',icon:'💵',color:'#0f9d67',type:'income'},
+  {id:'c2',name:'Food',icon:'🍔',color:'#f59e0b',type:'expense'},
+  {id:'c3',name:'Transport',icon:'🚗',color:'#2563eb',type:'expense'},
+  {id:'c4',name:'Bills',icon:'🧾',color:'#dc4f5f',type:'expense'},
+  {id:'c5',name:'Shopping',icon:'🛍️',color:'#db2777',type:'expense'},
+  {id:'c6',name:'Other income',icon:'💰',color:'#0891b2',type:'income'}
+ ],
+ transactions:[]
+};
+let editingId=null, selectedIcon='💵', selectedColor='#2563eb';
+
+function save(){localStorage.setItem(KEY,JSON.stringify(state));render();document.getElementById('syncText').textContent='Saved locally • '+new Date().toLocaleTimeString();}
+function money(n){return (state.profile.currency||'₵')+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function toast(s){let t=document.getElementById('toast');t.textContent=s;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600)}
+function id(p){return p+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function wallet(id){return state.wallets.find(x=>x.id===id)}
+function cat(id){return state.categories.find(x=>x.id===id)}
+function calcBalances(){
+ state.wallets.forEach(w=>w.balance=0);
+ state.transactions.forEach(t=>{
+  if(t.type==='income'){let w=wallet(t.walletId);if(w)w.balance+=+t.amount}
+  if(t.type==='expense'){let w=wallet(t.walletId);if(w)w.balance-=+t.amount}
+  if(t.type==='transfer'){let a=wallet(t.walletId),b=wallet(t.toWalletId);if(a)a.balance-=+t.amount;if(b)b.balance+=+t.amount}
+ });
+}
+function totals(){
+ let total=state.wallets.reduce((a,w)=>a+w.balance,0);
+ let savings=state.wallets.filter(w=>w.savings).reduce((a,w)=>a+w.balance,0);
+ return {total,savings,spendable:total-savings};
+}
+function showPage(p){
+ document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===p));
+ document.querySelectorAll('[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===p));
+ let names={dashboard:'Dashboard',transactions:'Transactions',wallets:'Wallets',categories:'Categories',analytics:'Analytics',settings:'Settings'};
+ document.getElementById('pageTitle').textContent=names[p]||'FlowTrack';
+ document.getElementById('greeting').textContent=p==='dashboard'?`Welcome back, ${state.profile.name||'there'}. Here's your money at a glance.`:'Manage your financial data and preferences.';
+}
+document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+
+function render(){
+ calcBalances();
+ let t=totals();document.getElementById('totalBalance').textContent=money(t.total);document.getElementById('savings').textContent=money(t.savings);document.getElementById('spendable').textContent=money(t.spendable);
+ let now=new Date(),m=now.getMonth(),y=now.getFullYear();let mi=state.transactions.filter(x=>{let d=new Date(x.date);return d.getMonth()===m&&d.getFullYear()===y});let inc=mi.filter(x=>x.type==='income').reduce((a,x)=>a+x.amount,0),exp=mi.filter(x=>x.type==='expense').reduce((a,x)=>a+x.amount,0);document.getElementById('monthNet').textContent=money(inc-exp);document.getElementById('monthNet').className='stat-value '+(inc-exp>=0?'positive':'negative');
+ document.getElementById('profileName').value=state.profile.name||'';document.getElementById('currency').value=state.profile.currency||'₵';document.getElementById('clientId').value=state.profile.clientId||'';
+ fillWalletSelects();renderWallets();renderCategories();renderTransactions();renderRecent();renderCashChart();renderAnalytics();
+}
+function fillWalletSelects(){
+ let opts=state.wallets.map(w=>`<option value="${w.id}">${esc(w.icon)} ${esc(w.name)}</option>`).join('');
+ let f=document.getElementById('txWallet');let cur=f.value;f.innerHTML='<option value="">All wallets</option>'+opts;f.value=cur;
+}
+function renderWallets(){
+ let box=document.getElementById('walletGrid');box.innerHTML=state.wallets.map(w=>`<div class="card item-card"><div class="wallet"><div class="avatar" style="background:${w.color}22">${w.icon}</div><div><h4>${esc(w.name)}</h4><p>${w.savings?'Savings wallet':'Spendable wallet'}</p></div><div class="meta"><b>${money(w.balance)}</b><div><button class="btn small" onclick="openWallet('${w.id}')">Edit</button> <button class="btn small danger" onclick="deleteWallet('${w.id}')">Delete</button></div></div></div></div>`).join('')||'<div class="empty">No wallets yet.</div>';
+}
+function renderCategories(){
+ let box=document.getElementById('categoryGrid');box.innerHTML=state.categories.map(c=>`<div class="card item-card"><div class="cat"><div class="avatar" style="background:${c.color}22">${c.icon}</div><div><h4>${esc(c.name)}</h4><p>${c.type}</p></div><div class="meta"><button class="btn small" onclick="openCategory('${c.id}')">Edit</button> <button class="btn small danger" onclick="deleteCategory('${c.id}')">Delete</button></div></div></div>`).join('');
+}
+function renderTransactions(){
+ let q=(document.getElementById('txSearch').value||'').toLowerCase(),type=document.getElementById('txType').value,wid=document.getElementById('txWallet').value;
+ let arr=state.transactions.filter(t=>(!type||t.type===type)&&(!wid||t.walletId===wid)&&(!q||JSON.stringify(t).toLowerCase().includes(q))).sort((a,b)=>new Date(b.date)-new Date(a.date));
+ document.getElementById('txTable').innerHTML=arr.map(t=>{let w=wallet(t.walletId),c=cat(t.categoryId);let sign=t.type==='income'?'+':t.type==='expense'?'-':'↔';return `<tr><td><div class="row-main"><div class="avatar" style="background:${c?.color||'#64748b'}22">${c?.icon||'↕'}</div><div><b>${esc(t.description||c?.name||t.type)}</b><span class="sub">${t.type}</span></div></div></td><td>${esc(w?.name||'—')}</td><td class="${t.type==='income'?'positive':t.type==='expense'?'negative':''}"><b>${sign}${money(t.amount)}</b></td><td>${new Date(t.date).toLocaleDateString()}</td><td><button class="btn small" onclick="openTransaction('${t.id}')">Edit</button> <button class="btn small danger" onclick="deleteTransaction('${t.id}')">Delete</button></td></tr>`}).join('')||'<tr><td colspan="5"><div class="empty">No transactions found.</div></td></tr>';
+}
+['txSearch','txType','txWallet'].forEach(x=>document.getElementById(x).addEventListener('input',renderTransactions));
+function renderRecent(){
+ let arr=[...state.transactions].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,6);document.getElementById('recent').innerHTML=arr.length?`<div class="table-wrap"><table class="table"><tbody>${arr.map(t=>{let c=cat(t.categoryId);return `<tr><td><div class="row-main"><div class="avatar" style="background:${c?.color||'#64748b'}22">${c?.icon||'↕'}</div><div><b>${esc(t.description||c?.name||t.type)}</b><span class="sub">${new Date(t.date).toLocaleDateString()} • ${esc(wallet(t.walletId)?.name||'')}</span></div></div></td><td class="${t.type==='income'?'positive':'negative'}">${t.type==='income'?'+':'-'}${money(t.amount)}</td></tr>`}).join('')}</tbody></table></div>`:'<div class="empty">No transactions yet. Add your first income or expense.</div>';
+}
+function series(months=6){
+ let out=[];let d=new Date();d.setDate(1);for(let i=months-1;i>=0;i--){let x=new Date(d.getFullYear(),d.getMonth()-i,1),mo=x.getMonth(),yr=x.getFullYear();let a=state.transactions.filter(t=>{let z=new Date(t.date);return z.getMonth()===mo&&z.getFullYear()===yr});out.push({label:x.toLocaleString(undefined,{month:'short'}),income:a.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0),expense:a.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0)});}return out;
+}
+function renderCashChart(){
+ let s=series(6),max=Math.max(1,...s.flatMap(x=>[x.income,x.expense])),W=700,H=250,p=35,step=(W-p*2)/(s.length-1);
+ let pts=(key)=>s.map((x,i)=>`${p+i*step},${H-p-(x[key]/max)*(H-p*2)}`).join(' ');
+ document.getElementById('cashChart').innerHTML=`<svg viewBox="0 0 ${W} ${H}"><line x1="${p}" y1="${H-p}" x2="${W-p}" y2="${H-p}" stroke="#e5e9f0"/>${s.map((x,i)=>`<text x="${p+i*step}" y="${H-8}" text-anchor="middle" font-size="11" fill="#718096">${x.label}</text>`).join('')}<polyline fill="none" stroke="#2563eb" stroke-width="3" points="${pts('income')}"/><polyline fill="none" stroke="#dc4f5f" stroke-width="3" points="${pts('expense')}"/>${s.map((x,i)=>`<circle cx="${p+i*step}" cy="${H-p-(x.income/max)*(H-p*2)}" r="4" fill="#2563eb"/><circle cx="${p+i*step}" cy="${H-p-(x.expense/max)*(H-p*2)}" r="4" fill="#dc4f5f"/>`).join('')}</svg>`;
+}
+function renderAnalytics(){
+ let s=series(6),max=Math.max(1,...s.flatMap(x=>[x.income,x.expense])),W=700,H=260,base=205,bw=30,gap=85;
+ document.getElementById('barChart').innerHTML=`<svg viewBox="0 0 ${W} ${H}">${s.map((x,i)=>{let X=35+i*gap,ih=(x.income/max)*165,eh=(x.expense/max)*165;return `<rect x="${X}" y="${base-ih}" width="${bw}" height="${ih}" rx="5" fill="#2563eb"/><rect x="${X+bw+5}" y="${base-eh}" width="${bw}" height="${eh}" rx="5" fill="#dc4f5f"/><text x="${X+bw}" y="230" text-anchor="middle" font-size="11" fill="#718096">${x.label}</text>`}).join('')}</svg>`;
+ let cats=state.categories.filter(c=>c.type==='expense').map(c=>({c,v:state.transactions.filter(t=>t.type==='expense'&&t.categoryId===c.id).reduce((s,t)=>s+t.amount,0)})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v),sum=cats.reduce((a,x)=>a+x.v,0)||1;
+ document.getElementById('categoryAnalytics').innerHTML=cats.length?cats.map(x=>`<div style="margin:12px 0"><div style="display:flex;justify-content:space-between;font-size:13px"><span>${x.c.icon} ${esc(x.c.name)}</span><b>${money(x.v)}</b></div><div style="height:8px;background:#eef1f5;border-radius:9px;margin-top:6px"><div style="width:${x.v/sum*100}%;height:100%;background:${x.c.color};border-radius:9px"></div></div></div>`).join(''):'<div class="empty">Expense analytics will appear after you add expenses.</div>';
+ let total=totals(),inc=state.transactions.filter(t=>t.type==='income').reduce((a,t)=>a+t.amount,0),exp=state.transactions.filter(t=>t.type==='expense').reduce((a,t)=>a+t.amount,0);
+ document.getElementById('snapshot').innerHTML=`<div class="grid three"><div><span class="sub">Lifetime income</span><b class="positive">${money(inc)}</b></div><div><span class="sub">Lifetime expenses</span><b class="negative">${money(exp)}</b></div><div><span class="sub">Current spendable</span><b>${money(total.spendable)}</b></div></div>`;
+}
+function openModal(content){document.getElementById('modal').innerHTML=content;document.getElementById('modalBg').classList.add('open')}
+function closeModal(){document.getElementById('modalBg').classList.remove('open')}
+document.getElementById('modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')closeModal()});
+function picker(){
+ return `<div class="field"><label>Icon</label><div class="iconpick">${ICONS.map(i=>`<button type="button" class="${i===selectedIcon?'selected':''}" onclick="pickIcon('${i}')">${i}</button>`).join('')}</div></div><div class="field"><label>Color</label><div class="colorpick">${COLORS.map(c=>`<button type="button" class="${c===selectedColor?'selected':''}" style="background:${c}" onclick="pickColor('${c}')"></button>`).join('')}</div></div>`;
+}
+function pickIcon(i){selectedIcon=i;document.querySelector('.iconpick').outerHTML=picker().split('<div class="field"><label>Color')[0]+'<div class="field"><label>Color'+document.querySelector('.colorpick').parentElement.innerHTML.split('<div class="field"><label>Color')[1].split('</div></div>')[0]+'</div></div>';openWallet(currentWalletId);}// overwritten below
+let currentWalletId=null;
+function openWallet(wid=null){
+ currentWalletId=wid;let w=wid?wallet(wid):null;selectedIcon=w?.icon||'💵';selectedColor=w?.color||'#2563eb';
+ openModal(`<div class="modal-head"><h2>${w?'Edit':'New'} wallet</h2><button class="x" onclick="closeModal()">×</button></div><div class="field"><label>Name</label><input id="mName" value="${esc(w?.name||'')}"></div><div class="field"><label>Wallet type</label><select id="mSavings"><option value="false" ${!w?.savings?'selected':''}>Spendable</option><option value="true" ${w?.savings?'selected':''}>Savings</option></select></div>${picker()}<div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveWallet()">Save wallet</button></div>`);
+}
+function pickIcon(i){selectedIcon=i;document.querySelectorAll('.iconpick button').forEach(b=>b.classList.toggle('selected',b.textContent===i))}
+function pickColor(c){selectedColor=c;document.querySelectorAll('.colorpick button').forEach(b=>b.classList.toggle('selected',b.style.backgroundColor===c))}
+function saveWallet(){let name=document.getElementById('mName').value.trim();if(!name)return toast('Wallet name is required');if(currentWalletId){let w=wallet(currentWalletId);Object.assign(w,{name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true'})}else state.wallets.push({id:id('w'),name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true',balance:0});closeModal();save();toast('Wallet saved')}
+function deleteWallet(wid){if(state.wallets.length<=1)return toast('Keep at least one wallet');if(state.transactions.some(t=>t.walletId===wid||t.toWalletId===wid))return toast('Cannot delete a wallet with transactions');if(confirm('Delete this wallet?')){state.wallets=state.wallets.filter(w=>w.id!==wid);save();}}
+let currentCatId=null;
+function openCategory(cid=null){
+ currentCatId=cid;let c=cid?cat(cid):null;selectedIcon=c?.icon||'💵';selectedColor=c?.color||'#2563eb';
+ openModal(`<div class="modal-head"><h2>${c?'Edit':'New'} category</h2><button class="x" onclick="closeModal()">×</button></div><div class="field"><label>Name</label><input id="cName" value="${esc(c?.name||'')}"></div><div class="field"><label>Type</label><select id="cType"><option value="income" ${c?.type==='income'?'selected':''}>Income</option><option value="expense" ${c?.type!=='income'?'selected':''}>Expense</option></select></div>${picker()}<div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveCategory()">Save category</button></div>`);
+}
+function saveCategory(){let name=document.getElementById('cName').value.trim();if(!name)return toast('Category name is required');let type=document.getElementById('cType').value;if(currentCatId)Object.assign(cat(currentCatId),{name,type,icon:selectedIcon,color:selectedColor});else state.categories.push({id:id('c'),name,type,icon:selectedIcon,color:selectedColor});closeModal();save();toast('Category saved')}
+function deleteCategory(cid){if(state.transactions.some(t=>t.categoryId===cid))return toast('Cannot delete a category used by transactions');if(confirm('Delete this category?')){state.categories=state.categories.filter(c=>c.id!==cid);save();}}
+function openTransaction(tid=null){
+ editingId=tid;let t=tid?state.transactions.find(x=>x.id===tid):null;let type=t?.type||'expense';
+ openModal(`<div class="modal-head"><h2>${t?'Edit':'New'} transaction</h2><button class="x" onclick="closeModal()">×</button></div>
+ <div class="formgrid"><div class="field"><label>Type</label><select id="tType" onchange="refreshTxForm()"><option value="expense" ${type==='expense'?'selected':''}>Expense</option><option value="income" ${type==='income'?'selected':''}>Income</option><option value="transfer" ${type==='transfer'?'selected':''}>Transfer</option></select></div><div class="field"><label>Amount</label><input id="tAmount" type="number" min="0" step="0.01" value="${t?.amount??''}"></div></div>
+ <div class="formgrid"><div class="field"><label>Wallet</label><select id="tWallet">${state.wallets.map(w=>`<option value="${w.id}" ${t?.walletId===w.id?'selected':''}>${w.icon} ${esc(w.name)}</option>`).join('')}</select></div><div class="field" id="catField"><label>Category</label><select id="tCat">${state.categories.map(c=>`<option value="${c.id}" ${t?.categoryId===c.id?'selected':''}>${c.icon} ${esc(c.name)}</option>`).join('')}</select></div></div>
+ <div class="field" id="toWalletField" style="display:none"><label>Transfer to</label><select id="tToWallet">${state.wallets.map(w=>`<option value="${w.id}" ${t?.toWalletId===w.id?'selected':''}>${w.icon} ${esc(w.name)}</option>`).join('')}</select></div>
+ <div class="formgrid"><div class="field"><label>Date & time</label><input id="tDate" type="datetime-local" value="${t?new Date(t.date).toISOString().slice(0,16):new Date().toISOString().slice(0,16)}"></div><div class="field"><label>Description / note</label><input id="tDesc" value="${esc(t?.description||'')}"></div></div>
+ <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveTransaction()">Save transaction</button></div>`);
+ refreshTxForm();
+}
+function refreshTxForm(){let type=document.getElementById('tType').value;document.getElementById('catField').style.display=type==='transfer'?'none':'';document.getElementById('toWalletField').style.display=type==='transfer'?'':'none';if(type==='income')document.getElementById('tCat').innerHTML=state.categories.filter(c=>c.type==='income').map(c=>`<option value="${c.id}">${c.icon} ${esc(c.name)}</option>`).join('');if(type==='expense')document.getElementById('tCat').innerHTML=state.categories.filter(c=>c.type==='expense').map(c=>`<option value="${c.id}">${c.icon} ${esc(c.name)}</option>`).join('')}
+function fingerprint(t){return [t.type,Number(t.amount).toFixed(2),t.walletId,t.toWalletId||'',t.categoryId||'',new Date(t.date).toISOString().slice(0,16),String(t.description||'').trim().toLowerCase()].join('|')}
+function saveTransaction(){
+ let type=document.getElementById('tType').value,amount=Number(document.getElementById('tAmount').value),walletId=document.getElementById('tWallet').value,date=new Date(document.getElementById('tDate').value).toISOString(),description=document.getElementById('tDesc').value.trim(),categoryId=type==='transfer'?null:document.getElementById('tCat').value,toWalletId=type==='transfer'?document.getElementById('tToWallet').value:null;
+ if(!amount||amount<=0)return toast('Enter a valid amount');if(type==='transfer'&&walletId===toWalletId)return toast('Choose different wallets');
+ let obj={id:editingId||id('t'),type,amount,walletId,toWalletId,categoryId,date,description};
+ let dup=state.transactions.find(x=>fingerprint(x)===fingerprint(obj)&&x.id!==editingId);
+ if(dup&&!confirm(`A matching transaction already exists (${money(dup.amount)}). Import/save anyway?`))return;
+ if(editingId)state.transactions[state.transactions.findIndex(x=>x.id===editingId)]=obj;else state.transactions.push(obj);
+ closeModal();save();toast('Transaction saved');
+}
+function deleteTransaction(tid){if(confirm('Delete this transaction?')){state.transactions=state.transactions.filter(t=>t.id!==tid);save();}}
+function exportJSON(){let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='flowtrack-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);toast('JSON backup exported')}
+document.getElementById('jsonFile').addEventListener('change',e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>importJSON(r.result);r.readAsText(f);e.target.value=''});
+function importJSON(text){
+ try{
+  let incoming=JSON.parse(text);let tx=incoming.transactions||incoming.data?.transactions||[];if(!Array.isArray(tx))throw Error('No transactions array found');
+  let existing=new Set(state.transactions.map(fingerprint)),dups=0,add=[];
+  tx.forEach(raw=>{let t={...raw,id:raw.id||id('t'),amount:Number(raw.amount||0)};if(!t.type||!t.walletId||!t.date||!t.amount)return;if(existing.has(fingerprint(t)))dups++;else{existing.add(fingerprint(t));add.push(t)}});
+  let msg=`Found ${tx.length} transaction(s). ${dups} possible duplicate(s), ${add.length} new transaction(s).\\n\\nImport the ${add.length} new record(s)?`;
+  if(!confirm(msg))return;state.transactions.push(...add);
+  if(Array.isArray(incoming.wallets))incoming.wallets.forEach(w=>{if(w.name&&!state.wallets.some(x=>x.id===w.id||x.name.toLowerCase()===w.name.toLowerCase()))state.wallets.push({...w,id:w.id||id('w')})});
+  if(Array.isArray(incoming.categories))incoming.categories.forEach(c=>{if(c.name&&!state.categories.some(x=>x.id===c.id||x.name.toLowerCase()===c.name.toLowerCase()))state.categories.push({...c,id:c.id||id('c')})});
+  save();toast(`Imported ${add.length} new transaction(s)`);
+ }catch(e){toast('Invalid JSON: '+e.message)}
+}
+function saveSettings(){state.profile.name=document.getElementById('profileName').value.trim()||'My Finance';state.profile.currency=document.getElementById('currency').value||'₵';state.profile.clientId=document.getElementById('clientId').value.trim();save();toast('Settings saved')}
+function resetData(){if(confirm('This will erase all local FlowTrack data. Continue?')){localStorage.removeItem(KEY);location.reload()}}
+let driveToken=null,driveFileId=null,googleUser=null;
+const DRIVE_SCOPE='https://www.googleapis.com/auth/drive.appdata';
+function googleConfigured(){return typeof google!=='undefined'&&google.accounts&&google.accounts.oauth2}
+function signInGoogle(){
+ let clientId=state.profile.clientId||document.getElementById('clientId').value.trim();
+ if(!clientId)return toast('Enter your Google OAuth Client ID first');
+ state.profile.clientId=clientId;localStorage.setItem(KEY,JSON.stringify(state));
+ if(!googleConfigured())return toast('Google sign-in is still loading. Try again in a moment.');
+ const client=google.accounts.oauth2.initTokenClient({
+  client_id:clientId,scope:DRIVE_SCOPE,prompt:'select_account',
+  callback: async (resp)=>{
+   if(resp.error)return toast('Google sign-in was not completed');
+   driveToken=resp.access_token;
+   try{
+    const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+driveToken}});
+    googleUser=await r.json();
+    localStorage.setItem('flowtrack_google_user',JSON.stringify({email:googleUser.email,name:googleUser.name,picture:googleUser.picture}));
+    showGoogleSignedIn();toast('Signed in as '+(googleUser.email||'Google account'));
+    await findDriveFile();
+   }catch(e){toast('Google account connected, but profile lookup failed')}
+  }
+ });
+ client.requestAccessToken({prompt:'select_account'});
+}
+function showGoogleSignedIn(){
+ document.getElementById('googleSignedOut').style.display='none';
+ document.getElementById('googleSignedIn').style.display='';
+ let u=googleUser||JSON.parse(localStorage.getItem('flowtrack_google_user')||'null')||{};
+ document.getElementById('googleEmail').textContent=u.email||'Google account';
+ document.getElementById('googleAvatar').innerHTML=u.picture?`<img src="${esc(u.picture)}" style="width:100%;height:100%;border-radius:10px">`:'G';
+}
+function signOutGoogle(){
+ driveToken=null;googleUser=null;driveFileId=null;localStorage.removeItem('flowtrack_google_user');
+ document.getElementById('googleSignedOut').style.display='';
+ document.getElementById('googleSignedIn').style.display='none';toast('Signed out of Google');
+}
+async function driveApi(url,options={}){
+ if(!driveToken)throw Error('Not signed in to Google');
+ options.headers={...(options.headers||{}),Authorization:'Bearer '+driveToken};return fetch(url,options);
+}
+async function findDriveFile(){
+ let q=encodeURIComponent("name='flowtrack-data.json' and trashed=false");
+ let r=await driveApi('https://www.googleapis.com/drive/v3/files?q='+q+'&spaces=appDataFolder&fields=files(id,name,modifiedTime)');
+ if(!r.ok)throw Error('Drive lookup failed');
+ let j=await r.json();driveFileId=j.files?.[0]?.id||null;
+ document.getElementById('driveStatus').textContent=driveFileId?'Existing FlowTrack backup found in Google Drive.':'No FlowTrack backup found yet.';
+}
+function makeMultipart(meta,data){
+ const boundary='flowtrack_boundary_'+Date.now();
+ const body='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(meta)+'\r\n--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+data+'\r\n--'+boundary+'--';
+ return new Blob([body],{type:'multipart/related; boundary='+boundary});
+}
+async function driveSave(){
+ try{
+  if(!driveToken)return signInGoogle();
+  let body=JSON.stringify(state,null,2),meta={name:'flowtrack-data.json',parents:['appDataFolder'],mimeType:'application/json'},r;
+  if(driveFileId)r=await driveApi('https://www.googleapis.com/upload/drive/v3/files/'+driveFileId+'?uploadType=multipart',{method:'PATCH',body:makeMultipart(meta,body)});
+  else r=await driveApi('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',body:makeMultipart(meta,body)});
+  if(!r.ok)throw Error('Upload failed');let j=await r.json();driveFileId=j.id||driveFileId;
+  document.getElementById('driveStatus').textContent='Saved to Google Drive • '+new Date().toLocaleTimeString();toast('Saved to Google Drive');
+ }catch(e){toast('Drive save failed: '+e.message)}
+}
+async function driveLoad(){
+ try{
+  if(!driveToken)return signInGoogle();if(!driveFileId)await findDriveFile();
+  if(!driveFileId)return toast('No FlowTrack backup found in this Google Drive account');
+  let r=await driveApi('https://www.googleapis.com/drive/v3/files/'+driveFileId+'?alt=media');if(!r.ok)throw Error('Download failed');
+  let incoming=await r.json();if(!incoming.transactions)return toast('The Drive file is not a valid FlowTrack backup');
+  if(!confirm('Load the Google Drive backup? Your current local data will be replaced.'))return;
+  state=incoming;save();toast('Loaded from Google Drive');
+ }catch(e){toast('Drive load failed: '+e.message)}
+}
+function restoreGoogleUI(){
+ let u=JSON.parse(localStorage.getItem('flowtrack_google_user')||'null');if(u){googleUser=u;showGoogleSignedIn();}
+}
+
+render();
+restoreGoogleUI();
+</script>
+</body>
+</html>
