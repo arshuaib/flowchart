@@ -27,7 +27,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 .toast{position:fixed;right:18px;bottom:18px;background:#101828;color:#fff;padding:12px 15px;border-radius:12px;box-shadow:var(--shadow);display:none;z-index:100;font-size:13px}.toast.show{display:block}
 .empty{text-align:center;color:var(--muted);padding:35px}.mobile-nav{display:none}
 @media(max-width:1050px){.stats{grid-template-columns:repeat(2,1fr)}.two,.three{grid-template-columns:1fr}.item-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:720px){.sidebar{display:none}.main{margin-left:0;width:100%;padding:16px 14px 85px}.topbar{align-items:flex-start}.title h1{font-size:22px}.actions .btn:nth-child(n+3){display:none}.stats{grid-template-columns:1fr 1fr;gap:10px}.stat-value{font-size:21px}.card{padding:15px}.item-grid{grid-template-columns:1fr}.mobile-nav{position:fixed;display:grid;grid-template-columns:repeat(5,1fr);bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);z-index:30;padding:7px 4px}.mobile-nav button{background:transparent;color:var(--muted);font-size:10px}.mobile-nav button.active{color:var(--primary);font-weight:700}.mobile-nav span{display:block;font-size:18px;margin-bottom:2px}.formgrid{grid-template-columns:1fr}.table th:nth-child(4),.table td:nth-child(4){display:none}}
+@media(max-width:720px){.sidebar{display:none}.main{margin-left:0;width:100%;padding:16px 14px 95px}.topbar{align-items:flex-start}.title h1{font-size:22px}.actions{width:100%;justify-content:flex-end}.actions .btn:nth-child(1),.actions .btn:nth-child(2){display:none}.actions .btn:nth-child(3){display:inline-flex}.stats{grid-template-columns:1fr 1fr;gap:10px}.stat-value{font-size:21px}.card{padding:15px}.item-grid{grid-template-columns:1fr}.mobile-nav{position:fixed;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);z-index:30;padding:7px 2px}.mobile-nav button{background:transparent;color:var(--muted);font-size:9px;min-width:0;padding:5px 1px}.mobile-nav button.active{color:var(--primary);font-weight:700}.mobile-nav span{display:block;font-size:17px;margin-bottom:2px}.formgrid{grid-template-columns:1fr}.table th:nth-child(4),.table td:nth-child(4){display:none}.modal-bg{padding:8px}.modal{width:100%;max-height:92vh;padding:16px}.iconpick{grid-template-columns:repeat(6,1fr)}.modal-actions{position:sticky;bottom:0;background:#fff;padding-top:10px}.modal-actions .btn{flex:1}}
 </style>
 </head>
 <body>
@@ -111,7 +111,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 </main>
 </div>
 <nav class="mobile-nav" id="mobileNav">
-<button data-page="dashboard" class="active"><span>⌂</span>Home</button><button data-page="transactions"><span>↕</span>Transactions</button><button data-page="wallets"><span>▣</span>Wallets</button><button data-page="analytics"><span>◒</span>Analytics</button><button data-page="settings"><span>⚙</span>Settings</button>
+<button data-page="dashboard" class="active"><span>⌂</span>Home</button><button data-page="transactions"><span>↕</span>Transactions</button><button data-page="wallets"><span>▣</span>Wallets</button><button data-page="categories"><span>◈</span>Categories</button><button data-page="analytics"><span>◒</span>Analytics</button><button data-page="settings"><span>⚙</span>Settings</button>
 </nav>
 
 <div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
@@ -141,7 +141,7 @@ let state=JSON.parse(localStorage.getItem(KEY)||'null')||{
 };
 let editingId=null, selectedIcon='💵', selectedColor='#2563eb';
 
-function save(){localStorage.setItem(KEY,JSON.stringify(state));render();document.getElementById('syncText').textContent='Saved locally • '+new Date().toLocaleTimeString();}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));render();document.getElementById('syncText').textContent=driveToken?'Saving to Google Drive…':'Saved locally • '+new Date().toLocaleTimeString();if(driveToken){clearTimeout(driveSyncTimer);driveSyncTimer=setTimeout(()=>driveSave(),1200);}}
 function money(n){return (state.profile.currency||'₵')+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function toast(s){let t=document.getElementById('toast');t.textContent=s;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600)}
@@ -216,7 +216,7 @@ function openModal(content){document.getElementById('modal').innerHTML=content;d
 function closeModal(){document.getElementById('modalBg').classList.remove('open')}
 document.getElementById('modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')closeModal()});
 function picker(){
- return `<div class="field"><label>Icon</label><div class="iconpick">${ICONS.map(i=>`<button type="button" class="${i===selectedIcon?'selected':''}" onclick="pickIcon('${i}')">${i}</button>`).join('')}</div></div><div class="field"><label>Color</label><div class="colorpick">${COLORS.map(c=>`<button type="button" class="${c===selectedColor?'selected':''}" style="background:${c}" onclick="pickColor('${c}')"></button>`).join('')}</div></div>`;
+ return `<div class="field"><label>Icon</label><div class="iconpick">${ICONS.map(i=>`<button type="button" class="${i===selectedIcon?'selected':''}" onclick="pickIcon('${i}')">${i}</button>`).join('')}</div></div><div class="field"><label>Color</label><div class="colorpick">${COLORS.map(c=>`<button type="button" class="${c===selectedColor?'selected':''}" style="background:${c}" data-color="${c}" onclick="pickColor('${c}')"></button>`).join('')}</div></div>`;
 }
 function pickIcon(i){selectedIcon=i;document.querySelector('.iconpick').outerHTML=picker().split('<div class="field"><label>Color')[0]+'<div class="field"><label>Color'+document.querySelector('.colorpick').parentElement.innerHTML.split('<div class="field"><label>Color')[1].split('</div></div>')[0]+'</div></div>';openWallet(currentWalletId);}// overwritten below
 let currentWalletId=null;
@@ -225,7 +225,7 @@ function openWallet(wid=null){
  openModal(`<div class="modal-head"><h2>${w?'Edit':'New'} wallet</h2><button class="x" onclick="closeModal()">×</button></div><div class="field"><label>Name</label><input id="mName" value="${esc(w?.name||'')}"></div><div class="field"><label>Wallet type</label><select id="mSavings"><option value="false" ${!w?.savings?'selected':''}>Spendable</option><option value="true" ${w?.savings?'selected':''}>Savings</option></select></div>${picker()}<div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveWallet()">Save wallet</button></div>`);
 }
 function pickIcon(i){selectedIcon=i;document.querySelectorAll('.iconpick button').forEach(b=>b.classList.toggle('selected',b.textContent===i))}
-function pickColor(c){selectedColor=c;document.querySelectorAll('.colorpick button').forEach(b=>b.classList.toggle('selected',b.style.backgroundColor===c))}
+function pickColor(c){selectedColor=c;document.querySelectorAll('.colorpick button').forEach(b=>b.classList.toggle('selected',b.getAttribute('data-color')===c))}
 function saveWallet(){let name=document.getElementById('mName').value.trim();if(!name)return toast('Wallet name is required');if(currentWalletId){let w=wallet(currentWalletId);Object.assign(w,{name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true'})}else state.wallets.push({id:id('w'),name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true',balance:0});closeModal();save();toast('Wallet saved')}
 function deleteWallet(wid){if(state.wallets.length<=1)return toast('Keep at least one wallet');if(state.transactions.some(t=>t.walletId===wid||t.toWalletId===wid))return toast('Cannot delete a wallet with transactions');if(confirm('Delete this wallet?')){state.wallets=state.wallets.filter(w=>w.id!==wid);save();}}
 let currentCatId=null;
@@ -273,7 +273,7 @@ function importJSON(text){
 }
 function saveSettings(){state.profile.name=document.getElementById('profileName').value.trim()||'My Finance';state.profile.currency=document.getElementById('currency').value||'₵';state.profile.clientId=FLOWTRACK_GOOGLE_CLIENT_ID;save();toast('Settings saved')}
 function resetData(){if(confirm('This will erase all local FlowTrack data. Continue?')){localStorage.removeItem(KEY);location.reload()}}
-let driveToken=null,driveFileId=null,googleUser=null;
+let driveToken=null,driveFileId=null,googleUser=null,driveSyncTimer=null;
 const DRIVE_SCOPE='https://www.googleapis.com/auth/drive.appdata';
 function googleConfigured(){return typeof google!=='undefined'&&google.accounts&&google.accounts.oauth2}
 function signInGoogle(){
@@ -328,18 +328,26 @@ function makeMultipart(meta,data){
 async function driveSave(){
  try{
   if(!driveToken)return signInGoogle();
-  let body=JSON.stringify(state,null,2),meta={name:'flowtrack-data.json',parents:['appDataFolder'],mimeType:'application/json'},r;
-  if(driveFileId)r=await driveApi('https://www.googleapis.com/upload/drive/v3/files/'+driveFileId+'?uploadType=multipart',{method:'PATCH',body:makeMultipart(meta,body)});
-  else r=await driveApi('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',body:makeMultipart(meta,body)});
-  if(!r.ok)throw Error('Upload failed');let j=await r.json();driveFileId=j.id||driveFileId;
-  document.getElementById('driveStatus').textContent='Saved to Google Drive • '+new Date().toLocaleTimeString();toast('Saved to Google Drive');
- }catch(e){toast('Drive save failed: '+e.message)}
+  let body=JSON.stringify(state,null,2),r;
+  if(driveFileId){
+   // Existing appDataFolder files are updated as media only; do not resend parents.
+   r=await driveApi('https://www.googleapis.com/upload/drive/v3/files/'+encodeURIComponent(driveFileId)+'?uploadType=media',{method:'PATCH',headers:{'Content-Type':'application/json'},body});
+  }else{
+   let meta={name:'flowtrack-data.json',parents:['appDataFolder'],mimeType:'application/json'};
+   r=await driveApi('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',body:makeMultipart(meta,body)});
+  }
+  if(!r.ok){let detail=await r.text().catch(()=> '');throw Error('Upload failed ('+r.status+')'+(detail?' — '+detail.slice(0,180):''));}
+  let j=await r.json();driveFileId=j.id||driveFileId;
+  document.getElementById('driveStatus').textContent='Saved to Google Drive • '+new Date().toLocaleTimeString();
+  document.getElementById('syncText').textContent='Google Drive synced';
+  toast('Saved to Google Drive');
+ }catch(e){console.error('Drive save error',e);toast('Drive save failed: '+e.message)}
 }
 async function driveLoad(){
  try{
   if(!driveToken)return signInGoogle();if(!driveFileId)await findDriveFile();
   if(!driveFileId)return toast('No FlowTrack backup found in this Google Drive account');
-  let r=await driveApi('https://www.googleapis.com/drive/v3/files/'+driveFileId+'?alt=media');if(!r.ok)throw Error('Download failed');
+  let r=await driveApi('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(driveFileId)+'?alt=media');if(!r.ok){let detail=await r.text().catch(()=> '');throw Error('Download failed ('+r.status+')'+(detail?' — '+detail.slice(0,180):''));}
   let incoming=await r.json();if(!incoming.transactions)return toast('The Drive file is not a valid FlowTrack backup');
   if(!confirm('Load the Google Drive backup? Your current local data will be replaced.'))return;
   state=incoming;save();toast('Loaded from Google Drive');
