@@ -101,8 +101,8 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 </div>
 <div id="googleSignedIn" style="display:none">
 <div class="row-main" style="margin-bottom:14px"><div class="avatar" id="googleAvatar">G</div><div><b id="googleEmail">Google account</b><span class="sub">Connected to FlowTrack</span></div></div>
-<button class="btn primary" onclick="driveSave()">Save to Google Drive</button>
-<button class="btn" onclick="driveLoad()">Load from Google Drive</button>
+<button class="btn primary" onclick="driveSave()">Sync now with Google Drive</button>
+<button class="btn" onclick="driveLoad()">Check Google Drive</button>
 <button class="btn danger" onclick="signOutGoogle()">Sign out</button>
 <p id="driveStatus" class="sub"></p>
 </div></div>
@@ -236,14 +236,14 @@ function openWallet(wid=null){
 }
 function pickIcon(i){selectedIcon=i;document.querySelectorAll('.iconpick button').forEach(b=>b.classList.toggle('selected',b.textContent===i))}
 function pickColor(c){selectedColor=c;document.querySelectorAll('.colorpick button').forEach(b=>b.classList.toggle('selected',b.getAttribute('data-color')===c))}
-function saveWallet(){let name=document.getElementById('mName').value.trim();if(!name)return toast('Wallet name is required');if(currentWalletId){let w=wallet(currentWalletId);Object.assign(w,{name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true'})}else state.wallets.push({id:id('w'),name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true',balance:0});closeModal();save();toast('Wallet saved')}
+function saveWallet(){let name=document.getElementById('mName').value.trim();if(!name)return toast('Wallet name is required');if(currentWalletId){let w=wallet(currentWalletId);Object.assign(w,touchRecord({name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true'}))}else state.wallets.push(touchRecord({id:id('w'),name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true',balance:0}));closeModal();save();toast('Wallet saved')}
 function deleteWallet(wid){if(state.wallets.length<=1)return toast('Keep at least one wallet');if(state.transactions.some(t=>t.walletId===wid||t.toWalletId===wid))return toast('Cannot delete a wallet with transactions');if(confirm('Delete this wallet?')){state.wallets=state.wallets.filter(w=>w.id!==wid);addTombstone('wallets',wid);save();}}
 let currentCatId=null;
 function openCategory(cid=null){
  currentCatId=cid;let c=cid?cat(cid):null;selectedIcon=c?.icon||'💵';selectedColor=c?.color||'#2563eb';
  openModal(`<div class="modal-head"><h2>${c?'Edit':'New'} category</h2><button class="x" onclick="closeModal()">×</button></div><div class="field"><label>Name</label><input id="cName" value="${esc(c?.name||'')}"></div><div class="field"><label>Type</label><select id="cType"><option value="income" ${c?.type==='income'?'selected':''}>Income</option><option value="expense" ${c?.type!=='income'?'selected':''}>Expense</option></select></div>${picker()}<div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveCategory()">Save category</button></div>`);
 }
-function saveCategory(){let name=document.getElementById('cName').value.trim();if(!name)return toast('Category name is required');let type=document.getElementById('cType').value;if(currentCatId)Object.assign(cat(currentCatId),{name,type,icon:selectedIcon,color:selectedColor});else state.categories.push({id:id('c'),name,type,icon:selectedIcon,color:selectedColor});closeModal();save();toast('Category saved')}
+function saveCategory(){let name=document.getElementById('cName').value.trim();if(!name)return toast('Category name is required');let type=document.getElementById('cType').value;if(currentCatId)Object.assign(cat(currentCatId),touchRecord({name,type,icon:selectedIcon,color:selectedColor}));else state.categories.push(touchRecord({id:id('c'),name,type,icon:selectedIcon,color:selectedColor}));closeModal();save();toast('Category saved')}
 function deleteCategory(cid){if(state.transactions.some(t=>t.categoryId===cid))return toast('Cannot delete a category used by transactions');if(confirm('Delete this category?')){state.categories=state.categories.filter(c=>c.id!==cid);addTombstone('categories',cid);save();}}
 function openTransaction(tid=null){
  editingId=tid;let t=tid?state.transactions.find(x=>x.id===tid):null;let type=t?.type||'expense';
@@ -260,7 +260,7 @@ function fingerprint(t){return [t.type,Number(t.amount).toFixed(2),t.walletId,t.
 function saveTransaction(){
  let type=document.getElementById('tType').value,amount=Number(document.getElementById('tAmount').value),walletId=document.getElementById('tWallet').value,date=new Date(document.getElementById('tDate').value).toISOString(),description=document.getElementById('tDesc').value.trim(),categoryId=type==='transfer'?null:document.getElementById('tCat').value,toWalletId=type==='transfer'?document.getElementById('tToWallet').value:null;
  if(!amount||amount<=0)return toast('Enter a valid amount');if(type==='transfer'&&walletId===toWalletId)return toast('Choose different wallets');
- let obj={id:editingId||id('t'),type,amount,walletId,toWalletId,categoryId,date,description};
+ let obj=touchRecord({id:editingId||id('t'),type,amount,walletId,toWalletId,categoryId,date,description});
  let dup=state.transactions.find(x=>fingerprint(x)===fingerprint(obj)&&x.id!==editingId);
  if(dup&&!confirm(`A matching transaction already exists (${money(dup.amount)}). Import/save anyway?`))return;
  if(editingId)state.transactions[state.transactions.findIndex(x=>x.id===editingId)]=obj;else state.transactions.push(obj);
@@ -282,7 +282,16 @@ function importJSON(text){
  }catch(e){toast('Invalid JSON: '+e.message)}
 }
 function saveSettings(){state.profile.name=document.getElementById('profileName').value.trim()||'My Finance';state.profile.currency=document.getElementById('currency').value||'₵';state.profile.clientId=FLOWTRACK_GOOGLE_CLIENT_ID;save();toast('Settings saved')}
-function resetData(){if(confirm('This will erase all local FlowTrack data. Continue?')){localStorage.removeItem(KEY);localStorage.removeItem(SYNC_KEY);location.reload()}}
+function resetData(){
+ const first=confirm('RESET ALL LOCAL DATA?\n\nThis will permanently remove the transactions, wallets, categories and profile stored on THIS DEVICE. Your Google Drive backup will NOT be deleted.\n\nPress OK only if you are sure.');
+ if(!first)return;
+ const typed=prompt('Final safety check: type RESET to continue.');
+ if(typed!=='RESET'){toast('Reset cancelled. Nothing was deleted.');return;}
+ clearTimeout(driveSyncTimer);
+ localStorage.removeItem(KEY);localStorage.removeItem(SYNC_KEY);
+ toast('Local data reset. Google Drive backup was kept safe.');
+ setTimeout(()=>location.reload(),500);
+}
 let driveToken=null,driveFileId=null,googleUser=null,driveSyncTimer=null,drivePollTimer=null,driveSyncBusy=false;
 const DRIVE_SCOPE='https://www.googleapis.com/auth/drive.appdata';
 const SYNC_KEY='flowtrack_sync_meta_v1';
@@ -290,7 +299,21 @@ let syncMeta=JSON.parse(localStorage.getItem(SYNC_KEY)||'null')||{deviceId:id('d
 function persistSyncMeta(){localStorage.setItem(SYNC_KEY,JSON.stringify(syncMeta));}
 function addTombstone(type,itemId){syncMeta.tombstones[type]=Array.from(new Set([...(syncMeta.tombstones[type]||[]),itemId])).slice(-5000);syncMeta.updatedAt=Date.now();persistSyncMeta();}
 function markLocalChange(){syncMeta.updatedAt=Date.now();persistSyncMeta();}
+function touchRecord(obj){obj.updatedAt=Date.now();obj.updatedBy=syncMeta.deviceId;return obj;}
 function googleConfigured(){return typeof google!=='undefined'&&google.accounts&&google.accounts.oauth2}
+function setGoogleSignedOut(message='Not connected to Google Drive.'){ 
+ driveToken=null;driveFileId=null;clearInterval(drivePollTimer);clearTimeout(driveSyncTimer);
+ document.getElementById('googleSignedOut').style.display='';document.getElementById('googleSignedIn').style.display='none';
+ const out=document.getElementById('driveStatusOut');if(out)out.textContent=message;
+ const st=document.getElementById('syncText');if(st)st.textContent='Local data ready • Google Drive not connected';
+}
+function handleDriveSessionLost(){
+ const wasConnected=!!googleUser;
+ driveToken=null;driveFileId=null;clearInterval(drivePollTimer);clearTimeout(driveSyncTimer);
+ document.getElementById('googleSignedOut').style.display='';document.getElementById('googleSignedIn').style.display='none';
+ const out=document.getElementById('driveStatusOut');if(out)out.textContent=wasConnected?'Google session expired or access was revoked. Sign in again to resume sync.':'Not connected to Google Drive.';
+ const st=document.getElementById('syncText');if(st)st.textContent='Google Drive disconnected';
+}
 function signInGoogle(silent=false){
  let clientId=FLOWTRACK_GOOGLE_CLIENT_ID;
  if(!clientId)return toast('Google sign-in is not configured in this build');
@@ -298,18 +321,22 @@ function signInGoogle(silent=false){
  const client=google.accounts.oauth2.initTokenClient({
   client_id:clientId,scope:DRIVE_SCOPE,
   callback: async (resp)=>{
-   if(resp.error){if(!silent)toast('Google sign-in was not completed');return;}
+   if(resp.error){
+    if(silent)handleDriveSessionLost(); else toast('Google sign-in was not completed');
+    return;
+   }
    driveToken=resp.access_token;
    try{
     const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+driveToken}});
-    if(!r.ok)throw Error('Google profile lookup failed');
+    if(!r.ok)throw Error('Google profile lookup failed ('+r.status+')');
     googleUser=await r.json();
     localStorage.setItem('flowtrack_google_user',JSON.stringify({email:googleUser.email,name:googleUser.name,picture:googleUser.picture}));
     showGoogleSignedIn();
-    await syncWithDrive({upload:true,initial:true});
+    await findDriveFile();
+    await syncWithDrive({upload:false,initial:true});
     startDrivePolling();
     if(!silent)toast('Signed in as '+(googleUser.email||'Google account'));
-   }catch(e){console.error(e);if(!silent)toast('Google account connected, but Drive sync could not start: '+e.message)}
+   }catch(e){console.error(e);handleDriveSessionLost();if(!silent)toast('Google Drive connection failed: '+e.message);}
   }
  });
  client.requestAccessToken({prompt:silent?'':'select_account'});
@@ -322,8 +349,7 @@ function showGoogleSignedIn(){
 }
 function signOutGoogle(){
  if(driveToken&&google.accounts?.oauth2?.revoke)google.accounts.oauth2.revoke(driveToken,()=>{});
- driveToken=null;googleUser=null;driveFileId=null;clearInterval(drivePollTimer);clearTimeout(driveSyncTimer);localStorage.removeItem('flowtrack_google_user');
- document.getElementById('googleSignedOut').style.display='';document.getElementById('googleSignedIn').style.display='none';document.getElementById('syncText').textContent='Local data ready';toast('Signed out of Google');
+ localStorage.removeItem('flowtrack_google_user');googleUser=null;setGoogleSignedOut('Signed out of Google Drive. Your local data is still safe on this device.');toast('Signed out of Google');
 }
 async function driveApi(url,options={}){
  if(!driveToken)throw Error('Not signed in to Google');
@@ -348,8 +374,20 @@ function normalizeIncoming(incoming){
 function hasRealLocalData(){return state.transactions.length>0||state.wallets.some(w=>!['w1','w2','w3'].includes(w.id))||state.categories.some(c=>!['c1','c2','c3','c4','c5','c6'].includes(c.id));}
 function mergeCollection(local,remote,type){
  const map=new Map(local.map(x=>[x.id,x]));
- remote.forEach(x=>{if(x?.id&&!map.has(x.id))map.set(x.id,x);else if(x?.id&&JSON.stringify(map.get(x.id))!==JSON.stringify(x)){const a=map.get(x.id), at=new Date(a.updatedAt||a.date||0).getTime(), rt=new Date(x.updatedAt||x.date||0).getTime();if(rt>at)map.set(x.id,x);}});
- const deleted=new Set(syncMeta.tombstones[type]||[]);return Array.from(map.values()).filter(x=>!deleted.has(x.id));
+ remote.forEach(x=>{
+  if(!x?.id)return;
+  const current=map.get(x.id);
+  if(!current){map.set(x.id,x);return;}
+  const lt=Number(current.updatedAt||0), rt=Number(x.updatedAt||0);
+  if(rt>lt)map.set(x.id,x);
+  else if(rt===lt && JSON.stringify(current)!==JSON.stringify(x)){
+   // Deterministic tie-breaker: the record with the lexicographically greater
+   // updatedBy wins, preventing different devices from oscillating.
+   if(String(x.updatedBy||'')>String(current.updatedBy||''))map.set(x.id,x);
+  }
+ });
+ const deleted=new Set(syncMeta.tombstones[type]||[]);
+ return Array.from(map.values()).filter(x=>!deleted.has(x.id));
 }
 function mergeRemote(remote){
  const r=normalizeIncoming(remote), rs=r._sync||{}, rt=rs.tombstones||{};
@@ -382,17 +420,30 @@ async function syncWithDrive({upload=false,initial=false}={}){
  if(!driveToken||driveSyncBusy)return;
  driveSyncBusy=true;
  try{
-  let remote=await readDriveState();
+  const remote=await readDriveState();
   if(remote){
-   const localHas=hasRealLocalData();
-   if(!localHas && remote.transactions?.length){state=remote;syncMeta={...(remote._sync||{}),deviceId:syncMeta.deviceId,tombstones:(remote._sync||{}).tombstones||syncMeta.tombstones};persistSyncMeta();save({sync:false});}
-   else {mergeRemote(remote);save({sync:false});}
+   const before=JSON.stringify(state);
+   mergeRemote(remote);
+   const changed=JSON.stringify(state)!==before;
+   if(changed){localStorage.setItem(KEY,JSON.stringify(state));render();}
+   // If local changes are newer (or we explicitly requested an upload), publish the merged state.
+   const remoteUpdated=Number(remote?._sync?.updatedAt||0);
+   const localUpdated=Number(syncMeta.updatedAt||0);
+   if(upload || localUpdated>remoteUpdated || changed){
+    await uploadDriveState();
+   }
+  }else if(upload || hasRealLocalData()){
+   await uploadDriveState();
   }
-  if(upload){await uploadDriveState();}
   document.getElementById('syncText').textContent='Google Drive synced • '+new Date().toLocaleTimeString();
-  const el=document.getElementById('driveStatus');if(el)el.textContent='Auto-sync is on • Last synced '+new Date().toLocaleTimeString();
- }catch(e){console.error('Drive sync error',e);document.getElementById('syncText').textContent='Drive sync needs attention';const el=document.getElementById('driveStatus');if(el)el.textContent='Sync error: '+e.message;}
- finally{driveSyncBusy=false;}
+  const el=document.getElementById('driveStatus');if(el)el.textContent='Auto-sync is on • Last checked '+new Date().toLocaleTimeString();
+ }catch(e){
+  console.error('Drive sync error',e);
+  const msg=e.message||String(e);
+  document.getElementById('syncText').textContent='Drive sync needs attention';
+  const el=document.getElementById('driveStatus');if(el)el.textContent='Sync error: '+msg;
+  if(/401|403|invalid|unauthorized|insufficient|token/i.test(msg)){handleDriveSessionLost();}
+ }finally{driveSyncBusy=false;}
 }
 function startDrivePolling(){clearInterval(drivePollTimer);drivePollTimer=setInterval(()=>syncWithDrive({upload:false}),15000);}
 async function driveSave(){
@@ -407,7 +458,8 @@ async function driveLoad(){
 }
 function restoreGoogleUI(){
  let u=JSON.parse(localStorage.getItem('flowtrack_google_user')||'null');
- if(u){googleUser=u;showGoogleSignedIn();setTimeout(()=>signInGoogle(true),700);}
+ if(u){googleUser=u;setGoogleSignedOut('Previous Google account: '+(u.email||'Unknown')+'. Reconnecting…');setTimeout(()=>signInGoogle(true),700);}
+ else setGoogleSignedOut();
 }
 window.addEventListener('focus',()=>{if(driveToken)syncWithDrive({upload:false});});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&driveToken)syncWithDrive({upload:false});});
