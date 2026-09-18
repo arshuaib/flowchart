@@ -141,7 +141,17 @@ let state=JSON.parse(localStorage.getItem(KEY)||'null')||{
 };
 let editingId=null, selectedIcon='💵', selectedColor='#2563eb';
 
-function save(){localStorage.setItem(KEY,JSON.stringify(state));render();document.getElementById('syncText').textContent=driveToken?'Saving to Google Drive…':'Saved locally • '+new Date().toLocaleTimeString();if(driveToken){clearTimeout(driveSyncTimer);driveSyncTimer=setTimeout(()=>driveSave(),1200);}}
+function save(opts={sync:true}){
+ markLocalChange();
+ localStorage.setItem(KEY,JSON.stringify(state));
+ render();
+ document.getElementById('syncText').textContent=driveToken?'Syncing with Google Drive…':'Saved locally • '+new Date().toLocaleTimeString();
+ if(opts.sync && driveToken) scheduleDriveSync();
+}
+function scheduleDriveSync(){
+ clearTimeout(driveSyncTimer);
+ driveSyncTimer=setTimeout(()=>syncWithDrive({upload:true}),1200);
+}
 function money(n){return (state.profile.currency||'₵')+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function toast(s){let t=document.getElementById('toast');t.textContent=s;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600)}
@@ -227,14 +237,14 @@ function openWallet(wid=null){
 function pickIcon(i){selectedIcon=i;document.querySelectorAll('.iconpick button').forEach(b=>b.classList.toggle('selected',b.textContent===i))}
 function pickColor(c){selectedColor=c;document.querySelectorAll('.colorpick button').forEach(b=>b.classList.toggle('selected',b.getAttribute('data-color')===c))}
 function saveWallet(){let name=document.getElementById('mName').value.trim();if(!name)return toast('Wallet name is required');if(currentWalletId){let w=wallet(currentWalletId);Object.assign(w,{name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true'})}else state.wallets.push({id:id('w'),name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true',balance:0});closeModal();save();toast('Wallet saved')}
-function deleteWallet(wid){if(state.wallets.length<=1)return toast('Keep at least one wallet');if(state.transactions.some(t=>t.walletId===wid||t.toWalletId===wid))return toast('Cannot delete a wallet with transactions');if(confirm('Delete this wallet?')){state.wallets=state.wallets.filter(w=>w.id!==wid);save();}}
+function deleteWallet(wid){if(state.wallets.length<=1)return toast('Keep at least one wallet');if(state.transactions.some(t=>t.walletId===wid||t.toWalletId===wid))return toast('Cannot delete a wallet with transactions');if(confirm('Delete this wallet?')){state.wallets=state.wallets.filter(w=>w.id!==wid);addTombstone('wallets',wid);save();}}
 let currentCatId=null;
 function openCategory(cid=null){
  currentCatId=cid;let c=cid?cat(cid):null;selectedIcon=c?.icon||'💵';selectedColor=c?.color||'#2563eb';
  openModal(`<div class="modal-head"><h2>${c?'Edit':'New'} category</h2><button class="x" onclick="closeModal()">×</button></div><div class="field"><label>Name</label><input id="cName" value="${esc(c?.name||'')}"></div><div class="field"><label>Type</label><select id="cType"><option value="income" ${c?.type==='income'?'selected':''}>Income</option><option value="expense" ${c?.type!=='income'?'selected':''}>Expense</option></select></div>${picker()}<div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveCategory()">Save category</button></div>`);
 }
 function saveCategory(){let name=document.getElementById('cName').value.trim();if(!name)return toast('Category name is required');let type=document.getElementById('cType').value;if(currentCatId)Object.assign(cat(currentCatId),{name,type,icon:selectedIcon,color:selectedColor});else state.categories.push({id:id('c'),name,type,icon:selectedIcon,color:selectedColor});closeModal();save();toast('Category saved')}
-function deleteCategory(cid){if(state.transactions.some(t=>t.categoryId===cid))return toast('Cannot delete a category used by transactions');if(confirm('Delete this category?')){state.categories=state.categories.filter(c=>c.id!==cid);save();}}
+function deleteCategory(cid){if(state.transactions.some(t=>t.categoryId===cid))return toast('Cannot delete a category used by transactions');if(confirm('Delete this category?')){state.categories=state.categories.filter(c=>c.id!==cid);addTombstone('categories',cid);save();}}
 function openTransaction(tid=null){
  editingId=tid;let t=tid?state.transactions.find(x=>x.id===tid):null;let type=t?.type||'expense';
  openModal(`<div class="modal-head"><h2>${t?'Edit':'New'} transaction</h2><button class="x" onclick="closeModal()">×</button></div>
@@ -256,7 +266,7 @@ function saveTransaction(){
  if(editingId)state.transactions[state.transactions.findIndex(x=>x.id===editingId)]=obj;else state.transactions.push(obj);
  closeModal();save();toast('Transaction saved');
 }
-function deleteTransaction(tid){if(confirm('Delete this transaction?')){state.transactions=state.transactions.filter(t=>t.id!==tid);save();}}
+function deleteTransaction(tid){if(confirm('Delete this transaction?')){state.transactions=state.transactions.filter(t=>t.id!==tid);addTombstone('transactions',tid);save();}}
 function exportJSON(){let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='flowtrack-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);toast('JSON backup exported')}
 document.getElementById('jsonFile').addEventListener('change',e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>importJSON(r.result);r.readAsText(f);e.target.value=''});
 function importJSON(text){
@@ -272,42 +282,48 @@ function importJSON(text){
  }catch(e){toast('Invalid JSON: '+e.message)}
 }
 function saveSettings(){state.profile.name=document.getElementById('profileName').value.trim()||'My Finance';state.profile.currency=document.getElementById('currency').value||'₵';state.profile.clientId=FLOWTRACK_GOOGLE_CLIENT_ID;save();toast('Settings saved')}
-function resetData(){if(confirm('This will erase all local FlowTrack data. Continue?')){localStorage.removeItem(KEY);location.reload()}}
-let driveToken=null,driveFileId=null,googleUser=null,driveSyncTimer=null;
+function resetData(){if(confirm('This will erase all local FlowTrack data. Continue?')){localStorage.removeItem(KEY);localStorage.removeItem(SYNC_KEY);location.reload()}}
+let driveToken=null,driveFileId=null,googleUser=null,driveSyncTimer=null,drivePollTimer=null,driveSyncBusy=false;
 const DRIVE_SCOPE='https://www.googleapis.com/auth/drive.appdata';
+const SYNC_KEY='flowtrack_sync_meta_v1';
+let syncMeta=JSON.parse(localStorage.getItem(SYNC_KEY)||'null')||{deviceId:id('device'),updatedAt:0,tombstones:{transactions:[],wallets:[],categories:[]}};
+function persistSyncMeta(){localStorage.setItem(SYNC_KEY,JSON.stringify(syncMeta));}
+function addTombstone(type,itemId){syncMeta.tombstones[type]=Array.from(new Set([...(syncMeta.tombstones[type]||[]),itemId])).slice(-5000);syncMeta.updatedAt=Date.now();persistSyncMeta();}
+function markLocalChange(){syncMeta.updatedAt=Date.now();persistSyncMeta();}
 function googleConfigured(){return typeof google!=='undefined'&&google.accounts&&google.accounts.oauth2}
-function signInGoogle(){
+function signInGoogle(silent=false){
  let clientId=FLOWTRACK_GOOGLE_CLIENT_ID;
  if(!clientId)return toast('Google sign-in is not configured in this build');
- state.profile.clientId=FLOWTRACK_GOOGLE_CLIENT_ID;localStorage.setItem(KEY,JSON.stringify(state));
  if(!googleConfigured())return toast('Google sign-in is still loading. Try again in a moment.');
  const client=google.accounts.oauth2.initTokenClient({
-  client_id:clientId,scope:DRIVE_SCOPE,prompt:'select_account',
+  client_id:clientId,scope:DRIVE_SCOPE,
   callback: async (resp)=>{
-   if(resp.error)return toast('Google sign-in was not completed');
+   if(resp.error){if(!silent)toast('Google sign-in was not completed');return;}
    driveToken=resp.access_token;
    try{
     const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+driveToken}});
+    if(!r.ok)throw Error('Google profile lookup failed');
     googleUser=await r.json();
     localStorage.setItem('flowtrack_google_user',JSON.stringify({email:googleUser.email,name:googleUser.name,picture:googleUser.picture}));
-    showGoogleSignedIn();toast('Signed in as '+(googleUser.email||'Google account'));
-    await findDriveFile();
-   }catch(e){toast('Google account connected, but profile lookup failed')}
+    showGoogleSignedIn();
+    await syncWithDrive({upload:true,initial:true});
+    startDrivePolling();
+    if(!silent)toast('Signed in as '+(googleUser.email||'Google account'));
+   }catch(e){console.error(e);if(!silent)toast('Google account connected, but Drive sync could not start: '+e.message)}
   }
  });
- client.requestAccessToken({prompt:'select_account'});
+ client.requestAccessToken({prompt:silent?'':'select_account'});
 }
 function showGoogleSignedIn(){
- document.getElementById('googleSignedOut').style.display='none';
- document.getElementById('googleSignedIn').style.display='';
+ document.getElementById('googleSignedOut').style.display='none';document.getElementById('googleSignedIn').style.display='';
  let u=googleUser||JSON.parse(localStorage.getItem('flowtrack_google_user')||'null')||{};
  document.getElementById('googleEmail').textContent=u.email||'Google account';
  document.getElementById('googleAvatar').innerHTML=u.picture?`<img src="${esc(u.picture)}" style="width:100%;height:100%;border-radius:10px">`:'G';
 }
 function signOutGoogle(){
- driveToken=null;googleUser=null;driveFileId=null;localStorage.removeItem('flowtrack_google_user');
- document.getElementById('googleSignedOut').style.display='';
- document.getElementById('googleSignedIn').style.display='none';toast('Signed out of Google');
+ if(driveToken&&google.accounts?.oauth2?.revoke)google.accounts.oauth2.revoke(driveToken,()=>{});
+ driveToken=null;googleUser=null;driveFileId=null;clearInterval(drivePollTimer);clearTimeout(driveSyncTimer);localStorage.removeItem('flowtrack_google_user');
+ document.getElementById('googleSignedOut').style.display='';document.getElementById('googleSignedIn').style.display='none';document.getElementById('syncText').textContent='Local data ready';toast('Signed out of Google');
 }
 async function driveApi(url,options={}){
  if(!driveToken)throw Error('Not signed in to Google');
@@ -315,47 +331,87 @@ async function driveApi(url,options={}){
 }
 async function findDriveFile(){
  let q=encodeURIComponent("name='flowtrack-data.json' and trashed=false");
- let r=await driveApi('https://www.googleapis.com/drive/v3/files?q='+q+'&spaces=appDataFolder&fields=files(id,name,modifiedTime)');
- if(!r.ok)throw Error('Drive lookup failed');
+ let r=await driveApi('https://www.googleapis.com/drive/v3/files?q='+q+'&spaces=appDataFolder&fields=files(id,name,modifiedTime,version)');
+ if(!r.ok)throw Error('Drive lookup failed ('+r.status+')');
  let j=await r.json();driveFileId=j.files?.[0]?.id||null;
- document.getElementById('driveStatus').textContent=driveFileId?'Existing FlowTrack backup found in Google Drive.':'No FlowTrack backup found yet.';
+ const el=document.getElementById('driveStatus');if(el)el.textContent=driveFileId?'FlowTrack backup connected. Auto-sync is on.':'No FlowTrack backup found yet. The next change will create it.';
+ return j.files?.[0]||null;
 }
 function makeMultipart(meta,data){
  const boundary='flowtrack_boundary_'+Date.now();
  const body='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(meta)+'\r\n--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+data+'\r\n--'+boundary+'--';
  return new Blob([body],{type:'multipart/related; boundary='+boundary});
 }
-async function driveSave(){
+function normalizeIncoming(incoming){
+ incoming=incoming||{};return {profile:incoming.profile||{},wallets:Array.isArray(incoming.wallets)?incoming.wallets:[],categories:Array.isArray(incoming.categories)?incoming.categories:[],transactions:Array.isArray(incoming.transactions)?incoming.transactions:[],_sync:incoming._sync||{}};
+}
+function hasRealLocalData(){return state.transactions.length>0||state.wallets.some(w=>!['w1','w2','w3'].includes(w.id))||state.categories.some(c=>!['c1','c2','c3','c4','c5','c6'].includes(c.id));}
+function mergeCollection(local,remote,type){
+ const map=new Map(local.map(x=>[x.id,x]));
+ remote.forEach(x=>{if(x?.id&&!map.has(x.id))map.set(x.id,x);else if(x?.id&&JSON.stringify(map.get(x.id))!==JSON.stringify(x)){const a=map.get(x.id), at=new Date(a.updatedAt||a.date||0).getTime(), rt=new Date(x.updatedAt||x.date||0).getTime();if(rt>at)map.set(x.id,x);}});
+ const deleted=new Set(syncMeta.tombstones[type]||[]);return Array.from(map.values()).filter(x=>!deleted.has(x.id));
+}
+function mergeRemote(remote){
+ const r=normalizeIncoming(remote), rs=r._sync||{}, rt=rs.tombstones||{};
+ for(const type of ['transactions','wallets','categories']){const ids=new Set(rt[type]||[]);state[type]=state[type].filter(x=>!ids.has(x.id));syncMeta.tombstones[type]=Array.from(new Set([...(syncMeta.tombstones[type]||[]),...(rt[type]||[])])).slice(-5000);}
+ state.transactions=mergeCollection(state.transactions,r.transactions,'transactions');
+ state.wallets=mergeCollection(state.wallets,r.wallets,'wallets');
+ state.categories=mergeCollection(state.categories,r.categories,'categories');
+ if((rs.updatedAt||0)>(syncMeta.updatedAt||0))state.profile={...state.profile,...r.profile};
+ syncMeta.updatedAt=Math.max(syncMeta.updatedAt||0,rs.updatedAt||0);persistSyncMeta();
+}
+async function readDriveState(){
+ if(!driveFileId)await findDriveFile();
+ if(!driveFileId)return null;
+ let r=await driveApi('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(driveFileId)+'?alt=media');
+ if(!r.ok)throw Error('Download failed ('+r.status+')');return await r.json();
+}
+async function uploadDriveState(){
+ let outgoing=JSON.parse(JSON.stringify(state));outgoing._sync={deviceId:syncMeta.deviceId,updatedAt:syncMeta.updatedAt,tombstones:syncMeta.tombstones};
+ let body=JSON.stringify(outgoing),r;
+ if(driveFileId){
+  r=await driveApi('https://www.googleapis.com/upload/drive/v3/files/'+encodeURIComponent(driveFileId)+'?uploadType=media',{method:'PATCH',headers:{'Content-Type':'application/json'},body});
+ }else{
+  let meta={name:'flowtrack-data.json',parents:['appDataFolder'],mimeType:'application/json'};
+  r=await driveApi('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',body:makeMultipart(meta,body)});
+ }
+ if(!r.ok){let detail=await r.text().catch(()=> '');throw Error('Upload failed ('+r.status+')'+(detail?' — '+detail.slice(0,180):''));}
+ let j=await r.json();driveFileId=j.id||driveFileId;return j;
+}
+async function syncWithDrive({upload=false,initial=false}={}){
+ if(!driveToken||driveSyncBusy)return;
+ driveSyncBusy=true;
  try{
-  if(!driveToken)return signInGoogle();
-  let body=JSON.stringify(state,null,2),r;
-  if(driveFileId){
-   // Existing appDataFolder files are updated as media only; do not resend parents.
-   r=await driveApi('https://www.googleapis.com/upload/drive/v3/files/'+encodeURIComponent(driveFileId)+'?uploadType=media',{method:'PATCH',headers:{'Content-Type':'application/json'},body});
-  }else{
-   let meta={name:'flowtrack-data.json',parents:['appDataFolder'],mimeType:'application/json'};
-   r=await driveApi('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',body:makeMultipart(meta,body)});
+  let remote=await readDriveState();
+  if(remote){
+   const localHas=hasRealLocalData();
+   if(!localHas && remote.transactions?.length){state=remote;syncMeta={...(remote._sync||{}),deviceId:syncMeta.deviceId,tombstones:(remote._sync||{}).tombstones||syncMeta.tombstones};persistSyncMeta();save({sync:false});}
+   else {mergeRemote(remote);save({sync:false});}
   }
-  if(!r.ok){let detail=await r.text().catch(()=> '');throw Error('Upload failed ('+r.status+')'+(detail?' — '+detail.slice(0,180):''));}
-  let j=await r.json();driveFileId=j.id||driveFileId;
-  document.getElementById('driveStatus').textContent='Saved to Google Drive • '+new Date().toLocaleTimeString();
-  document.getElementById('syncText').textContent='Google Drive synced';
-  toast('Saved to Google Drive');
- }catch(e){console.error('Drive save error',e);toast('Drive save failed: '+e.message)}
+  if(upload){await uploadDriveState();}
+  document.getElementById('syncText').textContent='Google Drive synced • '+new Date().toLocaleTimeString();
+  const el=document.getElementById('driveStatus');if(el)el.textContent='Auto-sync is on • Last synced '+new Date().toLocaleTimeString();
+ }catch(e){console.error('Drive sync error',e);document.getElementById('syncText').textContent='Drive sync needs attention';const el=document.getElementById('driveStatus');if(el)el.textContent='Sync error: '+e.message;}
+ finally{driveSyncBusy=false;}
+}
+function startDrivePolling(){clearInterval(drivePollTimer);drivePollTimer=setInterval(()=>syncWithDrive({upload:false}),15000);}
+async function driveSave(){
+ if(!driveToken)return signInGoogle();
+ try{markLocalChange();await uploadDriveState();document.getElementById('driveStatus').textContent='Saved to Google Drive • '+new Date().toLocaleTimeString();document.getElementById('syncText').textContent='Google Drive synced';toast('Saved to Google Drive');startDrivePolling();}
+ catch(e){console.error(e);toast('Drive save failed: '+e.message);}
 }
 async function driveLoad(){
- try{
-  if(!driveToken)return signInGoogle();if(!driveFileId)await findDriveFile();
-  if(!driveFileId)return toast('No FlowTrack backup found in this Google Drive account');
-  let r=await driveApi('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(driveFileId)+'?alt=media');if(!r.ok){let detail=await r.text().catch(()=> '');throw Error('Download failed ('+r.status+')'+(detail?' — '+detail.slice(0,180):''));}
-  let incoming=await r.json();if(!incoming.transactions)return toast('The Drive file is not a valid FlowTrack backup');
-  if(!confirm('Load the Google Drive backup? Your current local data will be replaced.'))return;
-  state=incoming;save();toast('Loaded from Google Drive');
- }catch(e){toast('Drive load failed: '+e.message)}
+ if(!driveToken)return signInGoogle();
+ try{let remote=await readDriveState();if(!remote)return toast('No FlowTrack backup found in this Google Drive account');mergeRemote(remote);save({sync:false});toast('Google Drive data synchronized');startDrivePolling();}
+ catch(e){toast('Drive load failed: '+e.message)}
 }
 function restoreGoogleUI(){
- let u=JSON.parse(localStorage.getItem('flowtrack_google_user')||'null');if(u){googleUser=u;showGoogleSignedIn();}
+ let u=JSON.parse(localStorage.getItem('flowtrack_google_user')||'null');
+ if(u){googleUser=u;showGoogleSignedIn();setTimeout(()=>signInGoogle(true),700);}
 }
+window.addEventListener('focus',()=>{if(driveToken)syncWithDrive({upload:false});});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&driveToken)syncWithDrive({upload:false});});
+
 
 state.profile.clientId=FLOWTRACK_GOOGLE_CLIENT_ID;
 localStorage.setItem(KEY,JSON.stringify(state));
