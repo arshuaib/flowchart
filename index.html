@@ -28,6 +28,24 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 .empty{text-align:center;color:var(--muted);padding:35px}.mobile-nav{display:none}
 @media(max-width:1050px){.stats{grid-template-columns:repeat(2,1fr)}.two,.three{grid-template-columns:1fr}.item-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:720px){.sidebar{display:none}.main{margin-left:0;width:100%;padding:16px 14px 95px}.topbar{align-items:flex-start}.title h1{font-size:22px}.actions{width:100%;justify-content:flex-end}.actions .btn:nth-child(1),.actions .btn:nth-child(2){display:none}.actions .btn:nth-child(3){display:inline-flex}.stats{grid-template-columns:1fr 1fr;gap:10px}.stat-value{font-size:21px}.card{padding:15px}.item-grid{grid-template-columns:1fr}.mobile-nav{position:fixed;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);z-index:30;padding:7px 2px}.mobile-nav button{background:transparent;color:var(--muted);font-size:9px;min-width:0;padding:5px 1px}.mobile-nav button.active{color:var(--primary);font-weight:700}.mobile-nav span{display:block;font-size:17px;margin-bottom:2px}.formgrid{grid-template-columns:1fr}.table th:nth-child(4),.table td:nth-child(4){display:none}.modal-bg{padding:8px}.modal{width:100%;max-height:92vh;padding:16px}.iconpick{grid-template-columns:repeat(6,1fr)}.modal-actions{position:sticky;bottom:0;background:#fff;padding-top:10px}.modal-actions .btn{flex:1}}
+
+.report-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
+.chart-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;min-height:320px}
+.chart-card h3{margin:0 0 12px}
+.chart-svg{width:100%;height:250px;display:block}
+.wallet-summary-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.wallet-summary-item:last-child{border-bottom:0}
+.wallet-summary-item .wallet-name{flex:1;min-width:0}
+.wallet-summary-item .wallet-name b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wallet-summary-item .wallet-bar{height:6px;background:#edf1f6;border-radius:99px;margin-top:6px;overflow:hidden}
+.wallet-summary-item .wallet-bar span{display:block;height:100%;border-radius:99px}
+.report-window{font-family:Arial,sans-serif}
+@media(max-width:720px){.chart-grid{grid-template-columns:1fr}.chart-card{min-height:290px}.report-actions .btn{flex:1}}
+@media print{
+  @page{size:A4;margin:14mm}
+  body.report-print{background:#fff}
+}
 </style>
 </head>
 <body>
@@ -48,7 +66,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 <main class="main">
 <header class="topbar">
  <div class="title"><h1 id="pageTitle">Dashboard</h1><p id="greeting">Your money at a glance.</p></div>
- <div class="actions"><button class="btn" onclick="exportJSON()">Export JSON</button><button class="btn" onclick="document.getElementById('jsonFile').click()">Import JSON</button><button class="btn primary" onclick="openTransaction()">+ Add transaction</button><input id="jsonFile" type="file" accept=".json,application/json" hidden></div>
+ <div class="actions"><button class="btn" onclick="exportJSON()">Export JSON</button><button class="btn" onclick="document.getElementById('jsonFile').click()">Import JSON</button><button class="btn" onclick="exportReportPDF()">PDF report</button><button class="btn primary" onclick="openTransaction()">+ Add transaction</button><input id="jsonFile" type="file" accept=".json,application/json" hidden></div>
 </header>
 
 <section id="dashboard" class="page active">
@@ -83,9 +101,19 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 </section>
 
 <section id="analytics" class="page">
+ <div class="report-actions">
+  <button class="btn primary" onclick="exportReportPDF()">Export PDF report</button>
+  <button class="btn" onclick="exportReportWord()">Export Word report</button>
+ </div>
  <div class="grid two">
   <div class="card"><h3>Income vs expenses — 6 months</h3><div class="chart" id="barChart"></div></div>
   <div class="card"><h3>Expenses by category</h3><div id="categoryAnalytics"></div></div>
+ </div>
+ <div class="chart-grid">
+  <div class="chart-card"><h3>Wallet balances</h3><div id="walletBalanceChart"></div></div>
+  <div class="chart-card"><h3>Monthly net cash flow</h3><div id="netFlowChart"></div></div>
+  <div class="chart-card"><h3>Income by category</h3><div id="incomeCategoryChart"></div></div>
+  <div class="chart-card"><h3>Transaction activity</h3><div id="activityChart"></div></div>
  </div>
  <div class="card" style="margin-top:16px"><h3>Financial snapshot</h3><div id="snapshot"></div></div>
 </section>
@@ -101,8 +129,8 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 </div>
 <div id="googleSignedIn" style="display:none">
 <div class="row-main" style="margin-bottom:14px"><div class="avatar" id="googleAvatar">G</div><div><b id="googleEmail">Google account</b><span class="sub">Connected to FlowTrack</span></div></div>
-<button class="btn primary" onclick="driveSave()">Sync now with Google Drive</button>
-<button class="btn" onclick="driveLoad()">Check Google Drive</button>
+<button class="btn primary" onclick="driveSave()">Save to Google Drive</button>
+<button class="btn" onclick="driveLoad()">Load from Google Drive</button>
 <button class="btn danger" onclick="signOutGoogle()">Sign out</button>
 <p id="driveStatus" class="sub"></p>
 </div></div>
@@ -141,23 +169,21 @@ let state=JSON.parse(localStorage.getItem(KEY)||'null')||{
 };
 let editingId=null, selectedIcon='💵', selectedColor='#2563eb';
 
-function save(opts={sync:true}){
- markLocalChange();
- localStorage.setItem(KEY,JSON.stringify(state));
- render();
- document.getElementById('syncText').textContent=driveToken?'Syncing with Google Drive…':'Saved locally • '+new Date().toLocaleTimeString();
- if(opts.sync && driveToken) scheduleDriveSync();
-}
-function scheduleDriveSync(){
- clearTimeout(driveSyncTimer);
- driveSyncTimer=setTimeout(()=>syncWithDrive({upload:true}),1200);
-}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));render();document.getElementById('syncText').textContent=driveToken?'Saving to Google Drive…':'Saved locally • '+new Date().toLocaleTimeString();if(driveToken){clearTimeout(driveSyncTimer);driveSyncTimer=setTimeout(()=>driveSave(),1200);}}
 function money(n){return (state.profile.currency||'₵')+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function toast(s){let t=document.getElementById('toast');t.textContent=s;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600)}
 function id(p){return p+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function wallet(id){return state.wallets.find(x=>x.id===id)}
 function cat(id){return state.categories.find(x=>x.id===id)}
+function dateInputValue(value){
+ let d=value instanceof Date?value:new Date(value);
+ if(Number.isNaN(d.getTime())) return new Date().toISOString().slice(0,10);
+ return d.toLocaleDateString('en-CA');
+}
+function transactionDateISO(value){
+ return new Date(value+'T12:00:00').toISOString();
+}
 function calcBalances(){
  state.wallets.forEach(w=>w.balance=0);
  state.transactions.forEach(t=>{
@@ -185,7 +211,7 @@ function render(){
  let t=totals();document.getElementById('totalBalance').textContent=money(t.total);document.getElementById('savings').textContent=money(t.savings);document.getElementById('spendable').textContent=money(t.spendable);
  let now=new Date(),m=now.getMonth(),y=now.getFullYear();let mi=state.transactions.filter(x=>{let d=new Date(x.date);return d.getMonth()===m&&d.getFullYear()===y});let inc=mi.filter(x=>x.type==='income').reduce((a,x)=>a+x.amount,0),exp=mi.filter(x=>x.type==='expense').reduce((a,x)=>a+x.amount,0);document.getElementById('monthNet').textContent=money(inc-exp);document.getElementById('monthNet').className='stat-value '+(inc-exp>=0?'positive':'negative');
  document.getElementById('profileName').value=state.profile.name||'';document.getElementById('currency').value=state.profile.currency||'₵';
- fillWalletSelects();renderWallets();renderCategories();renderTransactions();renderRecent();renderCashChart();renderAnalytics();
+ fillWalletSelects();renderWallets();renderWalletSummary();renderCategories();renderTransactions();renderRecent();renderCashChart();renderAnalytics();
 }
 function fillWalletSelects(){
  let opts=state.wallets.map(w=>`<option value="${w.id}">${esc(w.icon)} ${esc(w.name)}</option>`).join('');
@@ -193,6 +219,17 @@ function fillWalletSelects(){
 }
 function renderWallets(){
  let box=document.getElementById('walletGrid');box.innerHTML=state.wallets.map(w=>`<div class="card item-card"><div class="wallet"><div class="avatar" style="background:${w.color}22">${w.icon}</div><div><h4>${esc(w.name)}</h4><p>${w.savings?'Savings wallet':'Spendable wallet'}</p></div><div class="meta"><b>${money(w.balance)}</b><div><button class="btn small" onclick="openWallet('${w.id}')">Edit</button> <button class="btn small danger" onclick="deleteWallet('${w.id}')">Delete</button></div></div></div></div>`).join('')||'<div class="empty">No wallets yet.</div>';
+}
+function renderWalletSummary(){
+ let box=document.getElementById('walletSummary'), total=Math.abs(totals().total)||1;
+ box.innerHTML=state.wallets.length?state.wallets.map(w=>{
+   let pct=Math.min(100,Math.abs(w.balance)/total*100);
+   return `<div class="wallet-summary-item" onclick="showPage('wallets')" style="cursor:pointer">
+    <div class="avatar" style="background:${w.color}22">${w.icon}</div>
+    <div class="wallet-name"><b>${esc(w.name)}</b><span class="sub">${w.savings?'Savings':'Spendable'}</span><div class="wallet-bar"><span style="width:${pct}%;background:${w.color}"></span></div></div>
+    <b>${money(w.balance)}</b>
+   </div>`;
+ }).join(''):'<div class="empty">No wallets yet.</div>';
 }
 function renderCategories(){
  let box=document.getElementById('categoryGrid');box.innerHTML=state.categories.map(c=>`<div class="card item-card"><div class="cat"><div class="avatar" style="background:${c.color}22">${c.icon}</div><div><h4>${esc(c.name)}</h4><p>${c.type}</p></div><div class="meta"><button class="btn small" onclick="openCategory('${c.id}')">Edit</button> <button class="btn small danger" onclick="deleteCategory('${c.id}')">Delete</button></div></div></div>`).join('');
@@ -214,11 +251,26 @@ function renderCashChart(){
  let pts=(key)=>s.map((x,i)=>`${p+i*step},${H-p-(x[key]/max)*(H-p*2)}`).join(' ');
  document.getElementById('cashChart').innerHTML=`<svg viewBox="0 0 ${W} ${H}"><line x1="${p}" y1="${H-p}" x2="${W-p}" y2="${H-p}" stroke="#e5e9f0"/>${s.map((x,i)=>`<text x="${p+i*step}" y="${H-8}" text-anchor="middle" font-size="11" fill="#718096">${x.label}</text>`).join('')}<polyline fill="none" stroke="#2563eb" stroke-width="3" points="${pts('income')}"/><polyline fill="none" stroke="#dc4f5f" stroke-width="3" points="${pts('expense')}"/>${s.map((x,i)=>`<circle cx="${p+i*step}" cy="${H-p-(x.income/max)*(H-p*2)}" r="4" fill="#2563eb"/><circle cx="${p+i*step}" cy="${H-p-(x.expense/max)*(H-p*2)}" r="4" fill="#dc4f5f"/>`).join('')}</svg>`;
 }
+function svgBars(rows, key, color, height=230){
+ let max=Math.max(1,...rows.map(r=>Number(r[key])||0)),W=700,H=height,base=H-35,bw=Math.max(24,Math.min(55,620/Math.max(rows.length,1)-10)),gap=620/Math.max(rows.length,1);
+ return `<svg class="chart-svg" viewBox="0 0 ${W} ${H}"><line x1="35" y1="${base}" x2="680" y2="${base}" stroke="#e5e9f0"/>${rows.map((r,i)=>{let v=Number(r[key])||0,h=v/max*(base-25),x=45+i*gap;return `<rect x="${x}" y="${base-h}" width="${bw}" height="${h}" rx="5" fill="${color}"/><text x="${x+bw/2}" y="${H-10}" text-anchor="middle" font-size="11" fill="#718096">${esc(r.label)}</text><text x="${x+bw/2}" y="${Math.max(14,base-h-6)}" text-anchor="middle" font-size="10" fill="#475569">${money(v)}</text>`}).join('')}</svg>`;
+}
 function renderAnalytics(){
  let s=series(6),max=Math.max(1,...s.flatMap(x=>[x.income,x.expense])),W=700,H=260,base=205,bw=30,gap=85;
  document.getElementById('barChart').innerHTML=`<svg viewBox="0 0 ${W} ${H}">${s.map((x,i)=>{let X=35+i*gap,ih=(x.income/max)*165,eh=(x.expense/max)*165;return `<rect x="${X}" y="${base-ih}" width="${bw}" height="${ih}" rx="5" fill="#2563eb"/><rect x="${X+bw+5}" y="${base-eh}" width="${bw}" height="${eh}" rx="5" fill="#dc4f5f"/><text x="${X+bw}" y="230" text-anchor="middle" font-size="11" fill="#718096">${x.label}</text>`}).join('')}</svg>`;
  let cats=state.categories.filter(c=>c.type==='expense').map(c=>({c,v:state.transactions.filter(t=>t.type==='expense'&&t.categoryId===c.id).reduce((s,t)=>s+t.amount,0)})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v),sum=cats.reduce((a,x)=>a+x.v,0)||1;
  document.getElementById('categoryAnalytics').innerHTML=cats.length?cats.map(x=>`<div style="margin:12px 0"><div style="display:flex;justify-content:space-between;font-size:13px"><span>${x.c.icon} ${esc(x.c.name)}</span><b>${money(x.v)}</b></div><div style="height:8px;background:#eef1f5;border-radius:9px;margin-top:6px"><div style="width:${x.v/sum*100}%;height:100%;background:${x.c.color};border-radius:9px"></div></div></div>`).join(''):'<div class="empty">Expense analytics will appear after you add expenses.</div>';
+
+ let walletRows=state.wallets.map(w=>({label:w.name,value:w.balance})), netRows=s.map(x=>({label:x.label,value:x.income-x.expense}));
+ document.getElementById('walletBalanceChart').innerHTML=walletRows.length?svgBars(walletRows,'value','#2563eb'):'<div class="empty">No wallets yet.</div>';
+ document.getElementById('netFlowChart').innerHTML=svgBars(netRows,'value','#0f9d67');
+
+ let incomeCats=state.categories.filter(c=>c.type==='income').map(c=>({label:c.name,value:state.transactions.filter(t=>t.type==='income'&&t.categoryId===c.id).reduce((s,t)=>s+t.amount,0)})).filter(x=>x.value>0).sort((a,b)=>b.value-a.value);
+ document.getElementById('incomeCategoryChart').innerHTML=incomeCats.length?svgBars(incomeCats,'value','#0f9d67'):'<div class="empty">Income analytics will appear after you add income.</div>';
+
+ let activity=s.map(x=>{let monthTx=state.transactions.filter(t=>{let d=new Date(t.date),now=new Date();return d.getMonth()===new Date(now.getFullYear(),now.getMonth()- (5-s.indexOf(x)),1).getMonth()});return {label:x.label,value:monthTx.length}}); 
+ document.getElementById('activityChart').innerHTML=svgBars(activity,'value','#7c3aed');
+
  let total=totals(),inc=state.transactions.filter(t=>t.type==='income').reduce((a,t)=>a+t.amount,0),exp=state.transactions.filter(t=>t.type==='expense').reduce((a,t)=>a+t.amount,0);
  document.getElementById('snapshot').innerHTML=`<div class="grid three"><div><span class="sub">Lifetime income</span><b class="positive">${money(inc)}</b></div><div><span class="sub">Lifetime expenses</span><b class="negative">${money(exp)}</b></div><div><span class="sub">Current spendable</span><b>${money(total.spendable)}</b></div></div>`;
 }
@@ -236,233 +288,131 @@ function openWallet(wid=null){
 }
 function pickIcon(i){selectedIcon=i;document.querySelectorAll('.iconpick button').forEach(b=>b.classList.toggle('selected',b.textContent===i))}
 function pickColor(c){selectedColor=c;document.querySelectorAll('.colorpick button').forEach(b=>b.classList.toggle('selected',b.getAttribute('data-color')===c))}
-function saveWallet(){let name=document.getElementById('mName').value.trim();if(!name)return toast('Wallet name is required');if(currentWalletId){let w=wallet(currentWalletId);Object.assign(w,touchRecord({name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true'}))}else state.wallets.push(touchRecord({id:id('w'),name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true',balance:0}));closeModal();save();toast('Wallet saved')}
-function deleteWallet(wid){if(state.wallets.length<=1)return toast('Keep at least one wallet');if(state.transactions.some(t=>t.walletId===wid||t.toWalletId===wid))return toast('Cannot delete a wallet with transactions');if(confirm('Delete this wallet?')){state.wallets=state.wallets.filter(w=>w.id!==wid);addTombstone('wallets',wid);save();}}
+function saveWallet(){let name=document.getElementById('mName').value.trim();if(!name)return toast('Wallet name is required');if(currentWalletId){let w=wallet(currentWalletId);Object.assign(w,{name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true'})}else state.wallets.push({id:id('w'),name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true',balance:0});closeModal();save();toast('Wallet saved')}
+function deleteWallet(wid){if(state.wallets.length<=1)return toast('Keep at least one wallet');if(state.transactions.some(t=>t.walletId===wid||t.toWalletId===wid))return toast('Cannot delete a wallet with transactions');if(confirm('Delete this wallet?')){state.wallets=state.wallets.filter(w=>w.id!==wid);save();}}
 let currentCatId=null;
 function openCategory(cid=null){
  currentCatId=cid;let c=cid?cat(cid):null;selectedIcon=c?.icon||'💵';selectedColor=c?.color||'#2563eb';
  openModal(`<div class="modal-head"><h2>${c?'Edit':'New'} category</h2><button class="x" onclick="closeModal()">×</button></div><div class="field"><label>Name</label><input id="cName" value="${esc(c?.name||'')}"></div><div class="field"><label>Type</label><select id="cType"><option value="income" ${c?.type==='income'?'selected':''}>Income</option><option value="expense" ${c?.type!=='income'?'selected':''}>Expense</option></select></div>${picker()}<div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveCategory()">Save category</button></div>`);
 }
-function saveCategory(){let name=document.getElementById('cName').value.trim();if(!name)return toast('Category name is required');let type=document.getElementById('cType').value;if(currentCatId)Object.assign(cat(currentCatId),touchRecord({name,type,icon:selectedIcon,color:selectedColor}));else state.categories.push(touchRecord({id:id('c'),name,type,icon:selectedIcon,color:selectedColor}));closeModal();save();toast('Category saved')}
-function deleteCategory(cid){if(state.transactions.some(t=>t.categoryId===cid))return toast('Cannot delete a category used by transactions');if(confirm('Delete this category?')){state.categories=state.categories.filter(c=>c.id!==cid);addTombstone('categories',cid);save();}}
+function saveCategory(){let name=document.getElementById('cName').value.trim();if(!name)return toast('Category name is required');let type=document.getElementById('cType').value;if(currentCatId)Object.assign(cat(currentCatId),{name,type,icon:selectedIcon,color:selectedColor});else state.categories.push({id:id('c'),name,type,icon:selectedIcon,color:selectedColor});closeModal();save();toast('Category saved')}
+function deleteCategory(cid){if(state.transactions.some(t=>t.categoryId===cid))return toast('Cannot delete a category used by transactions');if(confirm('Delete this category?')){state.categories=state.categories.filter(c=>c.id!==cid);save();}}
 function openTransaction(tid=null){
  editingId=tid;let t=tid?state.transactions.find(x=>x.id===tid):null;let type=t?.type||'expense';
  openModal(`<div class="modal-head"><h2>${t?'Edit':'New'} transaction</h2><button class="x" onclick="closeModal()">×</button></div>
  <div class="formgrid"><div class="field"><label>Type</label><select id="tType" onchange="refreshTxForm()"><option value="expense" ${type==='expense'?'selected':''}>Expense</option><option value="income" ${type==='income'?'selected':''}>Income</option><option value="transfer" ${type==='transfer'?'selected':''}>Transfer</option></select></div><div class="field"><label>Amount</label><input id="tAmount" type="number" min="0" step="0.01" value="${t?.amount??''}"></div></div>
  <div class="formgrid"><div class="field"><label>Wallet</label><select id="tWallet">${state.wallets.map(w=>`<option value="${w.id}" ${t?.walletId===w.id?'selected':''}>${w.icon} ${esc(w.name)}</option>`).join('')}</select></div><div class="field" id="catField"><label>Category</label><select id="tCat">${state.categories.map(c=>`<option value="${c.id}" ${t?.categoryId===c.id?'selected':''}>${c.icon} ${esc(c.name)}</option>`).join('')}</select></div></div>
  <div class="field" id="toWalletField" style="display:none"><label>Transfer to</label><select id="tToWallet">${state.wallets.map(w=>`<option value="${w.id}" ${t?.toWalletId===w.id?'selected':''}>${w.icon} ${esc(w.name)}</option>`).join('')}</select></div>
- <div class="formgrid"><div class="field"><label>Date & time</label><input id="tDate" type="datetime-local" value="${t?new Date(t.date).toISOString().slice(0,16):new Date().toISOString().slice(0,16)}"></div><div class="field"><label>Description / note</label><input id="tDesc" value="${esc(t?.description||'')}"></div></div>
+ <div class="formgrid"><div class="field"><label>Date</label><input id="tDate" type="date" value="${t?dateInputValue(t.date):dateInputValue(new Date())}"></div><div class="field"><label>Description / note</label><input id="tDesc" value="${esc(t?.description||'')}"></div></div>
  <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveTransaction()">Save transaction</button></div>`);
  refreshTxForm();
 }
 function refreshTxForm(){let type=document.getElementById('tType').value;document.getElementById('catField').style.display=type==='transfer'?'none':'';document.getElementById('toWalletField').style.display=type==='transfer'?'':'none';if(type==='income')document.getElementById('tCat').innerHTML=state.categories.filter(c=>c.type==='income').map(c=>`<option value="${c.id}">${c.icon} ${esc(c.name)}</option>`).join('');if(type==='expense')document.getElementById('tCat').innerHTML=state.categories.filter(c=>c.type==='expense').map(c=>`<option value="${c.id}">${c.icon} ${esc(c.name)}</option>`).join('')}
-function fingerprint(t){return [t.type,Number(t.amount).toFixed(2),t.walletId,t.toWalletId||'',t.categoryId||'',new Date(t.date).toISOString().slice(0,16),String(t.description||'').trim().toLowerCase()].join('|')}
+function fingerprint(t){return [t.type,Number(t.amount).toFixed(2),t.walletId,t.toWalletId||'',t.categoryId||'',dateInputValue(t.date),String(t.description||'').trim().toLowerCase()].join('|')}
 function saveTransaction(){
- let type=document.getElementById('tType').value,amount=Number(document.getElementById('tAmount').value),walletId=document.getElementById('tWallet').value,date=new Date(document.getElementById('tDate').value).toISOString(),description=document.getElementById('tDesc').value.trim(),categoryId=type==='transfer'?null:document.getElementById('tCat').value,toWalletId=type==='transfer'?document.getElementById('tToWallet').value:null;
+ let type=document.getElementById('tType').value,amount=Number(document.getElementById('tAmount').value),walletId=document.getElementById('tWallet').value,date=transactionDateISO(document.getElementById('tDate').value),description=document.getElementById('tDesc').value.trim(),categoryId=type==='transfer'?null:document.getElementById('tCat').value,toWalletId=type==='transfer'?document.getElementById('tToWallet').value:null;
  if(!amount||amount<=0)return toast('Enter a valid amount');if(type==='transfer'&&walletId===toWalletId)return toast('Choose different wallets');
- let obj=touchRecord({id:editingId||id('t'),type,amount,walletId,toWalletId,categoryId,date,description});
+ let obj={id:editingId||id('t'),type,amount,walletId,toWalletId,categoryId,date,description};
  let dup=state.transactions.find(x=>fingerprint(x)===fingerprint(obj)&&x.id!==editingId);
  if(dup&&!confirm(`A matching transaction already exists (${money(dup.amount)}). Import/save anyway?`))return;
  if(editingId)state.transactions[state.transactions.findIndex(x=>x.id===editingId)]=obj;else state.transactions.push(obj);
  closeModal();save();toast('Transaction saved');
 }
-function deleteTransaction(tid){if(confirm('Delete this transaction?')){state.transactions=state.transactions.filter(t=>t.id!==tid);addTombstone('transactions',tid);save();}}
+function deleteTransaction(tid){if(confirm('Delete this transaction?')){state.transactions=state.transactions.filter(t=>t.id!==tid);save();}}
 function exportJSON(){let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='flowtrack-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);toast('JSON backup exported')}
 document.getElementById('jsonFile').addEventListener('change',e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>importJSON(r.result);r.readAsText(f);e.target.value=''});
 function importJSON(text){
  try{
-  const incoming=JSON.parse(text);
-  const rawTx=Array.isArray(incoming.transactions)?incoming.transactions:(Array.isArray(incoming.data?.transactions)?incoming.data.transactions:[]);
-  const rawWallets=Array.isArray(incoming.wallets)?incoming.wallets:(Array.isArray(incoming.accounts)?incoming.accounts:[]);
-  const rawCats=Array.isArray(incoming.categories)?incoming.categories:[];
-  const incomeNames=Array.isArray(incoming.customIncomeCats)?incoming.customIncomeCats:[];
-  const expenseNames=Array.isArray(incoming.customExpenseCats)?incoming.customExpenseCats:[];
-  if(!rawTx.length && !rawWallets.length && !rawCats.length && !incomeNames.length && !expenseNames.length)
-    throw Error('No FlowTrack transactions, wallets/accounts, or categories were found');
-
-  // This importer supports both FlowTrack's native format and the
-  // xlsx-to-json format: accounts + category names + accountId/fromAccountId.
-  const iconForAccount=(a)=>{
-   const x=String(a?.icon||a?.type||'').toLowerCase();
-   if(x.includes('bank'))return '🏦';
-   if(x.includes('phone')||x.includes('mtn')||x.includes('telecel')||x.includes('vodafone')||x.includes('mobile'))return '📱';
-   if(x.includes('cash'))return '💵';
-   if(x.includes('saving'))return '💰';
-   return '👛';
-  };
-  const iconForCategory=(name,type)=>{
-   const x=String(name||'').toLowerCase();
-   if(x.includes('salary')||x.includes('income')||x.includes('interest')||x.includes('refund'))return '💰';
-   if(x.includes('food')||x.includes('meal')||x.includes('rice')||x.includes('waakye')||x.includes('kenkey'))return '🍔';
-   if(x.includes('transport')||x.includes('travel')||x.includes('uber')||x.includes('okada'))return '🚗';
-   if(x.includes('airtime')||x.includes('phone')||x.includes('data'))return '📱';
-   if(x.includes('bill')||x.includes('charge')||x.includes('subscription'))return '🧾';
-   if(x.includes('cloth'))return '🛍️';
-   if(x.includes('tool'))return '🔧';
-   if(x.includes('health'))return '🏥';
-   if(x.includes('gift')||x.includes('give'))return '🎁';
-   return type==='income'?'💵':'📦';
-  };
-  const colorForType=(type)=>type==='income'?'#0f9d67':'#dc4f5f';
-  const slug=(x)=>String(x||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'other';
-
-  // Build account/wallet mapping before transactions so imported account IDs
-  // are converted into the app's walletId fields.
-  const walletMap=new Map();
-  rawWallets.forEach(a=>{
-   if(!a)return;
-   const wid=a.id||id('w');
-   const name=String(a.name||a.label||'Unnamed wallet').trim();
-   walletMap.set(a.id||wid,wid);
-   let w=state.wallets.find(x=>x.id===wid)||state.wallets.find(x=>x.name.trim().toLowerCase()===name.toLowerCase());
-   if(!w){
-    w={id:wid,name,icon:iconForAccount(a),color:a.color||'#2563eb',savings:/saving/i.test(name+' '+(a.type||'')),balance:0,createdAt:a.createdAt||new Date().toISOString()};
-    state.wallets.push(w);
-   }else{
-    // Keep the user's existing wallet ID/name when names match, but retain
-    // imported icon/color/type details where useful.
-    walletMap.set(a.id||wid,w.id);
-    if(a.color)w.color=a.color;
-    if(a.icon)w.icon=iconForAccount(a);
-    if(/saving/i.test(name+' '+(a.type||'')))w.savings=true;
-   }
-  });
-
-  // Build category mapping from both explicit categories and custom category arrays.
-  const catMap=new Map();
-  const ensureCategory=(name,type,sourceId=null)=>{
-   name=String(name||'').trim(); if(!name)return null;
-   const key=type+'|'+name.toLowerCase();
-   if(catMap.has(key))return catMap.get(key);
-   let c=sourceId?state.categories.find(x=>x.id===sourceId):null;
-   if(!c)c=state.categories.find(x=>x.type===type&&x.name.trim().toLowerCase()===name.toLowerCase());
-   if(!c){
-    const cid=sourceId||('c-import-'+slug(type)+'-'+slug(name));
-    c={id:cid,name,icon:iconForCategory(name,type),color:colorForType(type),type,createdAt:new Date().toISOString()};
-    // Ensure the generated ID is unique if an unrelated category already uses it.
-    if(state.categories.some(x=>x.id===c.id))c.id=id('c');
-    state.categories.push(c);
-   }
-   catMap.set(key,c.id); if(sourceId)catMap.set(type+'|id|'+sourceId,c.id);
-   return c.id;
-  };
-  rawCats.forEach(c=>ensureCategory(c.name,c.type||'expense',c.id));
-  incomeNames.forEach(n=>ensureCategory(n,'income'));
-  expenseNames.forEach(n=>ensureCategory(n,'expense'));
-  state.categories.forEach(c=>catMap.set(c.type+'|'+c.name.trim().toLowerCase(),c.id));
-
-  const existing=new Set(state.transactions.map(fingerprint));
-  let dups=0, invalid=0, add=[];
-  rawTx.forEach(raw=>{
-   if(!raw)return;
-   const type=raw.type==='transfer'?'transfer':raw.type==='income'?'income':'expense';
-   const amount=Number(raw.amount);
-   if(!Number.isFinite(amount)||amount===0){invalid++;return;}
-   const sourceFrom=raw.walletId||raw.accountId||raw.fromAccountId;
-   const sourceTo=raw.toWalletId||raw.toAccountId;
-   const walletId=walletMap.get(sourceFrom)||sourceFrom;
-   const toWalletId=type==='transfer'?(walletMap.get(sourceTo)||sourceTo):null;
-   if(!walletId||!raw.date){invalid++;return;}
-   const categoryName=raw.categoryName||raw.category||'';
-   const categoryId=type==='transfer'?null:(raw.categoryId&&state.categories.some(c=>c.id===raw.categoryId)?raw.categoryId:ensureCategory(categoryName,type));
-   const description=String(raw.description??raw.note??'').trim();
-   let date;
-   try{date=new Date(raw.date).toISOString();}catch(e){invalid++;return;}
-   if(type==='transfer'&&!toWalletId){invalid++;return;}
-   const t=touchRecord({id:raw.id||id('t'),type,amount:Math.abs(amount),walletId,toWalletId,categoryId,date,description});
-   // Preserve source timestamps when present so future cross-device merge has stable ordering.
-   if(raw.updatedAt)t.updatedAt=Number(raw.updatedAt)||t.updatedAt;
-   if(raw.updatedBy)t.updatedBy=raw.updatedBy;
-   if(existing.has(fingerprint(t))){dups++;return;}
-   existing.add(fingerprint(t));add.push(t);
-  });
-
-  const sourceLabel=(Array.isArray(incoming.accounts)||incoming.customIncomeCats||incoming.customExpenseCats)?'account/category JSON':'FlowTrack JSON';
-  const msg=`${sourceLabel} detected.
-
-Transactions found: ${rawTx.length}
-New transactions: ${add.length}
-Possible duplicates: ${dups}
-Skipped invalid records: ${invalid}
-Wallets/accounts processed: ${rawWallets.length}
-Categories processed: ${rawCats.length+incomeNames.length+expenseNames.length}
-
-Import the new transactions and compatible wallet/category data?`;
-  if(!confirm(msg))return;
-  state.transactions.push(...add);
-  save();
-  toast(`Imported ${add.length} new transaction(s), ${rawWallets.length} wallet/account(s) and compatible categories`);
- }catch(e){console.error(e);toast('Invalid or unsupported JSON: '+e.message)}
+  let incoming=JSON.parse(text);let tx=incoming.transactions||incoming.data?.transactions||[];if(!Array.isArray(tx))throw Error('No transactions array found');
+  let existing=new Set(state.transactions.map(fingerprint)),dups=0,add=[];
+  tx.forEach(raw=>{let t={...raw,id:raw.id||id('t'),amount:Number(raw.amount||0)};if(!t.type||!t.walletId||!t.date||!t.amount)return;if(existing.has(fingerprint(t)))dups++;else{existing.add(fingerprint(t));add.push(t)}});
+  let msg=`Found ${tx.length} transaction(s). ${dups} possible duplicate(s), ${add.length} new transaction(s).\\n\\nImport the ${add.length} new record(s)?`;
+  if(!confirm(msg))return;state.transactions.push(...add);
+  if(Array.isArray(incoming.wallets))incoming.wallets.forEach(w=>{if(w.name&&!state.wallets.some(x=>x.id===w.id||x.name.toLowerCase()===w.name.toLowerCase()))state.wallets.push({...w,id:w.id||id('w')})});
+  if(Array.isArray(incoming.categories))incoming.categories.forEach(c=>{if(c.name&&!state.categories.some(x=>x.id===c.id||x.name.toLowerCase()===c.name.toLowerCase()))state.categories.push({...c,id:c.id||id('c')})});
+  save();toast(`Imported ${add.length} new transaction(s)`);
+ }catch(e){toast('Invalid JSON: '+e.message)}
 }
+function reportData(){
+ let inc=state.transactions.filter(t=>t.type==='income').reduce((a,t)=>a+Number(t.amount),0);
+ let exp=state.transactions.filter(t=>t.type==='expense').reduce((a,t)=>a+Number(t.amount),0);
+ let t=totals();
+ return {inc,exp,net:inc-exp,total:t.total,savings:t.savings,spendable:t.spendable};
+}
+function reportChartsHTML(){
+ let s=series(6);
+ let rows=s.map(x=>`<tr><td>${esc(x.label)}</td><td>${money(x.income)}</td><td>${money(x.expense)}</td><td>${money(x.income-x.expense)}</td></tr>`).join('');
+ let cats=state.categories.filter(c=>c.type==='expense').map(c=>({name:c.name,v:state.transactions.filter(t=>t.type==='expense'&&t.categoryId===c.id).reduce((a,t)=>a+Number(t.amount),0)})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+ let catRows=cats.map(x=>`<tr><td>${esc(x.name)}</td><td>${money(x.v)}</td></tr>`).join('');
+ return `<h2>Cash flow analysis</h2>
+ <table><thead><tr><th>Month</th><th>Income</th><th>Expenses</th><th>Net</th></tr></thead><tbody>${rows}</tbody></table>
+ <h2>Expenses by category</h2><table><thead><tr><th>Category</th><th>Amount</th></tr></thead><tbody>${catRows||'<tr><td colspan="2">No expense data</td></tr>'}</tbody></table>`;
+}
+function reportTransactionsHTML(){
+ let arr=[...state.transactions].sort((a,b)=>new Date(b.date)-new Date(a.date));
+ return `<h2>Transaction history</h2><table><thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Wallet</th><th>Category</th><th>Amount</th></tr></thead><tbody>${arr.map(t=>`<tr><td>${esc(dateInputValue(t.date))}</td><td>${esc(t.type)}</td><td>${esc(t.description||'')}</td><td>${esc(wallet(t.walletId)?.name||'—')}</td><td>${esc(cat(t.categoryId)?.name||'—')}</td><td>${money(t.amount)}</td></tr>`).join('')}</tbody></table>`;
+}
+function buildReportHTML(){
+ let d=reportData(),u=state.profile.name||'FlowTrack Pro';
+ return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(u)} — FlowTrack Report</title><style>
+ @page{size:A4;margin:14mm}body{font-family:Arial,sans-serif;color:#18212f;margin:0;font-size:10pt}h1{font-size:24pt;margin:0 0 4px}h2{font-size:14pt;margin:22px 0 9px;border-bottom:1px solid #ddd;padding-bottom:5px}.muted{color:#718096}.header{border-bottom:2px solid #2563eb;padding-bottom:12px;margin-bottom:16px}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.card{border:1px solid #e1e5eb;border-radius:8px;padding:10px}.card b{display:block;font-size:14pt;margin-top:4px}table{width:100%;border-collapse:collapse;margin-bottom:10px}th,td{border-bottom:1px solid #e5e9f0;padding:6px;text-align:left}th{background:#f5f7fb}.footer{margin-top:20px;color:#718096;font-size:8pt} </style></head><body>
+ <div class="header"><h1>${esc(u)} — Financial Report</h1><div class="muted">Generated ${esc(new Date().toLocaleString())}</div></div>
+ <div class="cards"><div class="card">Total balance<b>${money(d.total)}</b></div><div class="card">Savings<b>${money(d.savings)}</b></div><div class="card">Spendable<b>${money(d.spendable)}</b></div><div class="card">Net cash flow<b>${money(d.net)}</b></div></div>
+ ${reportChartsHTML()}${reportTransactionsHTML()}<div class="footer">FlowTrack Pro • Professional A4 financial report</div>
+ </body></html>`;
+}
+function exportReportPDF(){
+ let w=window.open('','_blank','width=900,height=1100');
+ if(!w)return toast('Please allow pop-ups to export the PDF');
+ w.document.write(buildReportHTML());w.document.close();w.focus();setTimeout(()=>w.print(),500);
+}
+function exportReportWord(){
+ let blob=new Blob([buildReportHTML()],{type:'application/msword'});
+ let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='flowtrack-financial-report-'+new Date().toISOString().slice(0,10)+'.doc';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Word report exported');
+}
+
 function saveSettings(){state.profile.name=document.getElementById('profileName').value.trim()||'My Finance';state.profile.currency=document.getElementById('currency').value||'₵';state.profile.clientId=FLOWTRACK_GOOGLE_CLIENT_ID;save();toast('Settings saved')}
 function resetData(){
- const first=confirm('RESET ALL LOCAL DATA?\n\nThis will permanently remove the transactions, wallets, categories and profile stored on THIS DEVICE. Your Google Drive backup will NOT be deleted.\n\nPress OK only if you are sure.');
- if(!first)return;
- const typed=prompt('Final safety check: type RESET to continue.');
- if(typed!=='RESET'){toast('Reset cancelled. Nothing was deleted.');return;}
- clearTimeout(driveSyncTimer);
- localStorage.removeItem(KEY);localStorage.removeItem(SYNC_KEY);
- toast('Local data reset. Google Drive backup was kept safe.');
- setTimeout(()=>location.reload(),500);
+ if(!confirm('This will permanently clear the local FlowTrack data on this device. Your Google Drive backup will not be deleted. Continue?'))return;
+ let phrase=prompt('To confirm the reset, type RESET');
+ if(phrase!=='RESET')return toast('Reset cancelled');
+ localStorage.removeItem(KEY);location.reload();
 }
-let driveToken=null,driveFileId=null,googleUser=null,driveSyncTimer=null,drivePollTimer=null,driveSyncBusy=false;
+let driveToken=null,driveFileId=null,googleUser=null,driveSyncTimer=null;
 const DRIVE_SCOPE='https://www.googleapis.com/auth/drive.appdata';
-const SYNC_KEY='flowtrack_sync_meta_v1';
-let syncMeta=JSON.parse(localStorage.getItem(SYNC_KEY)||'null')||{deviceId:id('device'),updatedAt:0,tombstones:{transactions:[],wallets:[],categories:[]}};
-function persistSyncMeta(){localStorage.setItem(SYNC_KEY,JSON.stringify(syncMeta));}
-function addTombstone(type,itemId){syncMeta.tombstones[type]=Array.from(new Set([...(syncMeta.tombstones[type]||[]),itemId])).slice(-5000);syncMeta.updatedAt=Date.now();persistSyncMeta();}
-function markLocalChange(){syncMeta.updatedAt=Date.now();persistSyncMeta();}
-function touchRecord(obj){obj.updatedAt=Date.now();obj.updatedBy=syncMeta.deviceId;return obj;}
 function googleConfigured(){return typeof google!=='undefined'&&google.accounts&&google.accounts.oauth2}
-function setGoogleSignedOut(message='Not connected to Google Drive.'){ 
- driveToken=null;driveFileId=null;clearInterval(drivePollTimer);clearTimeout(driveSyncTimer);
- document.getElementById('googleSignedOut').style.display='';document.getElementById('googleSignedIn').style.display='none';
- const out=document.getElementById('driveStatusOut');if(out)out.textContent=message;
- const st=document.getElementById('syncText');if(st)st.textContent='Local data ready • Google Drive not connected';
-}
-function handleDriveSessionLost(){
- const wasConnected=!!googleUser;
- driveToken=null;driveFileId=null;clearInterval(drivePollTimer);clearTimeout(driveSyncTimer);
- document.getElementById('googleSignedOut').style.display='';document.getElementById('googleSignedIn').style.display='none';
- const out=document.getElementById('driveStatusOut');if(out)out.textContent=wasConnected?'Google session expired or access was revoked. Sign in again to resume sync.':'Not connected to Google Drive.';
- const st=document.getElementById('syncText');if(st)st.textContent='Google Drive disconnected';
-}
-function signInGoogle(silent=false){
+function signInGoogle(){
  let clientId=FLOWTRACK_GOOGLE_CLIENT_ID;
  if(!clientId)return toast('Google sign-in is not configured in this build');
+ state.profile.clientId=FLOWTRACK_GOOGLE_CLIENT_ID;localStorage.setItem(KEY,JSON.stringify(state));
  if(!googleConfigured())return toast('Google sign-in is still loading. Try again in a moment.');
  const client=google.accounts.oauth2.initTokenClient({
-  client_id:clientId,scope:DRIVE_SCOPE,
+  client_id:clientId,scope:DRIVE_SCOPE,prompt:'select_account',
   callback: async (resp)=>{
-   if(resp.error){
-    if(silent)handleDriveSessionLost(); else toast('Google sign-in was not completed');
-    return;
-   }
+   if(resp.error)return toast('Google sign-in was not completed');
    driveToken=resp.access_token;
    try{
     const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+driveToken}});
-    if(!r.ok)throw Error('Google profile lookup failed ('+r.status+')');
     googleUser=await r.json();
     localStorage.setItem('flowtrack_google_user',JSON.stringify({email:googleUser.email,name:googleUser.name,picture:googleUser.picture}));
-    showGoogleSignedIn();
+    showGoogleSignedIn();toast('Signed in as '+(googleUser.email||'Google account'));
     await findDriveFile();
-    await syncWithDrive({upload:false,initial:true});
-    startDrivePolling();
-    if(!silent)toast('Signed in as '+(googleUser.email||'Google account'));
-   }catch(e){console.error(e);handleDriveSessionLost();if(!silent)toast('Google Drive connection failed: '+e.message);}
+   }catch(e){toast('Google account connected, but profile lookup failed')}
   }
  });
- client.requestAccessToken({prompt:silent?'':'select_account'});
+ client.requestAccessToken({prompt:'select_account'});
 }
 function showGoogleSignedIn(){
- document.getElementById('googleSignedOut').style.display='none';document.getElementById('googleSignedIn').style.display='';
+ document.getElementById('googleSignedOut').style.display='none';
+ document.getElementById('googleSignedIn').style.display='';
  let u=googleUser||JSON.parse(localStorage.getItem('flowtrack_google_user')||'null')||{};
  document.getElementById('googleEmail').textContent=u.email||'Google account';
  document.getElementById('googleAvatar').innerHTML=u.picture?`<img src="${esc(u.picture)}" style="width:100%;height:100%;border-radius:10px">`:'G';
 }
 function signOutGoogle(){
- if(driveToken&&google.accounts?.oauth2?.revoke)google.accounts.oauth2.revoke(driveToken,()=>{});
- localStorage.removeItem('flowtrack_google_user');googleUser=null;setGoogleSignedOut('Signed out of Google Drive. Your local data is still safe on this device.');toast('Signed out of Google');
+ driveToken=null;googleUser=null;driveFileId=null;localStorage.removeItem('flowtrack_google_user');
+ document.getElementById('googleSignedOut').style.display='';
+ document.getElementById('googleSignedIn').style.display='none';toast('Signed out of Google');
 }
 async function driveApi(url,options={}){
  if(!driveToken)throw Error('Not signed in to Google');
@@ -470,113 +420,47 @@ async function driveApi(url,options={}){
 }
 async function findDriveFile(){
  let q=encodeURIComponent("name='flowtrack-data.json' and trashed=false");
- let r=await driveApi('https://www.googleapis.com/drive/v3/files?q='+q+'&spaces=appDataFolder&fields=files(id,name,modifiedTime,version)');
- if(!r.ok)throw Error('Drive lookup failed ('+r.status+')');
+ let r=await driveApi('https://www.googleapis.com/drive/v3/files?q='+q+'&spaces=appDataFolder&fields=files(id,name,modifiedTime)');
+ if(!r.ok)throw Error('Drive lookup failed');
  let j=await r.json();driveFileId=j.files?.[0]?.id||null;
- const el=document.getElementById('driveStatus');if(el)el.textContent=driveFileId?'FlowTrack backup connected. Auto-sync is on.':'No FlowTrack backup found yet. The next change will create it.';
- return j.files?.[0]||null;
+ document.getElementById('driveStatus').textContent=driveFileId?'Existing FlowTrack backup found in Google Drive.':'No FlowTrack backup found yet.';
 }
 function makeMultipart(meta,data){
  const boundary='flowtrack_boundary_'+Date.now();
  const body='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(meta)+'\r\n--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+data+'\r\n--'+boundary+'--';
  return new Blob([body],{type:'multipart/related; boundary='+boundary});
 }
-function normalizeIncoming(incoming){
- incoming=incoming||{};return {profile:incoming.profile||{},wallets:Array.isArray(incoming.wallets)?incoming.wallets:[],categories:Array.isArray(incoming.categories)?incoming.categories:[],transactions:Array.isArray(incoming.transactions)?incoming.transactions:[],_sync:incoming._sync||{}};
-}
-function hasRealLocalData(){return state.transactions.length>0||state.wallets.some(w=>!['w1','w2','w3'].includes(w.id))||state.categories.some(c=>!['c1','c2','c3','c4','c5','c6'].includes(c.id));}
-function mergeCollection(local,remote,type){
- const map=new Map(local.map(x=>[x.id,x]));
- remote.forEach(x=>{
-  if(!x?.id)return;
-  const current=map.get(x.id);
-  if(!current){map.set(x.id,x);return;}
-  const lt=Number(current.updatedAt||0), rt=Number(x.updatedAt||0);
-  if(rt>lt)map.set(x.id,x);
-  else if(rt===lt && JSON.stringify(current)!==JSON.stringify(x)){
-   // Deterministic tie-breaker: the record with the lexicographically greater
-   // updatedBy wins, preventing different devices from oscillating.
-   if(String(x.updatedBy||'')>String(current.updatedBy||''))map.set(x.id,x);
-  }
- });
- const deleted=new Set(syncMeta.tombstones[type]||[]);
- return Array.from(map.values()).filter(x=>!deleted.has(x.id));
-}
-function mergeRemote(remote){
- const r=normalizeIncoming(remote), rs=r._sync||{}, rt=rs.tombstones||{};
- for(const type of ['transactions','wallets','categories']){const ids=new Set(rt[type]||[]);state[type]=state[type].filter(x=>!ids.has(x.id));syncMeta.tombstones[type]=Array.from(new Set([...(syncMeta.tombstones[type]||[]),...(rt[type]||[])])).slice(-5000);}
- state.transactions=mergeCollection(state.transactions,r.transactions,'transactions');
- state.wallets=mergeCollection(state.wallets,r.wallets,'wallets');
- state.categories=mergeCollection(state.categories,r.categories,'categories');
- if((rs.updatedAt||0)>(syncMeta.updatedAt||0))state.profile={...state.profile,...r.profile};
- syncMeta.updatedAt=Math.max(syncMeta.updatedAt||0,rs.updatedAt||0);persistSyncMeta();
-}
-async function readDriveState(){
- if(!driveFileId)await findDriveFile();
- if(!driveFileId)return null;
- let r=await driveApi('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(driveFileId)+'?alt=media');
- if(!r.ok)throw Error('Download failed ('+r.status+')');return await r.json();
-}
-async function uploadDriveState(){
- let outgoing=JSON.parse(JSON.stringify(state));outgoing._sync={deviceId:syncMeta.deviceId,updatedAt:syncMeta.updatedAt,tombstones:syncMeta.tombstones};
- let body=JSON.stringify(outgoing),r;
- if(driveFileId){
-  r=await driveApi('https://www.googleapis.com/upload/drive/v3/files/'+encodeURIComponent(driveFileId)+'?uploadType=media',{method:'PATCH',headers:{'Content-Type':'application/json'},body});
- }else{
-  let meta={name:'flowtrack-data.json',parents:['appDataFolder'],mimeType:'application/json'};
-  r=await driveApi('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',body:makeMultipart(meta,body)});
- }
- if(!r.ok){let detail=await r.text().catch(()=> '');throw Error('Upload failed ('+r.status+')'+(detail?' — '+detail.slice(0,180):''));}
- let j=await r.json();driveFileId=j.id||driveFileId;return j;
-}
-async function syncWithDrive({upload=false,initial=false}={}){
- if(!driveToken||driveSyncBusy)return;
- driveSyncBusy=true;
- try{
-  const remote=await readDriveState();
-  if(remote){
-   const before=JSON.stringify(state);
-   mergeRemote(remote);
-   const changed=JSON.stringify(state)!==before;
-   if(changed){localStorage.setItem(KEY,JSON.stringify(state));render();}
-   // If local changes are newer (or we explicitly requested an upload), publish the merged state.
-   const remoteUpdated=Number(remote?._sync?.updatedAt||0);
-   const localUpdated=Number(syncMeta.updatedAt||0);
-   if(upload || localUpdated>remoteUpdated || changed){
-    await uploadDriveState();
-   }
-  }else if(upload || hasRealLocalData()){
-   await uploadDriveState();
-  }
-  document.getElementById('syncText').textContent='Google Drive synced • '+new Date().toLocaleTimeString();
-  const el=document.getElementById('driveStatus');if(el)el.textContent='Auto-sync is on • Last checked '+new Date().toLocaleTimeString();
- }catch(e){
-  console.error('Drive sync error',e);
-  const msg=e.message||String(e);
-  document.getElementById('syncText').textContent='Drive sync needs attention';
-  const el=document.getElementById('driveStatus');if(el)el.textContent='Sync error: '+msg;
-  if(/401|403|invalid|unauthorized|insufficient|token/i.test(msg)){handleDriveSessionLost();}
- }finally{driveSyncBusy=false;}
-}
-function startDrivePolling(){clearInterval(drivePollTimer);drivePollTimer=setInterval(()=>syncWithDrive({upload:false}),15000);}
 async function driveSave(){
- if(!driveToken)return signInGoogle();
- try{markLocalChange();await uploadDriveState();document.getElementById('driveStatus').textContent='Saved to Google Drive • '+new Date().toLocaleTimeString();document.getElementById('syncText').textContent='Google Drive synced';toast('Saved to Google Drive');startDrivePolling();}
- catch(e){console.error(e);toast('Drive save failed: '+e.message);}
+ try{
+  if(!driveToken)return signInGoogle();
+  let body=JSON.stringify(state,null,2),r;
+  if(driveFileId){
+   // Existing appDataFolder files are updated as media only; do not resend parents.
+   r=await driveApi('https://www.googleapis.com/upload/drive/v3/files/'+encodeURIComponent(driveFileId)+'?uploadType=media',{method:'PATCH',headers:{'Content-Type':'application/json'},body});
+  }else{
+   let meta={name:'flowtrack-data.json',parents:['appDataFolder'],mimeType:'application/json'};
+   r=await driveApi('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',body:makeMultipart(meta,body)});
+  }
+  if(!r.ok){let detail=await r.text().catch(()=> '');throw Error('Upload failed ('+r.status+')'+(detail?' — '+detail.slice(0,180):''));}
+  let j=await r.json();driveFileId=j.id||driveFileId;
+  document.getElementById('driveStatus').textContent='Saved to Google Drive • '+new Date().toLocaleTimeString();
+  document.getElementById('syncText').textContent='Google Drive synced';
+  toast('Saved to Google Drive');
+ }catch(e){console.error('Drive save error',e);toast('Drive save failed: '+e.message)}
 }
 async function driveLoad(){
- if(!driveToken)return signInGoogle();
- try{let remote=await readDriveState();if(!remote)return toast('No FlowTrack backup found in this Google Drive account');mergeRemote(remote);save({sync:false});toast('Google Drive data synchronized');startDrivePolling();}
- catch(e){toast('Drive load failed: '+e.message)}
+ try{
+  if(!driveToken)return signInGoogle();if(!driveFileId)await findDriveFile();
+  if(!driveFileId)return toast('No FlowTrack backup found in this Google Drive account');
+  let r=await driveApi('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(driveFileId)+'?alt=media');if(!r.ok){let detail=await r.text().catch(()=> '');throw Error('Download failed ('+r.status+')'+(detail?' — '+detail.slice(0,180):''));}
+  let incoming=await r.json();if(!incoming.transactions)return toast('The Drive file is not a valid FlowTrack backup');
+  if(!confirm('Load the Google Drive backup? Your current local data will be replaced.'))return;
+  state=incoming;save();toast('Loaded from Google Drive');
+ }catch(e){toast('Drive load failed: '+e.message)}
 }
 function restoreGoogleUI(){
- let u=JSON.parse(localStorage.getItem('flowtrack_google_user')||'null');
- if(u){googleUser=u;setGoogleSignedOut('Previous Google account: '+(u.email||'Unknown')+'. Reconnecting…');setTimeout(()=>signInGoogle(true),700);}
- else setGoogleSignedOut();
+ let u=JSON.parse(localStorage.getItem('flowtrack_google_user')||'null');if(u){googleUser=u;showGoogleSignedIn();}
 }
-window.addEventListener('focus',()=>{if(driveToken)syncWithDrive({upload:false});});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&driveToken)syncWithDrive({upload:false});});
-
 
 state.profile.clientId=FLOWTRACK_GOOGLE_CLIENT_ID;
 localStorage.setItem(KEY,JSON.stringify(state));
