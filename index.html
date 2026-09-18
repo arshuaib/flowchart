@@ -95,10 +95,10 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
   <div class="card"><h3>Profile</h3><div class="field"><label>Profile name</label><input id="profileName"></div><div class="field"><label>Currency symbol</label><input id="currency" maxlength="4"></div><button class="btn primary" onclick="saveSettings()">Save profile</button></div>
   <div class="card"><h3>Google Drive sync</h3>
 <div id="googleSignedOut">
-<p style="color:var(--muted);font-size:13px">Sign in with Google to connect this FlowTrack profile to Google Drive. Choose the Gmail account you want to use.</p>
-<input id="clientId" type="hidden" value="963866679895-vpejgje3gqcjg95m2i4am0cor60jtk50.apps.googleusercontent.com">
+<p style="color:var(--muted);font-size:13px">Connect FlowTrack to your Google Drive. The app already has its Google connection configured, so you only need to choose your Gmail account.</p>
 <button class="btn primary" onclick="signInGoogle()">Continue with Google</button>
-<p id="driveStatusOut" class="sub"></p></div>
+<p id="driveStatusOut" class="sub"></p>
+</div>
 <div id="googleSignedIn" style="display:none">
 <div class="row-main" style="margin-bottom:14px"><div class="avatar" id="googleAvatar">G</div><div><b id="googleEmail">Google account</b><span class="sub">Connected to FlowTrack</span></div></div>
 <button class="btn primary" onclick="driveSave()">Save to Google Drive</button>
@@ -106,7 +106,6 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 <button class="btn danger" onclick="signOutGoogle()">Sign out</button>
 <p id="driveStatus" class="sub"></p>
 </div></div>
- </div>
  <div class="card" style="margin-top:16px"><h3>Data management</h3><button class="btn" onclick="exportJSON()">Backup JSON</button> <button class="btn danger" onclick="resetData()">Reset all data</button><p class="sub">Tip: keep a JSON backup before resetting or importing a large dataset.</p></div>
 </section>
 </main>
@@ -120,10 +119,11 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 
 <script>
 const KEY='flowtrack_pro_v1';
+const FLOWTRACK_GOOGLE_CLIENT_ID='963866679895-vpejgje3gqcjg95m2i4am0cor60jtk50.apps.googleusercontent.com';
 const ICONS=['💵','🏦','💳','👛','💰','📱','🏠','🚗','✈️','🎓','🛒','🍔','⚡','🔧','🎁','📦','💡','🧾','🎯','⭐','🛍️','🏥','🎵','☪️'];
 const COLORS=['#2563eb','#0f9d67','#dc4f5f','#f59e0b','#7c3aed','#0891b2','#db2777','#475569'];
 let state=JSON.parse(localStorage.getItem(KEY)||'null')||{
- profile:{name:'My Finance',currency:'₵',clientId:''},
+ profile:{name:'My Finance',currency:'₵',clientId:FLOWTRACK_GOOGLE_CLIENT_ID},
  wallets:[
   {id:'w1',name:'Cash',icon:'💵',color:'#0f9d67',balance:0,savings:false},
   {id:'w2',name:'Bank',icon:'🏦',color:'#2563eb',balance:0,savings:false},
@@ -174,7 +174,7 @@ function render(){
  calcBalances();
  let t=totals();document.getElementById('totalBalance').textContent=money(t.total);document.getElementById('savings').textContent=money(t.savings);document.getElementById('spendable').textContent=money(t.spendable);
  let now=new Date(),m=now.getMonth(),y=now.getFullYear();let mi=state.transactions.filter(x=>{let d=new Date(x.date);return d.getMonth()===m&&d.getFullYear()===y});let inc=mi.filter(x=>x.type==='income').reduce((a,x)=>a+x.amount,0),exp=mi.filter(x=>x.type==='expense').reduce((a,x)=>a+x.amount,0);document.getElementById('monthNet').textContent=money(inc-exp);document.getElementById('monthNet').className='stat-value '+(inc-exp>=0?'positive':'negative');
- document.getElementById('profileName').value=state.profile.name||'';document.getElementById('currency').value=state.profile.currency||'₵';document.getElementById('clientId').value=state.profile.clientId||'';
+ document.getElementById('profileName').value=state.profile.name||'';document.getElementById('currency').value=state.profile.currency||'₵';
  fillWalletSelects();renderWallets();renderCategories();renderTransactions();renderRecent();renderCashChart();renderAnalytics();
 }
 function fillWalletSelects(){
@@ -271,15 +271,15 @@ function importJSON(text){
   save();toast(`Imported ${add.length} new transaction(s)`);
  }catch(e){toast('Invalid JSON: '+e.message)}
 }
-function saveSettings(){state.profile.name=document.getElementById('profileName').value.trim()||'My Finance';state.profile.currency=document.getElementById('currency').value||'₵';state.profile.clientId=document.getElementById('clientId').value.trim();save();toast('Settings saved')}
+function saveSettings(){state.profile.name=document.getElementById('profileName').value.trim()||'My Finance';state.profile.currency=document.getElementById('currency').value||'₵';state.profile.clientId=FLOWTRACK_GOOGLE_CLIENT_ID;save();toast('Settings saved')}
 function resetData(){if(confirm('This will erase all local FlowTrack data. Continue?')){localStorage.removeItem(KEY);location.reload()}}
 let driveToken=null,driveFileId=null,googleUser=null;
 const DRIVE_SCOPE='https://www.googleapis.com/auth/drive.appdata';
 function googleConfigured(){return typeof google!=='undefined'&&google.accounts&&google.accounts.oauth2}
 function signInGoogle(){
- let clientId=state.profile.clientId||'963866679895-vpejgje3gqcjg95m2i4am0cor60jtk50.apps.googleusercontent.com';
- if(!clientId)return toast('Enter your Google OAuth Client ID first');
- state.profile.clientId=clientId;localStorage.setItem(KEY,JSON.stringify(state));
+ let clientId=FLOWTRACK_GOOGLE_CLIENT_ID;
+ if(!clientId)return toast('Google sign-in is not configured in this build');
+ state.profile.clientId=FLOWTRACK_GOOGLE_CLIENT_ID;localStorage.setItem(KEY,JSON.stringify(state));
  if(!googleConfigured())return toast('Google sign-in is still loading. Try again in a moment.');
  const client=google.accounts.oauth2.initTokenClient({
   client_id:clientId,scope:DRIVE_SCOPE,prompt:'select_account',
@@ -349,6 +349,8 @@ function restoreGoogleUI(){
  let u=JSON.parse(localStorage.getItem('flowtrack_google_user')||'null');if(u){googleUser=u;showGoogleSignedIn();}
 }
 
+state.profile.clientId=FLOWTRACK_GOOGLE_CLIENT_ID;
+localStorage.setItem(KEY,JSON.stringify(state));
 render();
 restoreGoogleUI();
 </script>
