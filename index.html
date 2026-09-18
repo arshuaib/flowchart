@@ -95,8 +95,8 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
   <div class="card"><h3>Profile</h3><div class="field"><label>Profile name</label><input id="profileName"></div><div class="field"><label>Currency symbol</label><input id="currency" maxlength="4"></div><button class="btn primary" onclick="saveSettings()">Save profile</button></div>
   <div class="card"><h3>Google Drive sync</h3>
 <div id="googleSignedOut">
-<p style="color:var(--muted);font-size:13px">Sign in with Google to connect this FlowTrack profile to Google Drive. You can choose which Gmail account to use.</p>
-<div class="field"><label>Google OAuth Client ID</label><input id="clientId" placeholder="xxxx.apps.googleusercontent.com"></div>
+<p style="color:var(--muted);font-size:13px">Sign in with Google to connect this FlowTrack profile to Google Drive. Choose the Gmail account you want to use.</p>
+<input id="clientId" type="hidden" value="963866679895-vpejgje3gqcjg95m2i4am0cor60jtk50.apps.googleusercontent.com">
 <button class="btn primary" onclick="signInGoogle()">Continue with Google</button>
 <p id="driveStatusOut" class="sub"></p></div>
 <div id="googleSignedIn" style="display:none">
@@ -277,7 +277,7 @@ let driveToken=null,driveFileId=null,googleUser=null;
 const DRIVE_SCOPE='https://www.googleapis.com/auth/drive.appdata';
 function googleConfigured(){return typeof google!=='undefined'&&google.accounts&&google.accounts.oauth2}
 function signInGoogle(){
- let clientId=state.profile.clientId||document.getElementById('clientId').value.trim();
+ let clientId=state.profile.clientId||'963866679895-vpejgje3gqcjg95m2i4am0cor60jtk50.apps.googleusercontent.com';
  if(!clientId)return toast('Enter your Google OAuth Client ID first');
  state.profile.clientId=clientId;localStorage.setItem(KEY,JSON.stringify(state));
  if(!googleConfigured())return toast('Google sign-in is still loading. Try again in a moment.');
