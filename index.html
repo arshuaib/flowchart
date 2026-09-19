@@ -9,7 +9,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script>window.FLOWTRACK_BUILD_VERSION="3.2.0";</script>
+<script>window.FLOWTRACK_BUILD_VERSION="3.4.0";</script>
 <style>
 :root{--bg:#f5f7fb;--panel:#fff;--text:#18212f;--muted:#718096;--line:#e5e9f0;--primary:#2563eb;--primary2:#1d4ed8;--good:#0f9d67;--bad:#dc4f5f;--shadow:0 10px 30px rgba(20,34,55,.07);--radius:18px}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
@@ -31,7 +31,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 .toast{position:fixed;right:18px;bottom:18px;background:#101828;color:#fff;padding:12px 15px;border-radius:12px;box-shadow:var(--shadow);display:none;z-index:100;font-size:13px}.toast.show{display:block}
 .empty{text-align:center;color:var(--muted);padding:35px}.mobile-nav{display:none}
 @media(max-width:1050px){.stats{grid-template-columns:repeat(2,1fr)}.two,.three{grid-template-columns:1fr}.item-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:720px){.sidebar{display:none}.main{margin-left:0;width:100%;padding:16px 14px 95px}.topbar{align-items:flex-start}.title h1{font-size:22px}.actions{width:100%;justify-content:flex-end}.actions .btn:nth-child(1),.actions .btn:nth-child(2){display:none}.actions .btn:nth-child(3){display:inline-flex}.stats{grid-template-columns:1fr 1fr;gap:10px}.stat-value{font-size:21px}.card{padding:15px}.item-grid{grid-template-columns:1fr}.mobile-nav{position:fixed;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);z-index:30;padding:7px 2px}.mobile-nav button{background:transparent;color:var(--muted);font-size:9px;min-width:0;padding:5px 1px}.mobile-nav button.active{color:var(--primary);font-weight:700}.mobile-nav span{display:block;font-size:17px;margin-bottom:2px}.formgrid{grid-template-columns:1fr}.table th:nth-child(4),.table td:nth-child(4){display:none}.modal-bg{padding:8px}.modal{width:100%;max-height:92vh;padding:16px}.iconpick{grid-template-columns:repeat(6,1fr)}.modal-actions{position:sticky;bottom:0;background:#fff;padding-top:10px}.modal-actions .btn{flex:1}}
+@media(max-width:720px){.sidebar{display:none}.main{margin-left:0;width:100%;padding:16px 14px 95px}.topbar{align-items:flex-start}.title h1{font-size:22px}.actions{width:100%;justify-content:flex-end}.actions .btn:nth-child(1),.actions .btn:nth-child(2){display:none}.actions .btn:nth-child(3){display:inline-flex}.stats{grid-template-columns:1fr 1fr;gap:10px}.stat-value{font-size:21px}.card{padding:15px}.item-grid{grid-template-columns:1fr}.mobile-nav{position:fixed;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);z-index:30;padding:7px 2px}.mobile-nav button{background:transparent;color:var(--muted);font-size:9px;min-width:0;padding:5px 1px}.mobile-nav button.active{color:var(--primary);font-weight:700}.mobile-nav span{display:block;font-size:17px;margin-bottom:2px}.formgrid{grid-template-columns:1fr}.table th,.table td{font-size:12px;padding:10px 7px}.table-wrap{overflow-x:auto}.table th:nth-child(4),.table td:nth-child(4){display:table-cell}.table th:nth-child(5),.table td:nth-child(5){min-width:132px}.table td:nth-child(4){min-width:92px}.modal-bg{padding:8px}.modal{width:100%;max-height:92vh;padding:16px}.iconpick{grid-template-columns:repeat(6,1fr)}.modal-actions{position:sticky;bottom:0;background:#fff;padding-top:10px}.modal-actions .btn{flex:1}}
 
 .report-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
 .chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
@@ -90,7 +90,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 
 <section id="transactions" class="page">
  <div class="card">
-  <div class="toolbar"><input class="search" id="txSearch" placeholder="Search transactions…"><select id="txType"><option value="">All types</option><option>income</option><option>expense</option><option>transfer</option></select><select id="txWallet"><option value="">All wallets</option></select></div>
+  <div class="toolbar"><input class="search" id="txSearch" placeholder="Search transactions…"><select id="txType"><option value="">All types</option><option>income</option><option>expense</option><option>transfer</option><option>lend</option><option>repayment</option></select><select id="txWallet"><option value="">All wallets</option></select></div>
   <div class="table-wrap"><table class="table"><thead><tr><th>Transaction</th><th>Wallet</th><th>Amount</th><th>Date</th><th>Actions</th></tr></thead><tbody id="txTable"></tbody></table></div>
  </div>
 </section>
@@ -152,7 +152,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 
 <script>
 const KEY='flowtrack_pro_v1';
-const BUILD_VERSION=window.FLOWTRACK_BUILD_VERSION||'3.1.1';
+const BUILD_VERSION=window.FLOWTRACK_BUILD_VERSION||'3.4.0';
 const FLOWTRACK_GOOGLE_CLIENT_ID='963866679895-e0ck074n3ivrprahg8tdicn4aij257mc.apps.googleusercontent.com';
 const ICONS=['💵','🏦','💳','👛','💰','📱','🏠','🚗','✈️','🎓','🛒','🍔','⚡','🔧','🎁','📦','💡','🧾','🎯','⭐','🛍️','🏥','🎵','☪️'];
 const COLORS=['#2563eb','#0f9d67','#dc4f5f','#f59e0b','#7c3aed','#0891b2','#db2777','#475569'];
@@ -181,17 +181,18 @@ function normalizeState(raw){
  const profile=(raw.profile&&typeof raw.profile==='object')?raw.profile:{};
  base.profile={...base.profile,...profile,clientId:FLOWTRACK_GOOGLE_CLIENT_ID};
  if(Array.isArray(raw.wallets)) base.wallets=raw.wallets.map((w,i)=>({
-   id:w?.id||('w_migrated_'+i),name:w?.name||'Wallet',icon:w?.icon||ICONS[0],color:w?.color||COLORS[i%COLORS.length],balance:Number(w?.balance)||0,savings:!!w?.savings
+   id:w?.id||('w_migrated_'+i),name:w?.name||'Wallet',icon:w?.icon||ICONS[0],color:w?.color||COLORS[i%COLORS.length],balance:Number(w?.balance)||0,savings:!!w?.savings,updatedAt:w?.updatedAt||new Date().toISOString()
  }));
  if(Array.isArray(raw.categories)) base.categories=raw.categories.map((c,i)=>({
-   id:c?.id||('c_migrated_'+i),name:c?.name||'Category',icon:c?.icon||ICONS[0],color:c?.color||COLORS[i%COLORS.length],type:c?.type==='income'?'income':'expense'
+   id:c?.id||('c_migrated_'+i),name:c?.name||'Category',icon:c?.icon||ICONS[0],color:c?.color||COLORS[i%COLORS.length],type:c?.type==='income'?'income':'expense',updatedAt:c?.updatedAt||new Date().toISOString()
  }));
  if(Array.isArray(raw.transactions)) base.transactions=raw.transactions.map((t,i)=>({
-   id:t?.id||('t_migrated_'+i),type:['income','expense','transfer','lend'].includes(t?.type)?t.type:'expense',amount:Number(t?.amount)||0,
-   walletId:t?.walletId||null,toWalletId:t?.toWalletId||null,categoryId:t?.categoryId||null,
-   date:t?.date||new Date().toISOString(),description:String(t?.description||''),createdAt:t?.createdAt||t?.updatedAt||new Date().toISOString()
+   id:t?.id||('t_migrated_'+i),type:['income','expense','transfer','lend','repayment'].includes(t?.type)?t.type:'expense',amount:Number(t?.amount)||0,
+   walletId:t?.walletId||null,toWalletId:t?.toWalletId||null,categoryId:t?.categoryId||null,loanId:t?.loanId||null,
+   date:t?.date||new Date().toISOString(),description:String(t?.description||''),
+   createdAt:t?.createdAt||t?.updatedAt||new Date().toISOString(),updatedAt:t?.updatedAt||t?.createdAt||new Date().toISOString()
  }));
- base.meta={...(raw.meta||{}),appVersion:BUILD_VERSION,migratedAt:new Date().toISOString()};
+ base.meta={...(raw.meta||{}),appVersion:BUILD_VERSION,updatedAt:raw.meta?.updatedAt||new Date().toISOString()};
  return base;
 }
 
@@ -202,7 +203,14 @@ localStorage.setItem(KEY,JSON.stringify(state));
 
 let editingId=null, selectedIcon='💵', selectedColor='#2563eb';
 
-function save(){localStorage.setItem(KEY,JSON.stringify(state));render();document.getElementById('syncText').textContent=driveToken?'Saving to Google Drive…':'Saved locally • '+new Date().toLocaleTimeString();if(driveToken){clearTimeout(driveSyncTimer);driveSyncTimer=setTimeout(()=>driveSave(),1200);}}
+function save(options={}){
+ const now=new Date().toISOString();
+ state.meta={...(state.meta||{}),appVersion:BUILD_VERSION,updatedAt:now};
+ localStorage.setItem(KEY,JSON.stringify(state));
+ render();
+ document.getElementById('syncText').textContent=driveToken?'Saving to Google Drive…':'Saved locally • '+new Date().toLocaleTimeString();
+ if(driveToken){clearTimeout(driveSyncTimer);driveSyncTimer=setTimeout(()=>driveSave(),options.immediate?0:800);}
+}
 function money(n){return (state.profile.currency||'₵')+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function toast(s){let t=document.getElementById('toast');t.textContent=s;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600)}
@@ -222,13 +230,15 @@ function calcBalances(){
  state.transactions.forEach(t=>{
   if(t.type==='income'){let w=wallet(t.walletId);if(w)w.balance+=+t.amount}
   if(t.type==='expense'||t.type==='lend'){let w=wallet(t.walletId);if(w)w.balance-=+t.amount}
+  if(t.type==='repayment'){let w=wallet(t.walletId);if(w)w.balance+=+t.amount}
   if(t.type==='transfer'){let a=wallet(t.walletId),b=wallet(t.toWalletId);if(a)a.balance-=+t.amount;if(b)b.balance+=+t.amount}
  });
 }
 function totals(){
  let total=state.wallets.reduce((a,w)=>a+w.balance,0);
  let savings=state.wallets.filter(w=>w.savings).reduce((a,w)=>a+w.balance,0);
- let lent=state.transactions.filter(t=>t.type==='lend').reduce((a,t)=>a+Number(t.amount||0),0);
+ let lent=state.transactions.filter(t=>t.type==='lend').reduce((a,t)=>a+Number(t.amount||0),0)-state.transactions.filter(t=>t.type==='repayment').reduce((a,t)=>a+Number(t.amount||0),0);
+ if(lent<0)lent=0;
  return {total,savings,lent,spendable:total-savings};
 }
 function showPage(p){
@@ -243,7 +253,7 @@ document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',(
 function render(){
  calcBalances();
  let t=totals();document.getElementById('totalBalance').textContent=money(t.total);document.getElementById('savings').textContent=money(t.savings);document.getElementById('lent').textContent=money(t.lent);document.getElementById('spendable').textContent=money(t.spendable);
- let now=new Date(),m=now.getMonth(),y=now.getFullYear();let mi=state.transactions.filter(x=>{let d=new Date(x.date);return d.getMonth()===m&&d.getFullYear()===y});let inc=mi.filter(x=>x.type==='income').reduce((a,x)=>a+x.amount,0),exp=mi.filter(x=>x.type==='expense'||x.type==='lend').reduce((a,x)=>a+x.amount,0);document.getElementById('monthNet').textContent=money(inc-exp);document.getElementById('monthNet').className='stat-value '+(inc-exp>=0?'positive':'negative');
+ let now=new Date(),m=now.getMonth(),y=now.getFullYear();let mi=state.transactions.filter(x=>{let d=new Date(x.date);return d.getMonth()===m&&d.getFullYear()===y});let inc=mi.filter(x=>x.type==='income'||x.type==='repayment').reduce((a,x)=>a+x.amount,0),exp=mi.filter(x=>x.type==='expense'||x.type==='lend').reduce((a,x)=>a+x.amount,0);document.getElementById('monthNet').textContent=money(inc-exp);document.getElementById('monthNet').className='stat-value '+(inc-exp>=0?'positive':'negative');
  document.getElementById('profileName').value=state.profile.name||'';document.getElementById('currency').value=state.profile.currency||'₵';
  fillWalletSelects();renderWallets();renderWalletSummary();renderCategories();
  // Keep dashboard recent transactions independent from transaction-table filters/rendering.
@@ -275,8 +285,12 @@ function renderCategories(){
 }
 function renderTransactions(){
  let q=(document.getElementById('txSearch').value||'').toLowerCase(),type=document.getElementById('txType').value,wid=document.getElementById('txWallet').value;
- let arr=state.transactions.filter(t=>(!type||t.type===type)&&(!wid||t.walletId===wid)&&(!q||JSON.stringify(t).toLowerCase().includes(q))).sort((a,b)=>new Date(b.date)-new Date(a.date));
- document.getElementById('txTable').innerHTML=arr.map(t=>{let w=wallet(t.walletId),c=cat(t.categoryId);let sign=t.type==='income'?'+':t.type==='expense'||t.type==='lend'?'-':'↔';let label=t.type==='lend'?'Lent':t.type;let cls=t.type==='income'?'positive':(t.type==='expense'||t.type==='lend')?'negative':'';return `<tr><td><div class="row-main"><div class="avatar" style="background:${t.type==='lend'?'#dc4f5f22':(c?.color||'#64748b')+'22'}">${t.type==='lend'?'↗':(c?.icon||'↕')}</div><div><b>${esc(t.description||c?.name||label)}</b><span class="sub">${label}</span></div></div></td><td>${esc(w?.name||'—')}</td><td class="${cls}"><b>${sign}${money(t.amount)}</b></td><td><span class="sub">Date</span><br><b>${dateInputValue(t.date)}</b></td><td><button class="btn small" onclick="openTransaction('${t.id}')">Edit</button> <button class="btn small danger" onclick="deleteTransaction('${t.id}')">Delete</button></td></tr>`}).join('')||'<tr><td colspan="5"><div class="empty">No transactions found.</div></td></tr>';
+ let arr=state.transactions.filter(t=>(!type||t.type===type)&&(!wid||t.walletId===wid)&&(!q||JSON.stringify(t).toLowerCase().includes(q))).sort((a,b)=>{
+   const db=Date.parse(b.date)||0, da=Date.parse(a.date)||0;
+   if(db!==da)return db-da;
+   return (Date.parse(b.updatedAt||b.createdAt)||0)-(Date.parse(a.updatedAt||a.createdAt)||0);
+ });
+ document.getElementById('txTable').innerHTML=arr.map(t=>{let w=wallet(t.walletId),c=cat(t.categoryId);let sign=(t.type==='income'||t.type==='repayment')?'+':t.type==='expense'||t.type==='lend'?'-':'↔';let label=t.type==='lend'?'Lent':t.type==='repayment'?'Loan repayment':t.type;let cls=(t.type==='income'||t.type==='repayment')?'positive':(t.type==='expense'||t.type==='lend')?'negative':'';return `<tr><td><div class="row-main"><div class="avatar" style="background:${t.type==='lend'?'#dc4f5f22':(c?.color||'#64748b')+'22'}">${t.type==='lend'?'↗':(c?.icon||'↕')}</div><div><b>${esc(t.description||c?.name||label)}</b><span class="sub">${label}</span></div></div></td><td>${esc(w?.name||'—')}</td><td class="${cls}"><b>${sign}${money(t.amount)}</b></td><td><span class="sub">Date</span><br><b>${dateInputValue(t.date)}</b></td><td><button class="btn small" onclick="openTransaction('${t.id}')">Edit</button> <button class="btn small danger" onclick="deleteTransaction('${t.id}')">Delete</button></td></tr>`}).join('')||'<tr><td colspan="5"><div class="empty">No transactions found.</div></td></tr>';
 }
 ['txSearch','txType','txWallet'].forEach(x=>document.getElementById(x).addEventListener('input',renderTransactions));
 function renderRecent(){
@@ -294,14 +308,14 @@ function renderRecent(){
  }).slice(0,6);
  box.innerHTML=arr.length?`<div class="table-wrap"><table class="table"><tbody>${arr.map(t=>{
    let c=cat(t.categoryId),w=wallet(t.walletId);
-   let sign=t.type==='income'?'+':t.type==='expense'||t.type==='lend'?'-':'↔';
-   let cls=t.type==='income'?'positive':t.type==='expense'||t.type==='lend'?'negative':'';
+   let sign=(t.type==='income'||t.type==='repayment')?'+':t.type==='expense'||t.type==='lend'?'-':'↔';
+   let cls=(t.type==='income'||t.type==='repayment')?'positive':t.type==='expense'||t.type==='lend'?'negative':'';
    let date=t.date?new Date(t.date).toLocaleDateString():'—';
    return `<tr><td><div class="row-main"><div class="avatar" style="background:${c?.color||w?.color||'#64748b'}22">${c?.icon||w?.icon||'↕'}</div><div><b>${esc(t.description||c?.name||t.type)}</b><span class="sub">${date} • ${esc(w?.name||'')}</span></div></div></td><td class="${cls}">${sign}${money(t.amount)}</td></tr>`;
  }).join('')}</tbody></table></div>`:'<div class="empty">No transactions yet. Add your first income or expense.</div>';
 }
 function series(months=6){
- let out=[];let d=new Date();d.setDate(1);for(let i=months-1;i>=0;i--){let x=new Date(d.getFullYear(),d.getMonth()-i,1),mo=x.getMonth(),yr=x.getFullYear();let a=state.transactions.filter(t=>{let z=new Date(t.date);return z.getMonth()===mo&&z.getFullYear()===yr});out.push({label:x.toLocaleString(undefined,{month:'short'}),income:a.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0),expense:a.filter(t=>t.type==='expense'||t.type==='lend').reduce((s,t)=>s+t.amount,0)});}return out;
+ let out=[];let d=new Date();d.setDate(1);for(let i=months-1;i>=0;i--){let x=new Date(d.getFullYear(),d.getMonth()-i,1),mo=x.getMonth(),yr=x.getFullYear();let a=state.transactions.filter(t=>{let z=new Date(t.date);return z.getMonth()===mo&&z.getFullYear()===yr});out.push({label:x.toLocaleString(undefined,{month:'short'}),income:a.filter(t=>t.type==='income'||t.type==='repayment').reduce((s,t)=>s+t.amount,0),expense:a.filter(t=>t.type==='expense'||t.type==='lend').reduce((s,t)=>s+t.amount,0)});}return out;
 }
 function renderCashChart(){
  let s=series(6),max=Math.max(1,...s.flatMap(x=>[x.income,x.expense])),W=700,H=250,p=35,step=(W-p*2)/(s.length-1);
@@ -325,10 +339,10 @@ function renderAnalytics(){
  let incomeCats=state.categories.filter(c=>c.type==='income').map(c=>({label:c.name,value:state.transactions.filter(t=>t.type==='income'&&t.categoryId===c.id).reduce((s,t)=>s+t.amount,0)})).filter(x=>x.value>0).sort((a,b)=>b.value-a.value);
  document.getElementById('incomeCategoryChart').innerHTML=incomeCats.length?svgBars(incomeCats,'value','#0f9d67'):'<div class="empty">Income analytics will appear after you add income.</div>';
 
- let activity=s.map(x=>{let monthTx=state.transactions.filter(t=>{let d=new Date(t.date),now=new Date();return d.getMonth()===new Date(now.getFullYear(),now.getMonth()- (5-s.indexOf(x)),1).getMonth()});return {label:x.label,value:monthTx.length}}); 
+ let activity=s.map((x,i)=>{let anchor=new Date(new Date().getFullYear(),new Date().getMonth()-(5-i),1);let monthTx=state.transactions.filter(t=>{let d=new Date(t.date);return d.getMonth()===anchor.getMonth()&&d.getFullYear()===anchor.getFullYear()});return {label:x.label,value:monthTx.length}}); 
  document.getElementById('activityChart').innerHTML=svgBars(activity,'value','#7c3aed');
 
- let total=totals(),inc=state.transactions.filter(t=>t.type==='income').reduce((a,t)=>a+t.amount,0),exp=state.transactions.filter(t=>t.type==='expense'||t.type==='lend').reduce((a,t)=>a+t.amount,0);
+ let total=totals(),inc=state.transactions.filter(t=>t.type==='income'||t.type==='repayment').reduce((a,t)=>a+t.amount,0),exp=state.transactions.filter(t=>t.type==='expense'||t.type==='lend').reduce((a,t)=>a+t.amount,0);
  document.getElementById('snapshot').innerHTML=`<div class="grid three"><div><span class="sub">Lifetime income</span><b class="positive">${money(inc)}</b></div><div><span class="sub">Lifetime expenses</span><b class="negative">${money(exp)}</b></div><div><span class="sub">Current spendable</span><b>${money(total.spendable)}</b></div></div>`;
 }
 function openModal(content){document.getElementById('modal').innerHTML=content;document.getElementById('modalBg').classList.add('open')}
@@ -337,7 +351,6 @@ document.getElementById('modalBg').addEventListener('click',e=>{if(e.target.id==
 function picker(){
  return `<div class="field"><label>Icon</label><div class="iconpick">${ICONS.map(i=>`<button type="button" class="${i===selectedIcon?'selected':''}" onclick="pickIcon('${i}')">${i}</button>`).join('')}</div></div><div class="field"><label>Color</label><div class="colorpick">${COLORS.map(c=>`<button type="button" class="${c===selectedColor?'selected':''}" style="background:${c}" data-color="${c}" onclick="pickColor('${c}')"></button>`).join('')}</div></div>`;
 }
-function pickIcon(i){selectedIcon=i;document.querySelector('.iconpick').outerHTML=picker().split('<div class="field"><label>Color')[0]+'<div class="field"><label>Color'+document.querySelector('.colorpick').parentElement.innerHTML.split('<div class="field"><label>Color')[1].split('</div></div>')[0]+'</div></div>';openWallet(currentWalletId);}// overwritten below
 let currentWalletId=null;
 function openWallet(wid=null){
  currentWalletId=wid;let w=wid?wallet(wid):null;selectedIcon=w?.icon||'💵';selectedColor=w?.color||'#2563eb';
@@ -345,55 +358,114 @@ function openWallet(wid=null){
 }
 function pickIcon(i){selectedIcon=i;document.querySelectorAll('.iconpick button').forEach(b=>b.classList.toggle('selected',b.textContent===i))}
 function pickColor(c){selectedColor=c;document.querySelectorAll('.colorpick button').forEach(b=>b.classList.toggle('selected',b.getAttribute('data-color')===c))}
-function saveWallet(){let name=document.getElementById('mName').value.trim();if(!name)return toast('Wallet name is required');if(currentWalletId){let w=wallet(currentWalletId);Object.assign(w,{name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true'})}else state.wallets.push({id:id('w'),name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true',balance:0});closeModal();save();toast('Wallet saved')}
-function deleteWallet(wid){if(state.wallets.length<=1)return toast('Keep at least one wallet');if(state.transactions.some(t=>t.walletId===wid||t.toWalletId===wid))return toast('Cannot delete a wallet with transactions');if(confirm('Delete this wallet?')){state.wallets=state.wallets.filter(w=>w.id!==wid);save();}}
+function saveWallet(){let name=document.getElementById('mName').value.trim();if(!name)return toast('Wallet name is required');if(currentWalletId){let w=wallet(currentWalletId);Object.assign(w,{name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true',updatedAt:new Date().toISOString()})}else state.wallets.push({id:id('w'),name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true',balance:0,updatedAt:new Date().toISOString()});closeModal();save({immediate:true});toast('Wallet saved')}
+function deleteWallet(wid){if(state.wallets.length<=1)return toast('Keep at least one wallet');if(state.transactions.some(t=>t.walletId===wid||t.toWalletId===wid))return toast('Cannot delete a wallet with transactions');if(confirm('Delete this wallet?')){state.wallets=state.wallets.filter(w=>w.id!==wid);save({immediate:true});}}
 let currentCatId=null;
 function openCategory(cid=null){
  currentCatId=cid;let c=cid?cat(cid):null;selectedIcon=c?.icon||'💵';selectedColor=c?.color||'#2563eb';
  openModal(`<div class="modal-head"><h2>${c?'Edit':'New'} category</h2><button class="x" onclick="closeModal()">×</button></div><div class="field"><label>Name</label><input id="cName" value="${esc(c?.name||'')}"></div><div class="field"><label>Type</label><select id="cType"><option value="income" ${c?.type==='income'?'selected':''}>Income</option><option value="expense" ${c?.type!=='income'?'selected':''}>Expense</option></select></div>${picker()}<div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveCategory()">Save category</button></div>`);
 }
-function saveCategory(){let name=document.getElementById('cName').value.trim();if(!name)return toast('Category name is required');let type=document.getElementById('cType').value;if(currentCatId)Object.assign(cat(currentCatId),{name,type,icon:selectedIcon,color:selectedColor});else state.categories.push({id:id('c'),name,type,icon:selectedIcon,color:selectedColor});closeModal();save();toast('Category saved')}
-function deleteCategory(cid){if(state.transactions.some(t=>t.categoryId===cid))return toast('Cannot delete a category used by transactions');if(confirm('Delete this category?')){state.categories=state.categories.filter(c=>c.id!==cid);save();}}
+function saveCategory(){
+ let name=document.getElementById('cName').value.trim();if(!name)return toast('Category name is required');
+ let type=document.getElementById('cType').value;
+ if(currentCatId){
+  let existing=cat(currentCatId);
+  if(existing && existing.type!==type && state.transactions.some(t=>t.categoryId===currentCatId)) return toast('Cannot change category type while transactions use it. Create a new category instead.');
+  Object.assign(existing,{name,type,icon:selectedIcon,color:selectedColor,updatedAt:new Date().toISOString()});
+ }else state.categories.push({id:id('c'),name,type,icon:selectedIcon,color:selectedColor,updatedAt:new Date().toISOString()});
+ closeModal();save({immediate:true});toast('Category saved');
+}
+function deleteCategory(cid){if(state.transactions.some(t=>t.categoryId===cid))return toast('Cannot delete a category used by transactions');if(confirm('Delete this category?')){state.categories=state.categories.filter(c=>c.id!==cid);save({immediate:true});}}
 function openTransaction(tid=null){
  editingId=tid;let t=tid?state.transactions.find(x=>x.id===tid):null;let type=t?.type||'expense';
  openModal(`<div class="modal-head"><h2>${t?'Edit':'New'} transaction</h2><button class="x" onclick="closeModal()">×</button></div>
- <div class="formgrid"><div class="field"><label>Type</label><select id="tType" onchange="refreshTxForm()"><option value="expense" ${type==='expense'?'selected':''}>Expense</option><option value="lend" ${type==='lend'?'selected':''}>Lend</option><option value="income" ${type==='income'?'selected':''}>Income</option><option value="transfer" ${type==='transfer'?'selected':''}>Transfer</option></select></div><div class="field"><label>Amount</label><input id="tAmount" type="number" min="0" step="0.01" value="${t?.amount??''}"></div></div>
+ <div class="formgrid"><div class="field"><label>Type</label><select id="tType" onchange="refreshTxForm()"><option value="expense" ${type==='expense'?'selected':''}>Expense</option><option value="lend" ${type==='lend'?'selected':''}>Lend</option><option value="repayment" ${type==='repayment'?'selected':''}>Loan repayment</option><option value="income" ${type==='income'?'selected':''}>Income</option><option value="transfer" ${type==='transfer'?'selected':''}>Transfer</option></select></div><div class="field"><label>Amount</label><input id="tAmount" type="number" min="0" step="0.01" value="${t?.amount??''}"></div></div>
  <div class="formgrid"><div class="field"><label>Wallet</label><select id="tWallet">${state.wallets.map(w=>`<option value="${w.id}" ${t?.walletId===w.id?'selected':''}>${w.icon} ${esc(w.name)}</option>`).join('')}</select></div><div class="field" id="catField"><label>Category</label><select id="tCat">${state.categories.map(c=>`<option value="${c.id}" ${t?.categoryId===c.id?'selected':''}>${c.icon} ${esc(c.name)}</option>`).join('')}</select></div></div>
  <div class="field" id="toWalletField" style="display:none"><label>Transfer to</label><select id="tToWallet">${state.wallets.map(w=>`<option value="${w.id}" ${t?.toWalletId===w.id?'selected':''}>${w.icon} ${esc(w.name)}</option>`).join('')}</select></div>
+ <div class="field" id="loanField" style="display:none"><label>Loan being repaid</label><select id="tLoan"></select></div>
  <div class="formgrid"><div class="field"><label>Date</label><input id="tDate" type="date" value="${t?dateInputValue(t.date):dateInputValue(new Date())}"></div><div class="field"><label>Description / note</label><input id="tDesc" value="${esc(t?.description||'')}"></div></div>
  <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveTransaction()">Save transaction</button></div>`);
  refreshTxForm();
 }
-function refreshTxForm(){let type=document.getElementById('tType').value;document.getElementById('catField').style.display=(type==='transfer'||type==='lend')?'none':'';document.getElementById('toWalletField').style.display=type==='transfer'?'':'none';if(type==='income')document.getElementById('tCat').innerHTML=state.categories.filter(c=>c.type==='income').map(c=>`<option value="${c.id}">${c.icon} ${esc(c.name)}</option>`).join('');if(type==='expense')document.getElementById('tCat').innerHTML=state.categories.filter(c=>c.type==='expense').map(c=>`<option value="${c.id}">${c.icon} ${esc(c.name)}</option>`).join('')}
-function fingerprint(t){return [t.type,Number(t.amount).toFixed(2),t.walletId,t.toWalletId||'',t.categoryId||'',dateInputValue(t.date),String(t.description||'').trim().toLowerCase()].join('|')}
-function saveTransaction(){
- let type=document.getElementById('tType').value,amount=Number(document.getElementById('tAmount').value),walletId=document.getElementById('tWallet').value,date=transactionDateISO(document.getElementById('tDate').value),description=document.getElementById('tDesc').value.trim(),categoryId=(type==='transfer'||type==='lend')?null:document.getElementById('tCat').value,toWalletId=type==='transfer'?document.getElementById('tToWallet').value:null;
- if(!amount||amount<=0)return toast('Enter a valid amount');if(type==='transfer'&&walletId===toWalletId)return toast('Choose different wallets');
- let now=new Date().toISOString();
- let existingTx=editingId?state.transactions.find(x=>x.id===editingId):null;
- let obj={id:editingId||id('t'),type,amount,walletId,toWalletId,categoryId,date,description,createdAt:existingTx?.createdAt||now,updatedAt:now};
- let dup=state.transactions.find(x=>fingerprint(x)===fingerprint(obj)&&x.id!==editingId);
- if(dup&&!confirm(`A matching transaction already exists (${money(dup.amount)}). Import/save anyway?`))return;
- if(editingId)state.transactions[state.transactions.findIndex(x=>x.id===editingId)]=obj;else state.transactions.push(obj);
- closeModal();save();toast('Transaction saved');
+function outstandingForLoan(loanId,excludeId=null){
+ const loan=state.transactions.find(x=>x.id===loanId&&x.type==='lend');
+ if(!loan)return 0;
+ const repaid=state.transactions.filter(x=>x.type==='repayment'&&x.loanId===loanId&&x.id!==excludeId).reduce((a,x)=>a+Number(x.amount||0),0);
+ return Math.max(0,Number(loan.amount||0)-repaid);
 }
-function deleteTransaction(tid){if(confirm('Delete this transaction?')){state.transactions=state.transactions.filter(t=>t.id!==tid);save();}}
+function refreshTxForm(){
+ let type=document.getElementById('tType').value;
+ let catField=document.getElementById('catField'),toField=document.getElementById('toWalletField'),loanField=document.getElementById('loanField');
+ catField.style.display=(type==='transfer'||type==='lend'||type==='repayment')?'none':'';
+ toField.style.display=type==='transfer'?'':'none';
+ loanField.style.display=type==='repayment'?'':'none';
+ if(type==='income'||type==='expense'){document.getElementById('tCat').innerHTML=state.categories.filter(c=>c.type===type).map(c=>`<option value="${c.id}">${c.icon} ${esc(c.name)}</option>`).join('');}
+ if(type==='repayment'){
+   let currentLoan=document.getElementById('tLoan').value||state.transactions.find(x=>x.id===state.transactions.find(y=>y.id===editingId)?.loanId)?.id||'';
+   let loans=state.transactions.filter(x=>x.type==='lend'&&outstandingForLoan(x.id,editingId)>0);
+   document.getElementById('tLoan').innerHTML=loans.map(x=>`<option value="${x.id}" ${x.id===currentLoan?'selected':''}>${esc(x.description||'Loan')} — ${money(outstandingForLoan(x.id,editingId))} outstanding</option>`).join('');
+ }
+}
+function fingerprint(t){return [t.type,Number(t.amount).toFixed(2),t.walletId,t.toWalletId||'',t.categoryId||'',t.loanId||'',dateInputValue(t.date),String(t.description||'').trim().toLowerCase()].join('|')}
+function saveTransaction(){
+ let type=document.getElementById('tType').value,amount=Number(document.getElementById('tAmount').value),walletId=document.getElementById('tWallet').value,dateValue=document.getElementById('tDate').value,description=document.getElementById('tDesc').value.trim(),categoryId=(type==='transfer'||type==='lend'||type==='repayment')?null:document.getElementById('tCat').value,toWalletId=type==='transfer'?document.getElementById('tToWallet').value:null,loanId=type==='repayment'?(document.getElementById('tLoan')?.value||null):null;
+ if(!amount||amount<=0)return toast('Enter a valid amount');
+ if(!walletId)return toast('Choose a wallet');
+ if(!dateValue)return toast('Choose a transaction date');
+ if(type==='transfer'&&walletId===toWalletId)return toast('Choose different wallets');
+ if(type!=='transfer'&&type!=='lend'&&type!=='repayment'&&!categoryId)return toast('Choose a category');
+ if(type==='repayment'){if(!loanId)return toast('Choose the loan being repaid');let outstanding=outstandingForLoan(loanId,editingId);if(amount>outstanding+0.000001)return toast(`Repayment cannot exceed ${money(outstanding)} outstanding`);}
+ let now=new Date().toISOString();
+ let index=editingId?state.transactions.findIndex(x=>x.id===editingId):-1;
+ let existingTx=index>=0?state.transactions[index]:null;
+ let obj={id:editingId||id('t'),type,amount,walletId,toWalletId,categoryId,loanId,date:transactionDateISO(dateValue),description,createdAt:existingTx?.createdAt||now,updatedAt:now};
+ let dup=state.transactions.find(x=>fingerprint(x)===fingerprint(obj)&&x.id!==editingId);
+ if(dup&&!confirm(`A matching transaction already exists (${money(dup.amount)}). Save this as a separate transaction anyway?`))return;
+ if(index>=0)state.transactions[index]=obj;else state.transactions.push(obj);
+ closeModal();save({immediate:true});toast(index>=0?'Transaction updated':'Transaction saved');
+}
+function deleteTransaction(tid){if(confirm('Delete this transaction?')){state.transactions=state.transactions.filter(t=>t.id!==tid);save({immediate:true});}}
 function exportJSON(){let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='flowtrack-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);toast('JSON backup exported')}
 document.getElementById('jsonFile').addEventListener('change',e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>importJSON(r.result);r.readAsText(f);e.target.value=''});
 function importJSON(text){
  try{
-  let incoming=JSON.parse(text);let tx=incoming.transactions||incoming.data?.transactions||[];if(!Array.isArray(tx))throw Error('No transactions array found');
+  let incoming=JSON.parse(text);
+  if(!incoming||typeof incoming!=='object')throw Error('JSON must contain an object');
+  let rawTx=incoming.transactions||incoming.data?.transactions||[];
+  if(!Array.isArray(rawTx))throw Error('No transactions array found');
+  // Map imported wallets/categories to existing records by ID first, then by name.
+  const walletMap=new Map(),catMap=new Map();
+  (Array.isArray(incoming.wallets)?incoming.wallets:[]).forEach(w=>{
+    if(!w||!w.name)return;
+    let existing=state.wallets.find(x=>x.id===w.id)||state.wallets.find(x=>x.name.toLowerCase()===String(w.name).toLowerCase());
+    if(!existing){existing={...w,id:w.id||id('w'),balance:0,updatedAt:w.updatedAt||new Date().toISOString()};state.wallets.push(existing);}
+    walletMap.set(w.id,existing.id);
+  });
+  (Array.isArray(incoming.categories)?incoming.categories:[]).forEach(c=>{
+    if(!c||!c.name)return;
+    let existing=state.categories.find(x=>x.id===c.id)||state.categories.find(x=>x.name.toLowerCase()===String(c.name).toLowerCase()&&x.type===c.type);
+    if(!existing){existing={...c,id:c.id||id('c'),updatedAt:c.updatedAt||new Date().toISOString()};state.categories.push(existing);}
+    catMap.set(c.id,existing.id);
+  });
   let existing=new Set(state.transactions.map(fingerprint)),dups=0,add=[];
-  tx.forEach(raw=>{let t={...raw,id:raw.id||id('t'),amount:Number(raw.amount||0)};if(!t.type||!t.walletId||!t.date||!t.amount)return;if(existing.has(fingerprint(t)))dups++;else{existing.add(fingerprint(t));add.push(t)}});
-  let msg=`Found ${tx.length} transaction(s). ${dups} possible duplicate(s), ${add.length} new transaction(s).\\n\\nImport the ${add.length} new record(s)?`;
-  if(!confirm(msg))return;state.transactions.push(...add);
-  if(Array.isArray(incoming.wallets))incoming.wallets.forEach(w=>{if(w.name&&!state.wallets.some(x=>x.id===w.id||x.name.toLowerCase()===w.name.toLowerCase()))state.wallets.push({...w,id:w.id||id('w')})});
-  if(Array.isArray(incoming.categories))incoming.categories.forEach(c=>{if(c.name&&!state.categories.some(x=>x.id===c.id||x.name.toLowerCase()===c.name.toLowerCase()))state.categories.push({...c,id:c.id||id('c')})});
-  save();toast(`Imported ${add.length} new transaction(s)`);
- }catch(e){toast('Invalid JSON: '+e.message)}
+  rawTx.forEach(raw=>{
+    if(!raw||!raw.amount||!raw.date)return;
+    let t={...raw,id:raw.id||id('t'),amount:Number(raw.amount),type:['income','expense','transfer','lend','repayment'].includes(raw.type)?raw.type:'expense',
+      walletId:walletMap.get(raw.walletId)||raw.walletId||null,toWalletId:walletMap.get(raw.toWalletId)||raw.toWalletId||null,categoryId:catMap.get(raw.categoryId)||raw.categoryId||null,loanId:raw.loanId||null,
+      date:raw.date,description:String(raw.description||''),createdAt:raw.createdAt||raw.updatedAt||new Date().toISOString(),updatedAt:raw.updatedAt||raw.createdAt||new Date().toISOString()};
+    if(!t.walletId||!state.wallets.some(w=>w.id===t.walletId))return;
+    if(t.type==='transfer'&&(!t.toWalletId||!state.wallets.some(w=>w.id===t.toWalletId)))return;
+    if(t.type!=='transfer'&&t.type!=='lend'&&t.categoryId&&!state.categories.some(c=>c.id===t.categoryId))t.categoryId=null;
+    if(existing.has(fingerprint(t)))dups++;else{existing.add(fingerprint(t));add.push(t);}
+  });
+  let msg=`Found ${rawTx.length} transaction(s). ${dups} possible duplicate(s), ${add.length} new transaction(s).\n\nImport the ${add.length} new record(s)?`;
+  if(!confirm(msg))return;
+  state.transactions.push(...add);
+  save({immediate:true});toast(`Imported ${add.length} new transaction(s)`);
+ }catch(e){console.error('JSON import error',e);toast('Invalid JSON: '+e.message)}
 }
 function reportData(){
- let inc=state.transactions.filter(t=>t.type==='income').reduce((a,t)=>a+Number(t.amount),0);
+ let inc=state.transactions.filter(t=>t.type==='income'||t.type==='repayment').reduce((a,t)=>a+Number(t.amount),0);
  let exp=state.transactions.filter(t=>t.type==='expense'||t.type==='lend').reduce((a,t)=>a+Number(t.amount),0);
  let t=totals();
  return {inc,exp,net:inc-exp,total:t.total,savings:t.savings,spendable:t.spendable};
@@ -437,7 +509,7 @@ function resetData(){
  if(phrase!=='RESET')return toast('Reset cancelled');
  localStorage.removeItem(KEY);location.reload();
 }
-let driveToken=null,driveFileId=null,googleUser=null,driveSyncTimer=null;
+let driveToken=null,driveFileId=null,driveModifiedTime=null,googleUser=null,driveSyncTimer=null,drivePollTimer=null;
 const DRIVE_SCOPE='https://www.googleapis.com/auth/drive.appdata';
 function googleConfigured(){return typeof google!=='undefined'&&google.accounts&&google.accounts.oauth2}
 function signInGoogle(){
@@ -469,7 +541,7 @@ function showGoogleSignedIn(){
  document.getElementById('googleAvatar').innerHTML=u.picture?`<img src="${esc(u.picture)}" style="width:100%;height:100%;border-radius:10px">`:'G';
 }
 function signOutGoogle(){
- driveToken=null;googleUser=null;driveFileId=null;localStorage.removeItem('flowtrack_google_user');
+ driveToken=null;googleUser=null;driveFileId=null;driveModifiedTime=null;clearInterval(drivePollTimer);localStorage.removeItem('flowtrack_google_user');
  document.getElementById('googleSignedOut').style.display='';
  document.getElementById('googleSignedIn').style.display='none';toast('Signed out of Google');
 }
@@ -481,8 +553,12 @@ async function findDriveFile(){
  let q=encodeURIComponent("name='flowtrack-data.json' and trashed=false");
  let r=await driveApi('https://www.googleapis.com/drive/v3/files?q='+q+'&spaces=appDataFolder&fields=files(id,name,modifiedTime)');
  if(!r.ok)throw Error('Drive lookup failed');
- let j=await r.json();driveFileId=j.files?.[0]?.id||null;
+ let j=await r.json();
+ let file=(j.files||[]).sort((a,b)=>new Date(b.modifiedTime)-new Date(a.modifiedTime))[0];
+ driveFileId=file?.id||null;driveModifiedTime=file?.modifiedTime||null;
  document.getElementById('driveStatus').textContent=driveFileId?'Existing FlowTrack backup found in Google Drive.':'No FlowTrack backup found yet.';
+ if(driveFileId)await syncWithDrive({initial:true});
+ startDrivePolling();
 }
 function makeMultipart(meta,data){
  const boundary='flowtrack_boundary_'+Date.now();
@@ -501,7 +577,8 @@ async function driveSave(){
    r=await driveApi('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',body:makeMultipart(meta,body)});
   }
   if(!r.ok){let detail=await r.text().catch(()=> '');throw Error('Upload failed ('+r.status+')'+(detail?' — '+detail.slice(0,180):''));}
-  let j=await r.json();driveFileId=j.id||driveFileId;
+  let j=await r.json();driveFileId=j.id||driveFileId;driveModifiedTime=j.modifiedTime||new Date().toISOString();
+  state.meta={...(state.meta||{}),lastDriveSyncAt:new Date().toISOString()};localStorage.setItem(KEY,JSON.stringify(state));
   document.getElementById('driveStatus').textContent='Saved to Google Drive • '+new Date().toLocaleTimeString();
   document.getElementById('syncText').textContent='Google Drive synced';
   toast('Saved to Google Drive');
@@ -509,20 +586,71 @@ async function driveSave(){
 }
 async function driveLoad(){
  try{
-  if(!driveToken)return signInGoogle();if(!driveFileId)await findDriveFile();
+  if(!driveToken)return signInGoogle();
+  if(!driveFileId)await findDriveFile();
   if(!driveFileId)return toast('No FlowTrack backup found in this Google Drive account');
-  let r=await driveApi('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(driveFileId)+'?alt=media');if(!r.ok){let detail=await r.text().catch(()=> '');throw Error('Download failed ('+r.status+')'+(detail?' — '+detail.slice(0,180):''));}
-  let incoming=await r.json();if(!incoming.transactions)return toast('The Drive file is not a valid FlowTrack backup');
+  let incoming=await fetchDriveState();
+  if(!incoming)return;
   if(!confirm('Load the Google Drive backup? Your current local data will be replaced.'))return;
-  state=incoming;save();toast('Loaded from Google Drive');
- }catch(e){toast('Drive load failed: '+e.message)}
+  state=normalizeState(incoming.data);
+  state.meta={...(state.meta||{}),lastDriveSyncAt:new Date().toISOString()};
+  localStorage.setItem(KEY,JSON.stringify(state));render();toast('Loaded from Google Drive');
+ }catch(e){console.error(e);toast('Drive load failed: '+e.message)}
 }
+async function fetchDriveState(){
+ let r=await driveApi('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(driveFileId)+'?alt=media');
+ if(!r.ok){let detail=await r.text().catch(()=> '');throw Error('Download failed ('+r.status+')'+(detail?' — '+detail.slice(0,180):''));}
+ let data=await r.json();
+ if(!data.transactions||!Array.isArray(data.transactions))throw Error('Drive file is not a valid FlowTrack backup');
+ return {data};
+}
+function mergeStates(local,remote){
+ const merged=normalizeState(local);
+ const byId=new Map();
+ [...(remote.transactions||[]),...(local.transactions||[])].forEach(t=>{
+   if(!t?.id)return;
+   const prev=byId.get(t.id);
+   if(!prev || (Date.parse(t.updatedAt||t.createdAt||t.date)||0)>(Date.parse(prev.updatedAt||prev.createdAt||prev.date)||0))byId.set(t.id,t);
+ });
+ merged.transactions=[...byId.values()].map(t=>({...t,amount:Number(t.amount)||0}));
+ // Merge wallets/categories by id or name, preferring the most recently changed local/remote object when available.
+ const mergeCollection=(a,b)=>{const out=[...a.map(x=>({...x}))];(b||[]).forEach(x=>{if(!x?.name)return;let i=out.findIndex(y=>y.id===x.id||String(y.name).toLowerCase()===String(x.name).toLowerCase());if(i<0)out.push({...x});else if(x.updatedAt && (!out[i].updatedAt || Date.parse(x.updatedAt)>Date.parse(out[i].updatedAt)))out[i]={...out[i],...x};});return out};
+ merged.wallets=mergeCollection(local.wallets||[],remote.wallets||[]);
+ merged.categories=mergeCollection(local.categories||[],remote.categories||[]);
+ merged.profile={...(remote.profile||{}),...(local.profile||{})};
+ merged.meta={...(remote.meta||{}),...(local.meta||{}),appVersion:BUILD_VERSION,updatedAt:new Date().toISOString(),lastDriveSyncAt:new Date().toISOString()};
+ return merged;
+}
+async function syncWithDrive(opts={}){
+ if(!driveToken||!driveFileId)return;
+ try{
+   let remote=await fetchDriveState();
+   let localUpdated=Date.parse(state.meta?.updatedAt||0)||0;
+   let remoteUpdated=Date.parse(remote.data.meta?.updatedAt||driveModifiedTime||0)||0;
+   if(opts.initial){
+     if(remoteUpdated>localUpdated && !state.transactions.length){
+       state=normalizeState(remote.data);localStorage.setItem(KEY,JSON.stringify(state));render();toast('Synced latest data from Google Drive');
+     }else if(localUpdated>remoteUpdated){await driveSave();return;}else if(remote.data.transactions.length && JSON.stringify(remote.data.transactions)!==JSON.stringify(state.transactions)){
+       state=mergeStates(state,remote.data);localStorage.setItem(KEY,JSON.stringify(state));render();await driveSave();
+     }
+   }else if(remoteUpdated>localUpdated){
+     state=mergeStates(state,remote.data);localStorage.setItem(KEY,JSON.stringify(state));render();toast('Updated with newer Google Drive data');
+   }
+   document.getElementById('driveStatus').textContent='Google Drive synced • '+new Date().toLocaleTimeString();
+ }catch(e){console.error('Drive sync error',e);}
+}
+function startDrivePolling(){
+ clearInterval(drivePollTimer);
+ if(!driveToken)return;
+ drivePollTimer=setInterval(()=>syncWithDrive(),30000);
+}
+
 function restoreGoogleUI(){
  let u=JSON.parse(localStorage.getItem('flowtrack_google_user')||'null');if(u){googleUser=u;showGoogleSignedIn();}
 }
 
 state.profile.clientId=FLOWTRACK_GOOGLE_CLIENT_ID;
-state.meta={...(state.meta||{}),appVersion:BUILD_VERSION};
+state.meta={...(state.meta||{}),appVersion:BUILD_VERSION,updatedAt:state.meta?.updatedAt||new Date().toISOString()};
 localStorage.setItem(KEY,JSON.stringify(state));
 
 // Version-aware cache protection. Network-first service worker prevents an older
