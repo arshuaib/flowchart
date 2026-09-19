@@ -9,7 +9,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script>window.FLOWTRACK_BUILD_VERSION="3.1.0";</script>
+<script>window.FLOWTRACK_BUILD_VERSION="3.2.0";</script>
 <style>
 :root{--bg:#f5f7fb;--panel:#fff;--text:#18212f;--muted:#718096;--line:#e5e9f0;--primary:#2563eb;--primary2:#1d4ed8;--good:#0f9d67;--bad:#dc4f5f;--shadow:0 10px 30px rgba(20,34,55,.07);--radius:18px}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
@@ -77,6 +77,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
  <div class="grid stats">
   <div class="card"><div class="stat-label">Total balance <span>◉</span></div><div class="stat-value" id="totalBalance">₵0.00</div></div>
   <div class="card"><div class="stat-label">Savings <span>▰</span></div><div class="stat-value" id="savings">₵0.00</div></div>
+  <div class="card"><div class="stat-label">Lent <span>↗</span></div><div class="stat-value negative" id="lent">₵0.00</div></div>
   <div class="card"><div class="stat-label">Spendable <span>✓</span></div><div class="stat-value positive" id="spendable">₵0.00</div></div>
   <div class="card"><div class="stat-label">This month <span>↗</span></div><div class="stat-value" id="monthNet">₵0.00</div></div>
  </div>
@@ -151,7 +152,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 
 <script>
 const KEY='flowtrack_pro_v1';
-const BUILD_VERSION=window.FLOWTRACK_BUILD_VERSION||'3.1.0';
+const BUILD_VERSION=window.FLOWTRACK_BUILD_VERSION||'3.1.1';
 const FLOWTRACK_GOOGLE_CLIENT_ID='963866679895-e0ck074n3ivrprahg8tdicn4aij257mc.apps.googleusercontent.com';
 const ICONS=['💵','🏦','💳','👛','💰','📱','🏠','🚗','✈️','🎓','🛒','🍔','⚡','🔧','🎁','📦','💡','🧾','🎯','⭐','🛍️','🏥','🎵','☪️'];
 const COLORS=['#2563eb','#0f9d67','#dc4f5f','#f59e0b','#7c3aed','#0891b2','#db2777','#475569'];
@@ -186,9 +187,9 @@ function normalizeState(raw){
    id:c?.id||('c_migrated_'+i),name:c?.name||'Category',icon:c?.icon||ICONS[0],color:c?.color||COLORS[i%COLORS.length],type:c?.type==='income'?'income':'expense'
  }));
  if(Array.isArray(raw.transactions)) base.transactions=raw.transactions.map((t,i)=>({
-   id:t?.id||('t_migrated_'+i),type:['income','expense','transfer'].includes(t?.type)?t.type:'expense',amount:Number(t?.amount)||0,
+   id:t?.id||('t_migrated_'+i),type:['income','expense','transfer','lend'].includes(t?.type)?t.type:'expense',amount:Number(t?.amount)||0,
    walletId:t?.walletId||null,toWalletId:t?.toWalletId||null,categoryId:t?.categoryId||null,
-   date:t?.date||new Date().toISOString(),description:String(t?.description||'')
+   date:t?.date||new Date().toISOString(),description:String(t?.description||''),createdAt:t?.createdAt||t?.updatedAt||new Date().toISOString()
  }));
  base.meta={...(raw.meta||{}),appVersion:BUILD_VERSION,migratedAt:new Date().toISOString()};
  return base;
@@ -220,14 +221,15 @@ function calcBalances(){
  state.wallets.forEach(w=>w.balance=0);
  state.transactions.forEach(t=>{
   if(t.type==='income'){let w=wallet(t.walletId);if(w)w.balance+=+t.amount}
-  if(t.type==='expense'){let w=wallet(t.walletId);if(w)w.balance-=+t.amount}
+  if(t.type==='expense'||t.type==='lend'){let w=wallet(t.walletId);if(w)w.balance-=+t.amount}
   if(t.type==='transfer'){let a=wallet(t.walletId),b=wallet(t.toWalletId);if(a)a.balance-=+t.amount;if(b)b.balance+=+t.amount}
  });
 }
 function totals(){
  let total=state.wallets.reduce((a,w)=>a+w.balance,0);
  let savings=state.wallets.filter(w=>w.savings).reduce((a,w)=>a+w.balance,0);
- return {total,savings,spendable:total-savings};
+ let lent=state.transactions.filter(t=>t.type==='lend').reduce((a,t)=>a+Number(t.amount||0),0);
+ return {total,savings,lent,spendable:total-savings};
 }
 function showPage(p){
  document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===p));
@@ -240,10 +242,15 @@ document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',(
 
 function render(){
  calcBalances();
- let t=totals();document.getElementById('totalBalance').textContent=money(t.total);document.getElementById('savings').textContent=money(t.savings);document.getElementById('spendable').textContent=money(t.spendable);
- let now=new Date(),m=now.getMonth(),y=now.getFullYear();let mi=state.transactions.filter(x=>{let d=new Date(x.date);return d.getMonth()===m&&d.getFullYear()===y});let inc=mi.filter(x=>x.type==='income').reduce((a,x)=>a+x.amount,0),exp=mi.filter(x=>x.type==='expense').reduce((a,x)=>a+x.amount,0);document.getElementById('monthNet').textContent=money(inc-exp);document.getElementById('monthNet').className='stat-value '+(inc-exp>=0?'positive':'negative');
+ let t=totals();document.getElementById('totalBalance').textContent=money(t.total);document.getElementById('savings').textContent=money(t.savings);document.getElementById('lent').textContent=money(t.lent);document.getElementById('spendable').textContent=money(t.spendable);
+ let now=new Date(),m=now.getMonth(),y=now.getFullYear();let mi=state.transactions.filter(x=>{let d=new Date(x.date);return d.getMonth()===m&&d.getFullYear()===y});let inc=mi.filter(x=>x.type==='income').reduce((a,x)=>a+x.amount,0),exp=mi.filter(x=>x.type==='expense'||x.type==='lend').reduce((a,x)=>a+x.amount,0);document.getElementById('monthNet').textContent=money(inc-exp);document.getElementById('monthNet').className='stat-value '+(inc-exp>=0?'positive':'negative');
  document.getElementById('profileName').value=state.profile.name||'';document.getElementById('currency').value=state.profile.currency||'₵';
- fillWalletSelects();renderWallets();renderWalletSummary();renderCategories();renderTransactions();renderRecent();renderCashChart();renderAnalytics();
+ fillWalletSelects();renderWallets();renderWalletSummary();renderCategories();
+ // Keep dashboard recent transactions independent from transaction-table filters/rendering.
+ renderRecent();
+ try{renderTransactions();}catch(e){console.error('Transaction list render failed',e);}
+ try{renderCashChart();}catch(e){console.error('Cash chart render failed',e);}
+ try{renderAnalytics();}catch(e){console.error('Analytics render failed',e);}
 }
 function fillWalletSelects(){
  let opts=state.wallets.map(w=>`<option value="${w.id}">${esc(w.icon)} ${esc(w.name)}</option>`).join('');
@@ -269,14 +276,32 @@ function renderCategories(){
 function renderTransactions(){
  let q=(document.getElementById('txSearch').value||'').toLowerCase(),type=document.getElementById('txType').value,wid=document.getElementById('txWallet').value;
  let arr=state.transactions.filter(t=>(!type||t.type===type)&&(!wid||t.walletId===wid)&&(!q||JSON.stringify(t).toLowerCase().includes(q))).sort((a,b)=>new Date(b.date)-new Date(a.date));
- document.getElementById('txTable').innerHTML=arr.map(t=>{let w=wallet(t.walletId),c=cat(t.categoryId);let sign=t.type==='income'?'+':t.type==='expense'?'-':'↔';return `<tr><td><div class="row-main"><div class="avatar" style="background:${c?.color||'#64748b'}22">${c?.icon||'↕'}</div><div><b>${esc(t.description||c?.name||t.type)}</b><span class="sub">${t.type}</span></div></div></td><td>${esc(w?.name||'—')}</td><td class="${t.type==='income'?'positive':t.type==='expense'?'negative':''}"><b>${sign}${money(t.amount)}</b></td><td>${new Date(t.date).toLocaleDateString()}</td><td><button class="btn small" onclick="openTransaction('${t.id}')">Edit</button> <button class="btn small danger" onclick="deleteTransaction('${t.id}')">Delete</button></td></tr>`}).join('')||'<tr><td colspan="5"><div class="empty">No transactions found.</div></td></tr>';
+ document.getElementById('txTable').innerHTML=arr.map(t=>{let w=wallet(t.walletId),c=cat(t.categoryId);let sign=t.type==='income'?'+':t.type==='expense'||t.type==='lend'?'-':'↔';let label=t.type==='lend'?'Lent':t.type;let cls=t.type==='income'?'positive':(t.type==='expense'||t.type==='lend')?'negative':'';return `<tr><td><div class="row-main"><div class="avatar" style="background:${t.type==='lend'?'#dc4f5f22':(c?.color||'#64748b')+'22'}">${t.type==='lend'?'↗':(c?.icon||'↕')}</div><div><b>${esc(t.description||c?.name||label)}</b><span class="sub">${label}</span></div></div></td><td>${esc(w?.name||'—')}</td><td class="${cls}"><b>${sign}${money(t.amount)}</b></td><td><span class="sub">Date</span><br><b>${dateInputValue(t.date)}</b></td><td><button class="btn small" onclick="openTransaction('${t.id}')">Edit</button> <button class="btn small danger" onclick="deleteTransaction('${t.id}')">Delete</button></td></tr>`}).join('')||'<tr><td colspan="5"><div class="empty">No transactions found.</div></td></tr>';
 }
 ['txSearch','txType','txWallet'].forEach(x=>document.getElementById(x).addEventListener('input',renderTransactions));
 function renderRecent(){
- let arr=[...state.transactions].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,6);document.getElementById('recent').innerHTML=arr.length?`<div class="table-wrap"><table class="table"><tbody>${arr.map(t=>{let c=cat(t.categoryId);return `<tr><td><div class="row-main"><div class="avatar" style="background:${c?.color||'#64748b'}22">${c?.icon||'↕'}</div><div><b>${esc(t.description||c?.name||t.type)}</b><span class="sub">${new Date(t.date).toLocaleDateString()} • ${esc(wallet(t.walletId)?.name||'')}</span></div></div></td><td class="${t.type==='income'?'positive':'negative'}">${t.type==='income'?'+':'-'}${money(t.amount)}</td></tr>`}).join('')}</tbody></table></div>`:'<div class="empty">No transactions yet. Add your first income or expense.</div>';
+ const box=document.getElementById('recent');
+ if(!box)return;
+ const arr=[...state.transactions].sort((a,b)=>{
+   // Recent transactions are ordered by transaction date (newest first).
+   // If two transactions share the same date, the most recently added/edited
+   // transaction appears first.
+   const da=Date.parse(a.date)||0, db=Date.parse(b.date)||0;
+   if(db!==da) return db-da;
+   const ca=Date.parse(a.createdAt||a.updatedAt)||0;
+   const cb=Date.parse(b.createdAt||b.updatedAt)||0;
+   return cb-ca;
+ }).slice(0,6);
+ box.innerHTML=arr.length?`<div class="table-wrap"><table class="table"><tbody>${arr.map(t=>{
+   let c=cat(t.categoryId),w=wallet(t.walletId);
+   let sign=t.type==='income'?'+':t.type==='expense'||t.type==='lend'?'-':'↔';
+   let cls=t.type==='income'?'positive':t.type==='expense'||t.type==='lend'?'negative':'';
+   let date=t.date?new Date(t.date).toLocaleDateString():'—';
+   return `<tr><td><div class="row-main"><div class="avatar" style="background:${c?.color||w?.color||'#64748b'}22">${c?.icon||w?.icon||'↕'}</div><div><b>${esc(t.description||c?.name||t.type)}</b><span class="sub">${date} • ${esc(w?.name||'')}</span></div></div></td><td class="${cls}">${sign}${money(t.amount)}</td></tr>`;
+ }).join('')}</tbody></table></div>`:'<div class="empty">No transactions yet. Add your first income or expense.</div>';
 }
 function series(months=6){
- let out=[];let d=new Date();d.setDate(1);for(let i=months-1;i>=0;i--){let x=new Date(d.getFullYear(),d.getMonth()-i,1),mo=x.getMonth(),yr=x.getFullYear();let a=state.transactions.filter(t=>{let z=new Date(t.date);return z.getMonth()===mo&&z.getFullYear()===yr});out.push({label:x.toLocaleString(undefined,{month:'short'}),income:a.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0),expense:a.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0)});}return out;
+ let out=[];let d=new Date();d.setDate(1);for(let i=months-1;i>=0;i--){let x=new Date(d.getFullYear(),d.getMonth()-i,1),mo=x.getMonth(),yr=x.getFullYear();let a=state.transactions.filter(t=>{let z=new Date(t.date);return z.getMonth()===mo&&z.getFullYear()===yr});out.push({label:x.toLocaleString(undefined,{month:'short'}),income:a.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0),expense:a.filter(t=>t.type==='expense'||t.type==='lend').reduce((s,t)=>s+t.amount,0)});}return out;
 }
 function renderCashChart(){
  let s=series(6),max=Math.max(1,...s.flatMap(x=>[x.income,x.expense])),W=700,H=250,p=35,step=(W-p*2)/(s.length-1);
@@ -290,7 +315,7 @@ function svgBars(rows, key, color, height=230){
 function renderAnalytics(){
  let s=series(6),max=Math.max(1,...s.flatMap(x=>[x.income,x.expense])),W=700,H=260,base=205,bw=30,gap=85;
  document.getElementById('barChart').innerHTML=`<svg viewBox="0 0 ${W} ${H}">${s.map((x,i)=>{let X=35+i*gap,ih=(x.income/max)*165,eh=(x.expense/max)*165;return `<rect x="${X}" y="${base-ih}" width="${bw}" height="${ih}" rx="5" fill="#2563eb"/><rect x="${X+bw+5}" y="${base-eh}" width="${bw}" height="${eh}" rx="5" fill="#dc4f5f"/><text x="${X+bw}" y="230" text-anchor="middle" font-size="11" fill="#718096">${x.label}</text>`}).join('')}</svg>`;
- let cats=state.categories.filter(c=>c.type==='expense').map(c=>({c,v:state.transactions.filter(t=>t.type==='expense'&&t.categoryId===c.id).reduce((s,t)=>s+t.amount,0)})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v),sum=cats.reduce((a,x)=>a+x.v,0)||1;
+ let cats=state.categories.filter(c=>c.type==='expense').map(c=>({c,v:state.transactions.filter(t=>t.type==='expense'||t.type==='lend'&&t.categoryId===c.id).reduce((s,t)=>s+t.amount,0)})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v),sum=cats.reduce((a,x)=>a+x.v,0)||1;
  document.getElementById('categoryAnalytics').innerHTML=cats.length?cats.map(x=>`<div style="margin:12px 0"><div style="display:flex;justify-content:space-between;font-size:13px"><span>${x.c.icon} ${esc(x.c.name)}</span><b>${money(x.v)}</b></div><div style="height:8px;background:#eef1f5;border-radius:9px;margin-top:6px"><div style="width:${x.v/sum*100}%;height:100%;background:${x.c.color};border-radius:9px"></div></div></div>`).join(''):'<div class="empty">Expense analytics will appear after you add expenses.</div>';
 
  let walletRows=state.wallets.map(w=>({label:w.name,value:w.balance})), netRows=s.map(x=>({label:x.label,value:x.income-x.expense}));
@@ -303,7 +328,7 @@ function renderAnalytics(){
  let activity=s.map(x=>{let monthTx=state.transactions.filter(t=>{let d=new Date(t.date),now=new Date();return d.getMonth()===new Date(now.getFullYear(),now.getMonth()- (5-s.indexOf(x)),1).getMonth()});return {label:x.label,value:monthTx.length}}); 
  document.getElementById('activityChart').innerHTML=svgBars(activity,'value','#7c3aed');
 
- let total=totals(),inc=state.transactions.filter(t=>t.type==='income').reduce((a,t)=>a+t.amount,0),exp=state.transactions.filter(t=>t.type==='expense').reduce((a,t)=>a+t.amount,0);
+ let total=totals(),inc=state.transactions.filter(t=>t.type==='income').reduce((a,t)=>a+t.amount,0),exp=state.transactions.filter(t=>t.type==='expense'||t.type==='lend').reduce((a,t)=>a+t.amount,0);
  document.getElementById('snapshot').innerHTML=`<div class="grid three"><div><span class="sub">Lifetime income</span><b class="positive">${money(inc)}</b></div><div><span class="sub">Lifetime expenses</span><b class="negative">${money(exp)}</b></div><div><span class="sub">Current spendable</span><b>${money(total.spendable)}</b></div></div>`;
 }
 function openModal(content){document.getElementById('modal').innerHTML=content;document.getElementById('modalBg').classList.add('open')}
@@ -332,19 +357,21 @@ function deleteCategory(cid){if(state.transactions.some(t=>t.categoryId===cid))r
 function openTransaction(tid=null){
  editingId=tid;let t=tid?state.transactions.find(x=>x.id===tid):null;let type=t?.type||'expense';
  openModal(`<div class="modal-head"><h2>${t?'Edit':'New'} transaction</h2><button class="x" onclick="closeModal()">×</button></div>
- <div class="formgrid"><div class="field"><label>Type</label><select id="tType" onchange="refreshTxForm()"><option value="expense" ${type==='expense'?'selected':''}>Expense</option><option value="income" ${type==='income'?'selected':''}>Income</option><option value="transfer" ${type==='transfer'?'selected':''}>Transfer</option></select></div><div class="field"><label>Amount</label><input id="tAmount" type="number" min="0" step="0.01" value="${t?.amount??''}"></div></div>
+ <div class="formgrid"><div class="field"><label>Type</label><select id="tType" onchange="refreshTxForm()"><option value="expense" ${type==='expense'?'selected':''}>Expense</option><option value="lend" ${type==='lend'?'selected':''}>Lend</option><option value="income" ${type==='income'?'selected':''}>Income</option><option value="transfer" ${type==='transfer'?'selected':''}>Transfer</option></select></div><div class="field"><label>Amount</label><input id="tAmount" type="number" min="0" step="0.01" value="${t?.amount??''}"></div></div>
  <div class="formgrid"><div class="field"><label>Wallet</label><select id="tWallet">${state.wallets.map(w=>`<option value="${w.id}" ${t?.walletId===w.id?'selected':''}>${w.icon} ${esc(w.name)}</option>`).join('')}</select></div><div class="field" id="catField"><label>Category</label><select id="tCat">${state.categories.map(c=>`<option value="${c.id}" ${t?.categoryId===c.id?'selected':''}>${c.icon} ${esc(c.name)}</option>`).join('')}</select></div></div>
  <div class="field" id="toWalletField" style="display:none"><label>Transfer to</label><select id="tToWallet">${state.wallets.map(w=>`<option value="${w.id}" ${t?.toWalletId===w.id?'selected':''}>${w.icon} ${esc(w.name)}</option>`).join('')}</select></div>
  <div class="formgrid"><div class="field"><label>Date</label><input id="tDate" type="date" value="${t?dateInputValue(t.date):dateInputValue(new Date())}"></div><div class="field"><label>Description / note</label><input id="tDesc" value="${esc(t?.description||'')}"></div></div>
  <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveTransaction()">Save transaction</button></div>`);
  refreshTxForm();
 }
-function refreshTxForm(){let type=document.getElementById('tType').value;document.getElementById('catField').style.display=type==='transfer'?'none':'';document.getElementById('toWalletField').style.display=type==='transfer'?'':'none';if(type==='income')document.getElementById('tCat').innerHTML=state.categories.filter(c=>c.type==='income').map(c=>`<option value="${c.id}">${c.icon} ${esc(c.name)}</option>`).join('');if(type==='expense')document.getElementById('tCat').innerHTML=state.categories.filter(c=>c.type==='expense').map(c=>`<option value="${c.id}">${c.icon} ${esc(c.name)}</option>`).join('')}
+function refreshTxForm(){let type=document.getElementById('tType').value;document.getElementById('catField').style.display=(type==='transfer'||type==='lend')?'none':'';document.getElementById('toWalletField').style.display=type==='transfer'?'':'none';if(type==='income')document.getElementById('tCat').innerHTML=state.categories.filter(c=>c.type==='income').map(c=>`<option value="${c.id}">${c.icon} ${esc(c.name)}</option>`).join('');if(type==='expense')document.getElementById('tCat').innerHTML=state.categories.filter(c=>c.type==='expense').map(c=>`<option value="${c.id}">${c.icon} ${esc(c.name)}</option>`).join('')}
 function fingerprint(t){return [t.type,Number(t.amount).toFixed(2),t.walletId,t.toWalletId||'',t.categoryId||'',dateInputValue(t.date),String(t.description||'').trim().toLowerCase()].join('|')}
 function saveTransaction(){
- let type=document.getElementById('tType').value,amount=Number(document.getElementById('tAmount').value),walletId=document.getElementById('tWallet').value,date=transactionDateISO(document.getElementById('tDate').value),description=document.getElementById('tDesc').value.trim(),categoryId=type==='transfer'?null:document.getElementById('tCat').value,toWalletId=type==='transfer'?document.getElementById('tToWallet').value:null;
+ let type=document.getElementById('tType').value,amount=Number(document.getElementById('tAmount').value),walletId=document.getElementById('tWallet').value,date=transactionDateISO(document.getElementById('tDate').value),description=document.getElementById('tDesc').value.trim(),categoryId=(type==='transfer'||type==='lend')?null:document.getElementById('tCat').value,toWalletId=type==='transfer'?document.getElementById('tToWallet').value:null;
  if(!amount||amount<=0)return toast('Enter a valid amount');if(type==='transfer'&&walletId===toWalletId)return toast('Choose different wallets');
- let obj={id:editingId||id('t'),type,amount,walletId,toWalletId,categoryId,date,description};
+ let now=new Date().toISOString();
+ let existingTx=editingId?state.transactions.find(x=>x.id===editingId):null;
+ let obj={id:editingId||id('t'),type,amount,walletId,toWalletId,categoryId,date,description,createdAt:existingTx?.createdAt||now,updatedAt:now};
  let dup=state.transactions.find(x=>fingerprint(x)===fingerprint(obj)&&x.id!==editingId);
  if(dup&&!confirm(`A matching transaction already exists (${money(dup.amount)}). Import/save anyway?`))return;
  if(editingId)state.transactions[state.transactions.findIndex(x=>x.id===editingId)]=obj;else state.transactions.push(obj);
@@ -367,14 +394,14 @@ function importJSON(text){
 }
 function reportData(){
  let inc=state.transactions.filter(t=>t.type==='income').reduce((a,t)=>a+Number(t.amount),0);
- let exp=state.transactions.filter(t=>t.type==='expense').reduce((a,t)=>a+Number(t.amount),0);
+ let exp=state.transactions.filter(t=>t.type==='expense'||t.type==='lend').reduce((a,t)=>a+Number(t.amount),0);
  let t=totals();
  return {inc,exp,net:inc-exp,total:t.total,savings:t.savings,spendable:t.spendable};
 }
 function reportChartsHTML(){
  let s=series(6);
  let rows=s.map(x=>`<tr><td>${esc(x.label)}</td><td>${money(x.income)}</td><td>${money(x.expense)}</td><td>${money(x.income-x.expense)}</td></tr>`).join('');
- let cats=state.categories.filter(c=>c.type==='expense').map(c=>({name:c.name,v:state.transactions.filter(t=>t.type==='expense'&&t.categoryId===c.id).reduce((a,t)=>a+Number(t.amount),0)})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+ let cats=state.categories.filter(c=>c.type==='expense').map(c=>({name:c.name,v:state.transactions.filter(t=>t.type==='expense'||t.type==='lend'&&t.categoryId===c.id).reduce((a,t)=>a+Number(t.amount),0)})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
  let catRows=cats.map(x=>`<tr><td>${esc(x.name)}</td><td>${money(x.v)}</td></tr>`).join('');
  return `<h2>Cash flow analysis</h2>
  <table><thead><tr><th>Month</th><th>Income</th><th>Expenses</th><th>Net</th></tr></thead><tbody>${rows}</tbody></table>
