@@ -22,7 +22,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer;border:0}.app{mi
 .btn{padding:10px 14px;border-radius:11px;background:#fff;border:1px solid var(--line);color:var(--text);box-shadow:0 2px 5px rgba(0,0,0,.02)}.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}.btn.danger{color:var(--bad)}.btn.small{padding:7px 10px;font-size:13px}
 .grid{display:grid;gap:16px}.stats{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:16px}.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:19px}.stat-label{font-size:13px;color:var(--muted);display:flex;justify-content:space-between}.stat-value{font-size:28px;font-weight:800;margin-top:9px}.positive{color:var(--good)}.negative{color:var(--bad)}
 .two{grid-template-columns:1.5fr 1fr}.three{grid-template-columns:1.1fr 1fr 1fr}.card h3{margin:0 0 16px;font-size:16px}.chart{height:280px;position:relative}.chart svg{width:100%;height:100%;overflow:visible}.legend{display:flex;gap:16px;font-size:12px;color:var(--muted);margin-top:6px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
-.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:12px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;white-space:nowrap}.table th{color:var(--muted);font-weight:600}.row-main{display:flex;align-items:center;gap:10px}.avatar{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:17px}.sub{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:12px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;white-space:nowrap}.table th{color:var(--muted);font-weight:600}.row-main{display:flex;align-items:center;gap:10px}.avatar{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:17px}.sub{display:block;color:var(--muted);font-size:11px;margin-top:2px}.mobile-tx-date{display:none;color:var(--muted);font-size:11px;margin-top:3px}
 .page{display:none}.page.active{display:block}.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}.search{flex:1;min-width:180px}
 input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 11px;color:var(--text);outline:none}input:focus,select:focus,textarea:focus{border-color:#8eb1ff;box-shadow:0 0 0 3px #2563eb12}.field{margin-bottom:13px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .item-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.wallet,.cat{display:flex;align-items:center;gap:12px}.item-card{padding:15px}.item-card .meta{margin-left:auto;text-align:right}.item-card h4{margin:0 0 3px}.item-card p{margin:0;color:var(--muted);font-size:12px}
@@ -31,7 +31,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 .toast{position:fixed;right:18px;bottom:18px;background:#101828;color:#fff;padding:12px 15px;border-radius:12px;box-shadow:var(--shadow);display:none;z-index:100;font-size:13px}.toast.show{display:block}
 .empty{text-align:center;color:var(--muted);padding:35px}.mobile-nav{display:none}
 @media(max-width:1050px){.stats{grid-template-columns:repeat(2,1fr)}.two,.three{grid-template-columns:1fr}.item-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:720px){.sidebar{display:none}.main{margin-left:0;width:100%;padding:16px 14px 95px}.topbar{align-items:flex-start}.title h1{font-size:22px}.actions{width:100%;justify-content:flex-end}.actions .btn:nth-child(1),.actions .btn:nth-child(2){display:none}.actions .btn:nth-child(3){display:inline-flex}.stats{grid-template-columns:1fr 1fr;gap:10px}.stat-value{font-size:21px}.card{padding:15px}.item-grid{grid-template-columns:1fr}.mobile-nav{position:fixed;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);z-index:30;padding:7px 2px}.mobile-nav button{background:transparent;color:var(--muted);font-size:9px;min-width:0;padding:5px 1px}.mobile-nav button.active{color:var(--primary);font-weight:700}.mobile-nav span{display:block;font-size:17px;margin-bottom:2px}.formgrid{grid-template-columns:1fr}.table th:nth-child(4),.table td:nth-child(4){display:none}.modal-bg{padding:8px}.modal{width:100%;max-height:92vh;padding:16px}.iconpick{grid-template-columns:repeat(6,1fr)}.modal-actions{position:sticky;bottom:0;background:#fff;padding-top:10px}.modal-actions .btn{flex:1}}
+@media(max-width:720px){.sidebar{display:none}.main{margin-left:0;width:100%;padding:16px 14px 95px}.topbar{align-items:flex-start}.title h1{font-size:22px}.actions{width:100%;justify-content:flex-end}.actions .btn:nth-child(1),.actions .btn:nth-child(2){display:none}.actions .btn:nth-child(3){display:inline-flex}.stats{grid-template-columns:1fr 1fr;gap:10px}.stat-value{font-size:21px}.card{padding:15px}.item-grid{grid-template-columns:1fr}.mobile-nav{position:fixed;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);z-index:30;padding:7px 2px}.mobile-nav button{background:transparent;color:var(--muted);font-size:9px;min-width:0;padding:5px 1px}.mobile-nav button.active{color:var(--primary);font-weight:700}.mobile-nav span{display:block;font-size:17px;margin-bottom:2px}.formgrid{grid-template-columns:1fr}.table th:nth-child(4),.table td:nth-child(4){display:none}.mobile-tx-date{display:block}.modal-bg{padding:8px}.modal{width:100%;max-height:92vh;padding:16px}.iconpick{grid-template-columns:repeat(6,1fr)}.modal-actions{position:sticky;bottom:0;background:#fff;padding-top:10px}.modal-actions .btn{flex:1}}
 
 .report-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
 .chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
@@ -152,7 +152,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 
 <script>
 const KEY='flowtrack_pro_v1';
-const BUILD_VERSION=window.FLOWTRACK_BUILD_VERSION||'3.1.1';
+const BUILD_VERSION=window.FLOWTRACK_BUILD_VERSION||'3.3.0';
 const FLOWTRACK_GOOGLE_CLIENT_ID='963866679895-e0ck074n3ivrprahg8tdicn4aij257mc.apps.googleusercontent.com';
 const ICONS=['💵','🏦','💳','👛','💰','📱','🏠','🚗','✈️','🎓','🛒','🍔','⚡','🔧','🎁','📦','💡','🧾','🎯','⭐','🛍️','🏥','🎵','☪️'];
 const COLORS=['#2563eb','#0f9d67','#dc4f5f','#f59e0b','#7c3aed','#0891b2','#db2777','#475569'];
@@ -187,9 +187,9 @@ function normalizeState(raw){
    id:c?.id||('c_migrated_'+i),name:c?.name||'Category',icon:c?.icon||ICONS[0],color:c?.color||COLORS[i%COLORS.length],type:c?.type==='income'?'income':'expense'
  }));
  if(Array.isArray(raw.transactions)) base.transactions=raw.transactions.map((t,i)=>({
-   id:t?.id||('t_migrated_'+i),type:['income','expense','transfer','lend'].includes(t?.type)?t.type:'expense',amount:Number(t?.amount)||0,
+   id:t?.id||('t_migrated_'+i),type:['income','expense','transfer','lend','repayment'].includes(t?.type)?t.type:'expense',amount:Number(t?.amount)||0,
    walletId:t?.walletId||null,toWalletId:t?.toWalletId||null,categoryId:t?.categoryId||null,
-   date:t?.date||new Date().toISOString(),description:String(t?.description||''),createdAt:t?.createdAt||t?.updatedAt||new Date().toISOString()
+   date:t?.date||new Date().toISOString(),description:String(t?.description||''),borrower:String(t?.borrower||t?.person||''),linkedLoanId:t?.linkedLoanId||t?.loanId||null,createdAt:t?.createdAt||t?.updatedAt||new Date().toISOString()
  }));
  base.meta={...(raw.meta||{}),appVersion:BUILD_VERSION,migratedAt:new Date().toISOString()};
  return base;
@@ -220,7 +220,7 @@ function transactionDateISO(value){
 function calcBalances(){
  state.wallets.forEach(w=>w.balance=0);
  state.transactions.forEach(t=>{
-  if(t.type==='income'){let w=wallet(t.walletId);if(w)w.balance+=+t.amount}
+  if(t.type==='income'||t.type==='repayment'){let w=wallet(t.walletId);if(w)w.balance+=+t.amount}
   if(t.type==='expense'||t.type==='lend'){let w=wallet(t.walletId);if(w)w.balance-=+t.amount}
   if(t.type==='transfer'){let a=wallet(t.walletId),b=wallet(t.toWalletId);if(a)a.balance-=+t.amount;if(b)b.balance+=+t.amount}
  });
@@ -228,7 +228,7 @@ function calcBalances(){
 function totals(){
  let total=state.wallets.reduce((a,w)=>a+w.balance,0);
  let savings=state.wallets.filter(w=>w.savings).reduce((a,w)=>a+w.balance,0);
- let lent=state.transactions.filter(t=>t.type==='lend').reduce((a,t)=>a+Number(t.amount||0),0);
+ let lent=state.transactions.filter(t=>t.type==='lend').reduce((a,t)=>a+Number(t.amount||0),0)-state.transactions.filter(t=>t.type==='repayment').reduce((a,t)=>a+Number(t.amount||0),0);
  return {total,savings,lent,spendable:total-savings};
 }
 function showPage(p){
@@ -276,7 +276,7 @@ function renderCategories(){
 function renderTransactions(){
  let q=(document.getElementById('txSearch').value||'').toLowerCase(),type=document.getElementById('txType').value,wid=document.getElementById('txWallet').value;
  let arr=state.transactions.filter(t=>(!type||t.type===type)&&(!wid||t.walletId===wid)&&(!q||JSON.stringify(t).toLowerCase().includes(q))).sort((a,b)=>new Date(b.date)-new Date(a.date));
- document.getElementById('txTable').innerHTML=arr.map(t=>{let w=wallet(t.walletId),c=cat(t.categoryId);let sign=t.type==='income'?'+':t.type==='expense'||t.type==='lend'?'-':'↔';let label=t.type==='lend'?'Lent':t.type;let cls=t.type==='income'?'positive':(t.type==='expense'||t.type==='lend')?'negative':'';return `<tr><td><div class="row-main"><div class="avatar" style="background:${t.type==='lend'?'#dc4f5f22':(c?.color||'#64748b')+'22'}">${t.type==='lend'?'↗':(c?.icon||'↕')}</div><div><b>${esc(t.description||c?.name||label)}</b><span class="sub">${label}</span></div></div></td><td>${esc(w?.name||'—')}</td><td class="${cls}"><b>${sign}${money(t.amount)}</b></td><td><span class="sub">Date</span><br><b>${dateInputValue(t.date)}</b></td><td><button class="btn small" onclick="openTransaction('${t.id}')">Edit</button> <button class="btn small danger" onclick="deleteTransaction('${t.id}')">Delete</button></td></tr>`}).join('')||'<tr><td colspan="5"><div class="empty">No transactions found.</div></td></tr>';
+ document.getElementById('txTable').innerHTML=arr.map(t=>{let w=wallet(t.walletId),c=cat(t.categoryId);let sign=t.type==='income'||t.type==='repayment'?'+':t.type==='expense'||t.type==='lend'?'-':'↔';let label=t.type==='lend'?'Lent':t.type==='repayment'?'Loan repayment':t.type;let cls=(t.type==='income'||t.type==='repayment')?'positive':(t.type==='expense'||t.type==='lend')?'negative':'';let date=dateInputValue(t.date);let person=t.borrower?` • ${esc(t.borrower)}`:'';return `<tr><td><div class="row-main"><div class="avatar" style="background:${t.type==='lend'?'#dc4f5f22':t.type==='repayment'?'#0f9d6722':(c?.color||'#64748b')+'22'}">${t.type==='lend'?'↗':t.type==='repayment'?'↙':(c?.icon||'↕')}</div><div><b>${esc(t.description||c?.name||label)}</b><span class="sub">${label}${person}</span><span class="mobile-tx-date">Date: ${date}</span></div></div></td><td>${esc(w?.name||'—')}</td><td class="${cls}"><b>${sign}${money(t.amount)}</b></td><td><span class="sub">Date</span><br><b>${date}</b></td><td><button class="btn small" onclick="openTransaction('${t.id}')">Edit</button> <button class="btn small danger" onclick="deleteTransaction('${t.id}')">Delete</button></td></tr>`}).join('')||'<tr><td colspan="5"><div class="empty">No transactions found.</div></td></tr>';
 }
 ['txSearch','txType','txWallet'].forEach(x=>document.getElementById(x).addEventListener('input',renderTransactions));
 function renderRecent(){
@@ -301,7 +301,7 @@ function renderRecent(){
  }).join('')}</tbody></table></div>`:'<div class="empty">No transactions yet. Add your first income or expense.</div>';
 }
 function series(months=6){
- let out=[];let d=new Date();d.setDate(1);for(let i=months-1;i>=0;i--){let x=new Date(d.getFullYear(),d.getMonth()-i,1),mo=x.getMonth(),yr=x.getFullYear();let a=state.transactions.filter(t=>{let z=new Date(t.date);return z.getMonth()===mo&&z.getFullYear()===yr});out.push({label:x.toLocaleString(undefined,{month:'short'}),income:a.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0),expense:a.filter(t=>t.type==='expense'||t.type==='lend').reduce((s,t)=>s+t.amount,0)});}return out;
+ let out=[];let d=new Date();d.setDate(1);for(let i=months-1;i>=0;i--){let x=new Date(d.getFullYear(),d.getMonth()-i,1),mo=x.getMonth(),yr=x.getFullYear();let a=state.transactions.filter(t=>{let z=new Date(t.date);return z.getMonth()===mo&&z.getFullYear()===yr});out.push({label:x.toLocaleString(undefined,{month:'short'}),income:a.filter(t=>t.type==='income'||t.type==='repayment').reduce((s,t)=>s+t.amount,0),expense:a.filter(t=>t.type==='expense'||t.type==='lend').reduce((s,t)=>s+t.amount,0)});}return out;
 }
 function renderCashChart(){
  let s=series(6),max=Math.max(1,...s.flatMap(x=>[x.income,x.expense])),W=700,H=250,p=35,step=(W-p*2)/(s.length-1);
@@ -328,7 +328,7 @@ function renderAnalytics(){
  let activity=s.map(x=>{let monthTx=state.transactions.filter(t=>{let d=new Date(t.date),now=new Date();return d.getMonth()===new Date(now.getFullYear(),now.getMonth()- (5-s.indexOf(x)),1).getMonth()});return {label:x.label,value:monthTx.length}}); 
  document.getElementById('activityChart').innerHTML=svgBars(activity,'value','#7c3aed');
 
- let total=totals(),inc=state.transactions.filter(t=>t.type==='income').reduce((a,t)=>a+t.amount,0),exp=state.transactions.filter(t=>t.type==='expense'||t.type==='lend').reduce((a,t)=>a+t.amount,0);
+ let total=totals(),inc=state.transactions.filter(t=>t.type==='income'||t.type==='repayment').reduce((a,t)=>a+t.amount,0),exp=state.transactions.filter(t=>t.type==='expense'||t.type==='lend').reduce((a,t)=>a+t.amount,0);
  document.getElementById('snapshot').innerHTML=`<div class="grid three"><div><span class="sub">Lifetime income</span><b class="positive">${money(inc)}</b></div><div><span class="sub">Lifetime expenses</span><b class="negative">${money(exp)}</b></div><div><span class="sub">Current spendable</span><b>${money(total.spendable)}</b></div></div>`;
 }
 function openModal(content){document.getElementById('modal').innerHTML=content;document.getElementById('modalBg').classList.add('open')}
@@ -357,25 +357,54 @@ function deleteCategory(cid){if(state.transactions.some(t=>t.categoryId===cid))r
 function openTransaction(tid=null){
  editingId=tid;let t=tid?state.transactions.find(x=>x.id===tid):null;let type=t?.type||'expense';
  openModal(`<div class="modal-head"><h2>${t?'Edit':'New'} transaction</h2><button class="x" onclick="closeModal()">×</button></div>
- <div class="formgrid"><div class="field"><label>Type</label><select id="tType" onchange="refreshTxForm()"><option value="expense" ${type==='expense'?'selected':''}>Expense</option><option value="lend" ${type==='lend'?'selected':''}>Lend</option><option value="income" ${type==='income'?'selected':''}>Income</option><option value="transfer" ${type==='transfer'?'selected':''}>Transfer</option></select></div><div class="field"><label>Amount</label><input id="tAmount" type="number" min="0" step="0.01" value="${t?.amount??''}"></div></div>
+ <div class="formgrid"><div class="field"><label>Type</label><select id="tType" onchange="refreshTxForm()"><option value="expense" ${type==='expense'?'selected':''}>Expense</option><option value="lend" ${type==='lend'?'selected':''}>Lend</option><option value="repayment" ${type==='repayment'?'selected':''}>Loan repayment</option><option value="income" ${type==='income'?'selected':''}>Income</option><option value="transfer" ${type==='transfer'?'selected':''}>Transfer</option></select></div><div class="field"><label>Amount</label><input id="tAmount" type="number" min="0" step="0.01" value="${t?.amount??''}"></div></div>
  <div class="formgrid"><div class="field"><label>Wallet</label><select id="tWallet">${state.wallets.map(w=>`<option value="${w.id}" ${t?.walletId===w.id?'selected':''}>${w.icon} ${esc(w.name)}</option>`).join('')}</select></div><div class="field" id="catField"><label>Category</label><select id="tCat">${state.categories.map(c=>`<option value="${c.id}" ${t?.categoryId===c.id?'selected':''}>${c.icon} ${esc(c.name)}</option>`).join('')}</select></div></div>
- <div class="field" id="toWalletField" style="display:none"><label>Transfer to</label><select id="tToWallet">${state.wallets.map(w=>`<option value="${w.id}" ${t?.toWalletId===w.id?'selected':''}>${w.icon} ${esc(w.name)}</option>`).join('')}</select></div>
+ <div class="formgrid" id="loanFields" style="display:none"><div class="field"><label id="loanPersonLabel">Borrower / person</label><input id="tBorrower" value="${esc(t?.borrower||'')}" placeholder="e.g. John"></div><div class="field" id="linkedLoanField"><label>Loan to repay</label><select id="tLoan">${state.transactions.filter(x=>x.type==='lend').map(x=>{let paid=state.transactions.filter(r=>r.type==='repayment'&&r.linkedLoanId===x.id).reduce((a,r)=>a+Number(r.amount||0),0);let rem=Math.max(0,Number(x.amount||0)-paid);let person=x.borrower?` • ${esc(x.borrower)}`:'';return `<option value="${x.id}" ${t?.linkedLoanId===x.id?'selected':''}>${dateInputValue(x.date)} • ${money(rem)} remaining${person}</option>`}).join('')}</select></div></div><div class="field" id="toWalletField" style="display:none"><label>Transfer to</label><select id="tToWallet">${state.wallets.map(w=>`<option value="${w.id}" ${t?.toWalletId===w.id?'selected':''}>${w.icon} ${esc(w.name)}</option>`).join('')}</select></div>
  <div class="formgrid"><div class="field"><label>Date</label><input id="tDate" type="date" value="${t?dateInputValue(t.date):dateInputValue(new Date())}"></div><div class="field"><label>Description / note</label><input id="tDesc" value="${esc(t?.description||'')}"></div></div>
  <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveTransaction()">Save transaction</button></div>`);
  refreshTxForm();
 }
-function refreshTxForm(){let type=document.getElementById('tType').value;document.getElementById('catField').style.display=(type==='transfer'||type==='lend')?'none':'';document.getElementById('toWalletField').style.display=type==='transfer'?'':'none';if(type==='income')document.getElementById('tCat').innerHTML=state.categories.filter(c=>c.type==='income').map(c=>`<option value="${c.id}">${c.icon} ${esc(c.name)}</option>`).join('');if(type==='expense')document.getElementById('tCat').innerHTML=state.categories.filter(c=>c.type==='expense').map(c=>`<option value="${c.id}">${c.icon} ${esc(c.name)}</option>`).join('')}
-function fingerprint(t){return [t.type,Number(t.amount).toFixed(2),t.walletId,t.toWalletId||'',t.categoryId||'',dateInputValue(t.date),String(t.description||'').trim().toLowerCase()].join('|')}
+function refreshTxForm(){
+ let type=document.getElementById('tType').value;
+ let hideCat=(type==='transfer'||type==='lend'||type==='repayment');
+ document.getElementById('catField').style.display=hideCat?'none':'';
+ document.getElementById('toWalletField').style.display=type==='transfer'?'':'none';
+ let loanFields=document.getElementById('loanFields');
+ if(loanFields) loanFields.style.display=(type==='lend'||type==='repayment')?'grid':'none';
+ let linked=document.getElementById('linkedLoanField');
+ if(linked) linked.style.display=type==='repayment'?'':'none';
+ let personLabel=document.getElementById('loanPersonLabel');
+ if(personLabel) personLabel.textContent=type==='repayment'?'Borrower / person':'Borrower / person';
+ let person=document.getElementById('tBorrower');
+ if(person) person.placeholder=type==='repayment'?'e.g. John':'e.g. John';
+ if(type==='income')document.getElementById('tCat').innerHTML=state.categories.filter(c=>c.type==='income').map(c=>`<option value="${c.id}">${c.icon} ${esc(c.name)}</option>`).join('');
+ if(type==='expense')document.getElementById('tCat').innerHTML=state.categories.filter(c=>c.type==='expense').map(c=>`<option value="${c.id}">${c.icon} ${esc(c.name)}</option>`).join('');
+}
+function fingerprint(t){return [t.type,Number(t.amount).toFixed(2),t.walletId,t.toWalletId||'',t.categoryId||'',t.linkedLoanId||'',String(t.borrower||'').trim().toLowerCase(),dateInputValue(t.date),String(t.description||'').trim().toLowerCase()].join('|')}
 function saveTransaction(){
- let type=document.getElementById('tType').value,amount=Number(document.getElementById('tAmount').value),walletId=document.getElementById('tWallet').value,date=transactionDateISO(document.getElementById('tDate').value),description=document.getElementById('tDesc').value.trim(),categoryId=(type==='transfer'||type==='lend')?null:document.getElementById('tCat').value,toWalletId=type==='transfer'?document.getElementById('tToWallet').value:null;
- if(!amount||amount<=0)return toast('Enter a valid amount');if(type==='transfer'&&walletId===toWalletId)return toast('Choose different wallets');
+ let type=document.getElementById('tType').value,amount=Number(document.getElementById('tAmount').value),walletId=document.getElementById('tWallet').value,date=transactionDateISO(document.getElementById('tDate').value),description=document.getElementById('tDesc').value.trim(),borrower=document.getElementById('tBorrower')?.value.trim()||'',linkedLoanId=document.getElementById('tLoan')?.value||null,categoryId=(type==='transfer'||type==='lend'||type==='repayment')?null:document.getElementById('tCat').value,toWalletId=type==='transfer'?document.getElementById('tToWallet').value:null;
+ if(!amount||amount<=0)return toast('Enter a valid amount');
+ if(type==='transfer'&&walletId===toWalletId)return toast('Choose different wallets');
+ if((type==='lend'||type==='repayment')&&!borrower){
+   if(type==='repayment'&&linkedLoanId){let loan=state.transactions.find(x=>x.id===linkedLoanId);borrower=loan?.borrower||'';}
+   if(!borrower)return toast('Enter the borrower / person name');
+ }
+ if(type==='repayment'){
+   if(!linkedLoanId)return toast('Select the loan being repaid');
+   let loan=state.transactions.find(x=>x.id===linkedLoanId&&x.type==='lend');
+   if(!loan)return toast('Selected loan was not found');
+   let paid=state.transactions.filter(x=>x.type==='repayment'&&x.linkedLoanId===linkedLoanId&&x.id!==editingId).reduce((a,x)=>a+Number(x.amount||0),0);
+   let remaining=Math.max(0,Number(loan.amount||0)-paid);
+   if(amount>remaining+0.000001)return toast(`Repayment exceeds remaining ${money(remaining)}`);
+   borrower=loan.borrower||borrower;
+ }
  let now=new Date().toISOString();
  let existingTx=editingId?state.transactions.find(x=>x.id===editingId):null;
- let obj={id:editingId||id('t'),type,amount,walletId,toWalletId,categoryId,date,description,createdAt:existingTx?.createdAt||now,updatedAt:now};
+ let obj={id:editingId||id('t'),type,amount,walletId,toWalletId,categoryId,date,description,borrower,linkedLoanId:type==='repayment'?linkedLoanId:null,createdAt:existingTx?.createdAt||now,updatedAt:now};
  let dup=state.transactions.find(x=>fingerprint(x)===fingerprint(obj)&&x.id!==editingId);
  if(dup&&!confirm(`A matching transaction already exists (${money(dup.amount)}). Import/save anyway?`))return;
  if(editingId)state.transactions[state.transactions.findIndex(x=>x.id===editingId)]=obj;else state.transactions.push(obj);
- closeModal();save();toast('Transaction saved');
+ closeModal();save();toast(type==='repayment'?'Loan repayment saved':'Transaction saved');
 }
 function deleteTransaction(tid){if(confirm('Delete this transaction?')){state.transactions=state.transactions.filter(t=>t.id!==tid);save();}}
 function exportJSON(){let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='flowtrack-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);toast('JSON backup exported')}
