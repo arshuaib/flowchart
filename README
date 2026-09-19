@@ -1,45 +1,11 @@
-# FlowTrack Pro
+# FlowTrack Pro v3.1.1 — Recent Transactions Fix
 
-A professional responsive cash-flow manager built as a standalone web app.
+Changes:
+- Fixed dashboard Recent transactions so newly added transactions appear immediately.
+- Recent transactions are sorted by creation/update time rather than only transaction date.
+- Added `createdAt` / `updatedAt` metadata while preserving existing transaction dates.
+- Dashboard recent list is rendered independently so a transaction-table rendering error cannot hide it.
+- Existing localStorage data is preserved and migrated safely.
+- Build version updated to 3.1.1.
 
-## Included
-- Dashboard with total balance, savings, spendable balance and monthly net
-- Cash-flow charts and category analytics
-- Custom wallets with icon/color and savings flag
-- Custom income/expense categories with icon/color
-- Add/edit/delete transactions
-- Wallet-specific balances and transaction filtering
-- JSON import/export
-- Duplicate detection before saving/importing
-- Profile/currency settings
-- Responsive mobile + desktop layout
-- Local persistence using browser localStorage
-
-## Google Drive
-The UI includes the Google Drive connection area, but real Drive synchronization requires an OAuth 2.0 Web Client ID configured in Google Cloud Console and Google Identity Services. This is intentionally not hard-coded because credentials belong to the app owner.
-
-Recommended deployment:
-1. Upload `index.html` to Vercel as a static site (or put it in a GitHub repository and import the repository).
-2. In Google Cloud Console, create/select a project.
-3. Enable Google Drive API.
-4. Configure OAuth consent screen.
-5. Create an OAuth 2.0 Client ID for a Web application.
-6. Add your Vercel domain to Authorized JavaScript origins.
-7. Paste the client ID into FlowTrack Settings.
-
-The current build keeps local data intact and provides the Drive configuration UI. The Drive API calls can then be wired to the chosen OAuth client/storage strategy.
-
-## Data format
-The app exports a JSON object containing:
-`profile`, `wallets`, `categories`, and `transactions`.
-
-Transaction duplicate fingerprints use:
-type + amount + wallet + destination wallet + category + date/time + description.
-
-
-## v3.1.0 cache-safe update
-- Added build/version marker and migration-safe localStorage normalization.
-- Existing transactions, wallets, categories and profile settings are preserved.
-- Added network-first service worker with automatic cache cleanup so stale deployments do not mask newer releases.
-- No reset or local data deletion is performed during migration.
-- If a very old cached page is already open, close it and open the deployed URL once; future updates will refresh automatically.
+Deploy the contents of this folder to Vercel. Do not reset localStorage or Google Drive data.
