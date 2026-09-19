@@ -9,7 +9,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script>window.FLOWTRACK_BUILD_VERSION="3.1.1";</script>
+<script>window.FLOWTRACK_BUILD_VERSION="3.1.0";</script>
 <style>
 :root{--bg:#f5f7fb;--panel:#fff;--text:#18212f;--muted:#718096;--line:#e5e9f0;--primary:#2563eb;--primary2:#1d4ed8;--good:#0f9d67;--bad:#dc4f5f;--shadow:0 10px 30px rgba(20,34,55,.07);--radius:18px}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
@@ -151,7 +151,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 
 <script>
 const KEY='flowtrack_pro_v1';
-const BUILD_VERSION=window.FLOWTRACK_BUILD_VERSION||'3.1.1';
+const BUILD_VERSION=window.FLOWTRACK_BUILD_VERSION||'3.1.0';
 const FLOWTRACK_GOOGLE_CLIENT_ID='963866679895-e0ck074n3ivrprahg8tdicn4aij257mc.apps.googleusercontent.com';
 const ICONS=['💵','🏦','💳','👛','💰','📱','🏠','🚗','✈️','🎓','🛒','🍔','⚡','🔧','🎁','📦','💡','🧾','🎯','⭐','🛍️','🏥','🎵','☪️'];
 const COLORS=['#2563eb','#0f9d67','#dc4f5f','#f59e0b','#7c3aed','#0891b2','#db2777','#475569'];
@@ -188,7 +188,7 @@ function normalizeState(raw){
  if(Array.isArray(raw.transactions)) base.transactions=raw.transactions.map((t,i)=>({
    id:t?.id||('t_migrated_'+i),type:['income','expense','transfer'].includes(t?.type)?t.type:'expense',amount:Number(t?.amount)||0,
    walletId:t?.walletId||null,toWalletId:t?.toWalletId||null,categoryId:t?.categoryId||null,
-   date:t?.date||new Date().toISOString(),description:String(t?.description||''),createdAt:t?.createdAt||t?.updatedAt||new Date().toISOString()
+   date:t?.date||new Date().toISOString(),description:String(t?.description||'')
  }));
  base.meta={...(raw.meta||{}),appVersion:BUILD_VERSION,migratedAt:new Date().toISOString()};
  return base;
@@ -243,12 +243,7 @@ function render(){
  let t=totals();document.getElementById('totalBalance').textContent=money(t.total);document.getElementById('savings').textContent=money(t.savings);document.getElementById('spendable').textContent=money(t.spendable);
  let now=new Date(),m=now.getMonth(),y=now.getFullYear();let mi=state.transactions.filter(x=>{let d=new Date(x.date);return d.getMonth()===m&&d.getFullYear()===y});let inc=mi.filter(x=>x.type==='income').reduce((a,x)=>a+x.amount,0),exp=mi.filter(x=>x.type==='expense').reduce((a,x)=>a+x.amount,0);document.getElementById('monthNet').textContent=money(inc-exp);document.getElementById('monthNet').className='stat-value '+(inc-exp>=0?'positive':'negative');
  document.getElementById('profileName').value=state.profile.name||'';document.getElementById('currency').value=state.profile.currency||'₵';
- fillWalletSelects();renderWallets();renderWalletSummary();renderCategories();
- // Keep dashboard recent transactions independent from transaction-table filters/rendering.
- renderRecent();
- try{renderTransactions();}catch(e){console.error('Transaction list render failed',e);}
- try{renderCashChart();}catch(e){console.error('Cash chart render failed',e);}
- try{renderAnalytics();}catch(e){console.error('Analytics render failed',e);}
+ fillWalletSelects();renderWallets();renderWalletSummary();renderCategories();renderTransactions();renderRecent();renderCashChart();renderAnalytics();
 }
 function fillWalletSelects(){
  let opts=state.wallets.map(w=>`<option value="${w.id}">${esc(w.icon)} ${esc(w.name)}</option>`).join('');
@@ -278,20 +273,7 @@ function renderTransactions(){
 }
 ['txSearch','txType','txWallet'].forEach(x=>document.getElementById(x).addEventListener('input',renderTransactions));
 function renderRecent(){
- const box=document.getElementById('recent');
- if(!box)return;
- const arr=[...state.transactions].sort((a,b)=>{
-   const ca=Date.parse(a.createdAt||a.updatedAt||a.date)||0;
-   const cb=Date.parse(b.createdAt||b.updatedAt||b.date)||0;
-   return cb-ca;
- }).slice(0,6);
- box.innerHTML=arr.length?`<div class="table-wrap"><table class="table"><tbody>${arr.map(t=>{
-   let c=cat(t.categoryId),w=wallet(t.walletId);
-   let sign=t.type==='income'?'+':t.type==='expense'?'-':'↔';
-   let cls=t.type==='income'?'positive':t.type==='expense'?'negative':'';
-   let date=t.date?new Date(t.date).toLocaleDateString():'—';
-   return `<tr><td><div class="row-main"><div class="avatar" style="background:${c?.color||w?.color||'#64748b'}22">${c?.icon||w?.icon||'↕'}</div><div><b>${esc(t.description||c?.name||t.type)}</b><span class="sub">${date} • ${esc(w?.name||'')}</span></div></div></td><td class="${cls}">${sign}${money(t.amount)}</td></tr>`;
- }).join('')}</tbody></table></div>`:'<div class="empty">No transactions yet. Add your first income or expense.</div>';
+ let arr=[...state.transactions].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,6);document.getElementById('recent').innerHTML=arr.length?`<div class="table-wrap"><table class="table"><tbody>${arr.map(t=>{let c=cat(t.categoryId);return `<tr><td><div class="row-main"><div class="avatar" style="background:${c?.color||'#64748b'}22">${c?.icon||'↕'}</div><div><b>${esc(t.description||c?.name||t.type)}</b><span class="sub">${new Date(t.date).toLocaleDateString()} • ${esc(wallet(t.walletId)?.name||'')}</span></div></div></td><td class="${t.type==='income'?'positive':'negative'}">${t.type==='income'?'+':'-'}${money(t.amount)}</td></tr>`}).join('')}</tbody></table></div>`:'<div class="empty">No transactions yet. Add your first income or expense.</div>';
 }
 function series(months=6){
  let out=[];let d=new Date();d.setDate(1);for(let i=months-1;i>=0;i--){let x=new Date(d.getFullYear(),d.getMonth()-i,1),mo=x.getMonth(),yr=x.getFullYear();let a=state.transactions.filter(t=>{let z=new Date(t.date);return z.getMonth()===mo&&z.getFullYear()===yr});out.push({label:x.toLocaleString(undefined,{month:'short'}),income:a.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0),expense:a.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0)});}return out;
@@ -362,9 +344,7 @@ function fingerprint(t){return [t.type,Number(t.amount).toFixed(2),t.walletId,t.
 function saveTransaction(){
  let type=document.getElementById('tType').value,amount=Number(document.getElementById('tAmount').value),walletId=document.getElementById('tWallet').value,date=transactionDateISO(document.getElementById('tDate').value),description=document.getElementById('tDesc').value.trim(),categoryId=type==='transfer'?null:document.getElementById('tCat').value,toWalletId=type==='transfer'?document.getElementById('tToWallet').value:null;
  if(!amount||amount<=0)return toast('Enter a valid amount');if(type==='transfer'&&walletId===toWalletId)return toast('Choose different wallets');
- let now=new Date().toISOString();
- let existingTx=editingId?state.transactions.find(x=>x.id===editingId):null;
- let obj={id:editingId||id('t'),type,amount,walletId,toWalletId,categoryId,date,description,createdAt:existingTx?.createdAt||now,updatedAt:now};
+ let obj={id:editingId||id('t'),type,amount,walletId,toWalletId,categoryId,date,description};
  let dup=state.transactions.find(x=>fingerprint(x)===fingerprint(obj)&&x.id!==editingId);
  if(dup&&!confirm(`A matching transaction already exists (${money(dup.amount)}). Import/save anyway?`))return;
  if(editingId)state.transactions[state.transactions.findIndex(x=>x.id===editingId)]=obj;else state.transactions.push(obj);
