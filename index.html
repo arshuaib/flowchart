@@ -9,7 +9,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script>window.FLOWTRACK_BUILD_VERSION="3.4.0";</script>
+<script>window.FLOWTRACK_BUILD_VERSION="3.5.0";</script>
 <style>
 :root{--bg:#f5f7fb;--panel:#fff;--text:#18212f;--muted:#718096;--line:#e5e9f0;--primary:#2563eb;--primary2:#1d4ed8;--good:#0f9d67;--bad:#dc4f5f;--shadow:0 10px 30px rgba(20,34,55,.07);--radius:18px}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
@@ -20,7 +20,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer;border:0}.app{mi
 .side-bottom{position:absolute;left:15px;right:15px;bottom:20px}.sync-pill{font-size:12px;color:#9fb0c9;background:#182337;padding:10px;border-radius:12px}
 .main{margin-left:250px;width:calc(100% - 250px);padding:28px;max-width:1600px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px}.title h1{margin:0;font-size:28px}.title p{margin:5px 0 0;color:var(--muted)}.actions{display:flex;gap:9px;flex-wrap:wrap}
 .btn{padding:10px 14px;border-radius:11px;background:#fff;border:1px solid var(--line);color:var(--text);box-shadow:0 2px 5px rgba(0,0,0,.02)}.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}.btn.danger{color:var(--bad)}.btn.small{padding:7px 10px;font-size:13px}
-.grid{display:grid;gap:16px}.stats{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:16px}.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:19px}.stat-label{font-size:13px;color:var(--muted);display:flex;justify-content:space-between}.stat-value{font-size:28px;font-weight:800;margin-top:9px}.positive{color:var(--good)}.negative{color:var(--bad)}
+.grid{display:grid;gap:16px}.stats{grid-template-columns:repeat(5,minmax(0,1fr));margin-bottom:16px}.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:19px}.stat-label{font-size:13px;color:var(--muted);display:flex;justify-content:space-between}.stat-value{font-size:28px;font-weight:800;margin-top:9px}.positive{color:var(--good)}.negative{color:var(--bad)}
 .two{grid-template-columns:1.5fr 1fr}.three{grid-template-columns:1.1fr 1fr 1fr}.card h3{margin:0 0 16px;font-size:16px}.chart{height:280px;position:relative}.chart svg{width:100%;height:100%;overflow:visible}.legend{display:flex;gap:16px;font-size:12px;color:var(--muted);margin-top:6px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
 .table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:12px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;white-space:nowrap}.table th{color:var(--muted);font-weight:600}.row-main{display:flex;align-items:center;gap:10px}.avatar{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:17px}.sub{display:block;color:var(--muted);font-size:11px;margin-top:2px}
 .page{display:none}.page.active{display:block}.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}.search{flex:1;min-width:180px}
@@ -78,6 +78,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
   <div class="card"><div class="stat-label">Total balance <span>◉</span></div><div class="stat-value" id="totalBalance">₵0.00</div></div>
   <div class="card"><div class="stat-label">Savings <span>▰</span></div><div class="stat-value" id="savings">₵0.00</div></div>
   <div class="card"><div class="stat-label">Lent <span>↗</span></div><div class="stat-value negative" id="lent">₵0.00</div></div>
+  <div class="card"><div class="stat-label">For disbursement <span>⇢</span></div><div class="stat-value negative" id="heldFunds">₵0.00</div></div>
   <div class="card"><div class="stat-label">Spendable <span>✓</span></div><div class="stat-value positive" id="spendable">₵0.00</div></div>
   <div class="card"><div class="stat-label">This month <span>↗</span></div><div class="stat-value" id="monthNet">₵0.00</div></div>
  </div>
@@ -90,7 +91,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 
 <section id="transactions" class="page">
  <div class="card">
-  <div class="toolbar"><input class="search" id="txSearch" placeholder="Search transactions…"><select id="txType"><option value="">All types</option><option>income</option><option>expense</option><option>transfer</option><option>lend</option><option>repayment</option></select><select id="txWallet"><option value="">All wallets</option></select></div>
+  <div class="toolbar"><input class="search" id="txSearch" placeholder="Search transactions…"><select id="txType"><option value="">All types</option><option value="income">Income</option><option value="expense">Expense</option><option value="transfer">Transfer</option><option value="lend">Lend</option><option value="repayment">Loan repayment</option><option value="custody_in">Funds received for disbursement</option><option value="disbursement">Disbursement</option></select><select id="txWallet"><option value="">All wallets</option></select></div>
   <div class="table-wrap"><table class="table"><thead><tr><th>Transaction</th><th>Wallet</th><th>Amount</th><th>Date</th><th>Actions</th></tr></thead><tbody id="txTable"></tbody></table></div>
  </div>
 </section>
@@ -187,8 +188,8 @@ function normalizeState(raw){
    id:c?.id||('c_migrated_'+i),name:c?.name||'Category',icon:c?.icon||ICONS[0],color:c?.color||COLORS[i%COLORS.length],type:c?.type==='income'?'income':'expense',updatedAt:c?.updatedAt||new Date().toISOString()
  }));
  if(Array.isArray(raw.transactions)) base.transactions=raw.transactions.map((t,i)=>({
-   id:t?.id||('t_migrated_'+i),type:['income','expense','transfer','lend','repayment'].includes(t?.type)?t.type:'expense',amount:Number(t?.amount)||0,
-   walletId:t?.walletId||null,toWalletId:t?.toWalletId||null,categoryId:t?.categoryId||null,loanId:t?.loanId||null,
+   id:t?.id||('t_migrated_'+i),type:['income','expense','transfer','lend','repayment','custody_in','disbursement'].includes(t?.type)?t.type:'expense',amount:Number(t?.amount)||0,
+   walletId:t?.walletId||null,toWalletId:t?.toWalletId||null,categoryId:t?.categoryId||null,loanId:t?.loanId||null,fundId:t?.fundId||null,counterparty:String(t?.counterparty||''),
    date:t?.date||new Date().toISOString(),description:String(t?.description||''),
    createdAt:t?.createdAt||t?.updatedAt||new Date().toISOString(),updatedAt:t?.updatedAt||t?.createdAt||new Date().toISOString()
  }));
@@ -230,7 +231,8 @@ function calcBalances(){
  state.transactions.forEach(t=>{
   if(t.type==='income'){let w=wallet(t.walletId);if(w)w.balance+=+t.amount}
   if(t.type==='expense'||t.type==='lend'){let w=wallet(t.walletId);if(w)w.balance-=+t.amount}
-  if(t.type==='repayment'){let w=wallet(t.walletId);if(w)w.balance+=+t.amount}
+  if(t.type==='repayment'||t.type==='custody_in'){let w=wallet(t.walletId);if(w)w.balance+=+t.amount}
+  if(t.type==='disbursement'){let w=wallet(t.walletId);if(w)w.balance-=+t.amount}
   if(t.type==='transfer'){let a=wallet(t.walletId),b=wallet(t.toWalletId);if(a)a.balance-=+t.amount;if(b)b.balance+=+t.amount}
  });
 }
@@ -239,7 +241,9 @@ function totals(){
  let savings=state.wallets.filter(w=>w.savings).reduce((a,w)=>a+w.balance,0);
  let lent=state.transactions.filter(t=>t.type==='lend').reduce((a,t)=>a+Number(t.amount||0),0)-state.transactions.filter(t=>t.type==='repayment').reduce((a,t)=>a+Number(t.amount||0),0);
  if(lent<0)lent=0;
- return {total,savings,lent,spendable:total-savings};
+ let held=state.transactions.filter(t=>t.type==='custody_in').reduce((a,t)=>a+Number(t.amount||0),0)-state.transactions.filter(t=>t.type==='disbursement').reduce((a,t)=>a+Number(t.amount||0),0);
+ if(held<0)held=0;
+ return {total,savings,lent,held,spendable:total-savings-held};
 }
 function showPage(p){
  document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===p));
@@ -252,7 +256,7 @@ document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',(
 
 function render(){
  calcBalances();
- let t=totals();document.getElementById('totalBalance').textContent=money(t.total);document.getElementById('savings').textContent=money(t.savings);document.getElementById('lent').textContent=money(t.lent);document.getElementById('spendable').textContent=money(t.spendable);
+ let t=totals();document.getElementById('totalBalance').textContent=money(t.total);document.getElementById('savings').textContent=money(t.savings);document.getElementById('lent').textContent=money(t.lent);document.getElementById('heldFunds').textContent=money(t.held);document.getElementById('spendable').textContent=money(t.spendable);
  let now=new Date(),m=now.getMonth(),y=now.getFullYear();let mi=state.transactions.filter(x=>{let d=new Date(x.date);return d.getMonth()===m&&d.getFullYear()===y});let inc=mi.filter(x=>x.type==='income'||x.type==='repayment').reduce((a,x)=>a+x.amount,0),exp=mi.filter(x=>x.type==='expense'||x.type==='lend').reduce((a,x)=>a+x.amount,0);document.getElementById('monthNet').textContent=money(inc-exp);document.getElementById('monthNet').className='stat-value '+(inc-exp>=0?'positive':'negative');
  document.getElementById('profileName').value=state.profile.name||'';document.getElementById('currency').value=state.profile.currency||'₵';
  fillWalletSelects();renderWallets();renderWalletSummary();renderCategories();
@@ -290,7 +294,7 @@ function renderTransactions(){
    if(db!==da)return db-da;
    return (Date.parse(b.updatedAt||b.createdAt)||0)-(Date.parse(a.updatedAt||a.createdAt)||0);
  });
- document.getElementById('txTable').innerHTML=arr.map(t=>{let w=wallet(t.walletId),c=cat(t.categoryId);let sign=(t.type==='income'||t.type==='repayment')?'+':t.type==='expense'||t.type==='lend'?'-':'↔';let label=t.type==='lend'?'Lent':t.type==='repayment'?'Loan repayment':t.type;let cls=(t.type==='income'||t.type==='repayment')?'positive':(t.type==='expense'||t.type==='lend')?'negative':'';return `<tr><td><div class="row-main"><div class="avatar" style="background:${t.type==='lend'?'#dc4f5f22':(c?.color||'#64748b')+'22'}">${t.type==='lend'?'↗':(c?.icon||'↕')}</div><div><b>${esc(t.description||c?.name||label)}</b><span class="sub">${label}</span></div></div></td><td>${esc(w?.name||'—')}</td><td class="${cls}"><b>${sign}${money(t.amount)}</b></td><td><span class="sub">Date</span><br><b>${dateInputValue(t.date)}</b></td><td><button class="btn small" onclick="openTransaction('${t.id}')">Edit</button> <button class="btn small danger" onclick="deleteTransaction('${t.id}')">Delete</button></td></tr>`}).join('')||'<tr><td colspan="5"><div class="empty">No transactions found.</div></td></tr>';
+ document.getElementById('txTable').innerHTML=arr.map(t=>{let w=wallet(t.walletId),c=cat(t.categoryId);let sign=(t.type==='income'||t.type==='repayment'||t.type==='custody_in')?'+':(t.type==='expense'||t.type==='lend'||t.type==='disbursement')?'-':'↔';let label=t.type==='lend'?'Lent':t.type==='repayment'?'Loan repayment':t.type==='custody_in'?'Funds received for disbursement':t.type==='disbursement'?'Disbursement':t.type;let cls=(t.type==='income'||t.type==='repayment'||t.type==='custody_in')?'positive':(t.type==='expense'||t.type==='lend'||t.type==='disbursement')?'negative':'';return `<tr><td><div class="row-main"><div class="avatar" style="background:${t.type==='lend'?'#dc4f5f22':(c?.color||'#64748b')+'22'}">${t.type==='lend'?'↗':(c?.icon||'↕')}</div><div><b>${esc(t.description||c?.name||label)}</b><span class="sub">${label}</span></div></div></td><td>${esc(w?.name||'—')}</td><td class="${cls}"><b>${sign}${money(t.amount)}</b></td><td><span class="sub">Date</span><br><b>${dateInputValue(t.date)}</b></td><td><button class="btn small" onclick="openTransaction('${t.id}')">Edit</button> <button class="btn small danger" onclick="deleteTransaction('${t.id}')">Delete</button></td></tr>`}).join('')||'<tr><td colspan="5"><div class="empty">No transactions found.</div></td></tr>';
 }
 ['txSearch','txType','txWallet'].forEach(x=>document.getElementById(x).addEventListener('input',renderTransactions));
 function renderRecent(){
@@ -308,8 +312,8 @@ function renderRecent(){
  }).slice(0,6);
  box.innerHTML=arr.length?`<div class="table-wrap"><table class="table"><tbody>${arr.map(t=>{
    let c=cat(t.categoryId),w=wallet(t.walletId);
-   let sign=(t.type==='income'||t.type==='repayment')?'+':t.type==='expense'||t.type==='lend'?'-':'↔';
-   let cls=(t.type==='income'||t.type==='repayment')?'positive':t.type==='expense'||t.type==='lend'?'negative':'';
+   let sign=(t.type==='income'||t.type==='repayment'||t.type==='custody_in')?'+':(t.type==='expense'||t.type==='lend'||t.type==='disbursement')?'-':'↔';
+   let cls=(t.type==='income'||t.type==='repayment'||t.type==='custody_in')?'positive':(t.type==='expense'||t.type==='lend'||t.type==='disbursement')?'negative':'';
    let date=t.date?new Date(t.date).toLocaleDateString():'—';
    return `<tr><td><div class="row-main"><div class="avatar" style="background:${c?.color||w?.color||'#64748b'}22">${c?.icon||w?.icon||'↕'}</div><div><b>${esc(t.description||c?.name||t.type)}</b><span class="sub">${date} • ${esc(w?.name||'')}</span></div></div></td><td class="${cls}">${sign}${money(t.amount)}</td></tr>`;
  }).join('')}</tbody></table></div>`:'<div class="empty">No transactions yet. Add your first income or expense.</div>';
@@ -343,7 +347,7 @@ function renderAnalytics(){
  document.getElementById('activityChart').innerHTML=svgBars(activity,'value','#7c3aed');
 
  let total=totals(),inc=state.transactions.filter(t=>t.type==='income'||t.type==='repayment').reduce((a,t)=>a+t.amount,0),exp=state.transactions.filter(t=>t.type==='expense'||t.type==='lend').reduce((a,t)=>a+t.amount,0);
- document.getElementById('snapshot').innerHTML=`<div class="grid three"><div><span class="sub">Lifetime income</span><b class="positive">${money(inc)}</b></div><div><span class="sub">Lifetime expenses</span><b class="negative">${money(exp)}</b></div><div><span class="sub">Current spendable</span><b>${money(total.spendable)}</b></div></div>`;
+ document.getElementById('snapshot').innerHTML=`<div class="grid three"><div><span class="sub">Lifetime income</span><b class="positive">${money(inc)}</b></div><div><span class="sub">Lifetime expenses</span><b class="negative">${money(exp)}</b></div><div><span class="sub">Funds held for disbursement</span><b class="negative">${money(total.held)}</b></div><div><span class="sub">Current spendable</span><b>${money(total.spendable)}</b></div></div>`;
 }
 function openModal(content){document.getElementById('modal').innerHTML=content;document.getElementById('modalBg').classList.add('open')}
 function closeModal(){document.getElementById('modalBg').classList.remove('open')}
@@ -379,10 +383,12 @@ function deleteCategory(cid){if(state.transactions.some(t=>t.categoryId===cid))r
 function openTransaction(tid=null){
  editingId=tid;let t=tid?state.transactions.find(x=>x.id===tid):null;let type=t?.type||'expense';
  openModal(`<div class="modal-head"><h2>${t?'Edit':'New'} transaction</h2><button class="x" onclick="closeModal()">×</button></div>
- <div class="formgrid"><div class="field"><label>Type</label><select id="tType" onchange="refreshTxForm()"><option value="expense" ${type==='expense'?'selected':''}>Expense</option><option value="lend" ${type==='lend'?'selected':''}>Lend</option><option value="repayment" ${type==='repayment'?'selected':''}>Loan repayment</option><option value="income" ${type==='income'?'selected':''}>Income</option><option value="transfer" ${type==='transfer'?'selected':''}>Transfer</option></select></div><div class="field"><label>Amount</label><input id="tAmount" type="number" min="0" step="0.01" value="${t?.amount??''}"></div></div>
+ <div class="formgrid"><div class="field"><label>Type</label><select id="tType" onchange="refreshTxForm()"><option value="expense" ${type==='expense'?'selected':''}>Expense</option><option value="lend" ${type==='lend'?'selected':''}>Lend</option><option value="repayment" ${type==='repayment'?'selected':''}>Loan repayment</option><option value="income" ${type==='income'?'selected':''}>Income</option><option value="transfer" ${type==='transfer'?'selected':''}>Transfer</option><option value="custody_in" ${type==='custody_in'?'selected':''}>Funds received for disbursement</option><option value="disbursement" ${type==='disbursement'?'selected':''}>Disbursement</option></select></div><div class="field"><label>Amount</label><input id="tAmount" type="number" min="0" step="0.01" value="${t?.amount??''}"></div></div>
  <div class="formgrid"><div class="field"><label>Wallet</label><select id="tWallet">${state.wallets.map(w=>`<option value="${w.id}" ${t?.walletId===w.id?'selected':''}>${w.icon} ${esc(w.name)}</option>`).join('')}</select></div><div class="field" id="catField"><label>Category</label><select id="tCat">${state.categories.map(c=>`<option value="${c.id}" ${t?.categoryId===c.id?'selected':''}>${c.icon} ${esc(c.name)}</option>`).join('')}</select></div></div>
  <div class="field" id="toWalletField" style="display:none"><label>Transfer to</label><select id="tToWallet">${state.wallets.map(w=>`<option value="${w.id}" ${t?.toWalletId===w.id?'selected':''}>${w.icon} ${esc(w.name)}</option>`).join('')}</select></div>
  <div class="field" id="loanField" style="display:none"><label>Loan being repaid</label><select id="tLoan"></select></div>
+ <div class="field" id="fundField" style="display:none"><label>Funds source</label><select id="tFund"></select></div>
+ <div class="field" id="partyField" style="display:none"><label id="partyLabel">Person / organization</label><input id="tParty" value="${esc(t?.counterparty||'')}"></div>
  <div class="formgrid"><div class="field"><label>Date</label><input id="tDate" type="date" value="${t?dateInputValue(t.date):dateInputValue(new Date())}"></div><div class="field"><label>Description / note</label><input id="tDesc" value="${esc(t?.description||'')}"></div></div>
  <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveTransaction()">Save transaction</button></div>`);
  refreshTxForm();
@@ -395,10 +401,13 @@ function outstandingForLoan(loanId,excludeId=null){
 }
 function refreshTxForm(){
  let type=document.getElementById('tType').value;
- let catField=document.getElementById('catField'),toField=document.getElementById('toWalletField'),loanField=document.getElementById('loanField');
- catField.style.display=(type==='transfer'||type==='lend'||type==='repayment')?'none':'';
+ let catField=document.getElementById('catField'),toField=document.getElementById('toWalletField'),loanField=document.getElementById('loanField'),fundField=document.getElementById('fundField'),partyField=document.getElementById('partyField');
+ catField.style.display=(type==='transfer'||type==='lend'||type==='repayment'||type==='custody_in'||type==='disbursement')?'none':'';
  toField.style.display=type==='transfer'?'':'none';
  loanField.style.display=type==='repayment'?'':'none';
+ fundField.style.display=type==='disbursement'?'':'none';
+ partyField.style.display=(type==='custody_in'||type==='disbursement')?'':'none';
+ if(type==='custody_in'||type==='disbursement') document.getElementById('partyLabel').textContent=type==='custody_in'?'Received from':'Disburse to';
  if(type==='income'||type==='expense'){
    const catSelect=document.getElementById('tCat');
    const previousCategoryId=catSelect?.value||state.transactions.find(x=>x.id===editingId)?.categoryId||'';
@@ -406,30 +415,42 @@ function refreshTxForm(){
    if(previousCategoryId && state.categories.some(c=>c.id===previousCategoryId && c.type===type)) catSelect.value=previousCategoryId;
  }
  if(type==='repayment'){
-   let currentLoan=document.getElementById('tLoan').value||state.transactions.find(x=>x.id===state.transactions.find(y=>y.id===editingId)?.loanId)?.id||'';
+   let currentLoan=document.getElementById('tLoan').value||state.transactions.find(x=>x.id===editingId)?.loanId||'';
    let loans=state.transactions.filter(x=>x.type==='lend'&&outstandingForLoan(x.id,editingId)>0);
    document.getElementById('tLoan').innerHTML=loans.map(x=>`<option value="${x.id}" ${x.id===currentLoan?'selected':''}>${esc(x.description||'Loan')} — ${money(outstandingForLoan(x.id,editingId))} outstanding</option>`).join('');
  }
+ if(type==='disbursement'){
+   let currentFund=document.getElementById('tFund').value||state.transactions.find(x=>x.id===editingId)?.fundId||'';
+   let funds=state.transactions.filter(x=>x.type==='custody_in'&&outstandingForFund(x.id,editingId)>0);
+   document.getElementById('tFund').innerHTML=funds.map(x=>`<option value="${x.id}" ${x.id===currentFund?'selected':''}>${esc(x.counterparty||x.description||'Funds received')} — ${money(outstandingForFund(x.id,editingId))} available</option>`).join('');
+ }
 }
-function fingerprint(t){return [t.type,Number(t.amount).toFixed(2),t.walletId,t.toWalletId||'',t.categoryId||'',t.loanId||'',dateInputValue(t.date),String(t.description||'').trim().toLowerCase()].join('|')}
+function outstandingForFund(fundId,excludeId=null){
+ const fund=state.transactions.find(x=>x.id===fundId&&x.type==='custody_in');
+ if(!fund)return 0;
+ const used=state.transactions.filter(x=>x.type==='disbursement'&&x.fundId===fundId&&x.id!==excludeId).reduce((a,x)=>a+Number(x.amount||0),0);
+ return Math.max(0,Number(fund.amount||0)-used);
+}
+function fingerprint(t){return [t.type,Number(t.amount).toFixed(2),t.walletId,t.toWalletId||'',t.categoryId||'',t.loanId||'',t.fundId||'',String(t.counterparty||'').trim().toLowerCase(),dateInputValue(t.date),String(t.description||'').trim().toLowerCase()].join('|')}
 function saveTransaction(){
- let type=document.getElementById('tType').value,amount=Number(document.getElementById('tAmount').value),walletId=document.getElementById('tWallet').value,dateValue=document.getElementById('tDate').value,description=document.getElementById('tDesc').value.trim(),categoryId=(type==='transfer'||type==='lend'||type==='repayment')?null:document.getElementById('tCat').value,toWalletId=type==='transfer'?document.getElementById('tToWallet').value:null,loanId=type==='repayment'?(document.getElementById('tLoan')?.value||null):null;
+ let type=document.getElementById('tType').value,amount=Number(document.getElementById('tAmount').value),walletId=document.getElementById('tWallet').value,dateValue=document.getElementById('tDate').value,description=document.getElementById('tDesc').value.trim(),categoryId=(type==='transfer'||type==='lend'||type==='repayment'||type==='custody_in'||type==='disbursement')?null:document.getElementById('tCat').value,toWalletId=type==='transfer'?document.getElementById('tToWallet').value:null,loanId=type==='repayment'?(document.getElementById('tLoan')?.value||null):null,fundId=type==='disbursement'?(document.getElementById('tFund')?.value||null):null,counterparty=(type==='custody_in'||type==='disbursement')?(document.getElementById('tParty')?.value.trim()||''):'';
  if(!amount||amount<=0)return toast('Enter a valid amount');
  if(!walletId)return toast('Choose a wallet');
  if(!dateValue)return toast('Choose a transaction date');
  if(type==='transfer'&&walletId===toWalletId)return toast('Choose different wallets');
- if(type!=='transfer'&&type!=='lend'&&type!=='repayment'&&!categoryId)return toast('Choose a category');
+ if(type!=='transfer'&&type!=='lend'&&type!=='repayment'&&type!=='custody_in'&&type!=='disbursement'&&!categoryId)return toast('Choose a category');
  if(type==='repayment'){if(!loanId)return toast('Choose the loan being repaid');let outstanding=outstandingForLoan(loanId,editingId);if(amount>outstanding+0.000001)return toast(`Repayment cannot exceed ${money(outstanding)} outstanding`);}
+ if(type==='disbursement'){if(!fundId)return toast('Choose the funds source');let available=outstandingForFund(fundId,editingId);if(amount>available+0.000001)return toast(`Disbursement cannot exceed ${money(available)} available`);}
  let now=new Date().toISOString();
  let index=editingId?state.transactions.findIndex(x=>x.id===editingId):-1;
  let existingTx=index>=0?state.transactions[index]:null;
- let obj={id:editingId||id('t'),type,amount,walletId,toWalletId,categoryId,loanId,date:transactionDateISO(dateValue),description,createdAt:existingTx?.createdAt||now,updatedAt:now};
+ let obj={id:editingId||id('t'),type,amount,walletId,toWalletId,categoryId,loanId,fundId,counterparty,date:transactionDateISO(dateValue),description,createdAt:existingTx?.createdAt||now,updatedAt:now};
  let dup=state.transactions.find(x=>fingerprint(x)===fingerprint(obj)&&x.id!==editingId);
  if(dup&&!confirm(`A matching transaction already exists (${money(dup.amount)}). Save this as a separate transaction anyway?`))return;
  if(index>=0)state.transactions[index]=obj;else state.transactions.push(obj);
  closeModal();save({immediate:true});toast(index>=0?'Transaction updated':'Transaction saved');
 }
-function deleteTransaction(tid){if(confirm('Delete this transaction?')){state.transactions=state.transactions.filter(t=>t.id!==tid);save({immediate:true});}}
+function deleteTransaction(tid){let tx=state.transactions.find(t=>t.id===tid);if(tx?.type==='custody_in'&&state.transactions.some(t=>t.type==='disbursement'&&t.fundId===tid))return toast('Cannot delete funds received while a disbursement is linked to them');if(confirm('Delete this transaction?')){state.transactions=state.transactions.filter(t=>t.id!==tid);save({immediate:true});}}
 function exportJSON(){let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='flowtrack-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);toast('JSON backup exported')}
 document.getElementById('jsonFile').addEventListener('change',e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>importJSON(r.result);r.readAsText(f);e.target.value=''});
 function importJSON(text){
@@ -455,7 +476,7 @@ function importJSON(text){
   let existing=new Set(state.transactions.map(fingerprint)),dups=0,add=[];
   rawTx.forEach(raw=>{
     if(!raw||!raw.amount||!raw.date)return;
-    let t={...raw,id:raw.id||id('t'),amount:Number(raw.amount),type:['income','expense','transfer','lend','repayment'].includes(raw.type)?raw.type:'expense',
+    let t={...raw,id:raw.id||id('t'),amount:Number(raw.amount),type:['income','expense','transfer','lend','repayment','custody_in','disbursement'].includes(raw.type)?raw.type:'expense',
       walletId:walletMap.get(raw.walletId)||raw.walletId||null,toWalletId:walletMap.get(raw.toWalletId)||raw.toWalletId||null,categoryId:catMap.get(raw.categoryId)||raw.categoryId||null,loanId:raw.loanId||null,
       date:raw.date,description:String(raw.description||''),createdAt:raw.createdAt||raw.updatedAt||new Date().toISOString(),updatedAt:raw.updatedAt||raw.createdAt||new Date().toISOString()};
     if(!t.walletId||!state.wallets.some(w=>w.id===t.walletId))return;
@@ -473,7 +494,7 @@ function reportData(){
  let inc=state.transactions.filter(t=>t.type==='income'||t.type==='repayment').reduce((a,t)=>a+Number(t.amount),0);
  let exp=state.transactions.filter(t=>t.type==='expense'||t.type==='lend').reduce((a,t)=>a+Number(t.amount),0);
  let t=totals();
- return {inc,exp,net:inc-exp,total:t.total,savings:t.savings,spendable:t.spendable};
+ return {inc,exp,net:inc-exp,total:t.total,savings:t.savings,held:t.held,spendable:t.spendable};
 }
 function reportChartsHTML(){
  let s=series(6);
@@ -486,14 +507,14 @@ function reportChartsHTML(){
 }
 function reportTransactionsHTML(){
  let arr=[...state.transactions].sort((a,b)=>new Date(b.date)-new Date(a.date));
- return `<h2>Transaction history</h2><table><thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Wallet</th><th>Category</th><th>Amount</th></tr></thead><tbody>${arr.map(t=>`<tr><td>${esc(dateInputValue(t.date))}</td><td>${esc(t.type)}</td><td>${esc(t.description||'')}</td><td>${esc(wallet(t.walletId)?.name||'—')}</td><td>${esc(cat(t.categoryId)?.name||'—')}</td><td>${money(t.amount)}</td></tr>`).join('')}</tbody></table>`;
+ return `<h2>Transaction history</h2><table><thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Wallet</th><th>Category</th><th>Amount</th></tr></thead><tbody>${arr.map(t=>{let label=t.type==='custody_in'?'Funds received for disbursement':t.type==='disbursement'?'Disbursement':t.type==='repayment'?'Loan repayment':t.type==='lend'?'Lend':t.type;let desc=t.description||t.counterparty||'';return `<tr><td>${esc(dateInputValue(t.date))}</td><td>${esc(label)}</td><td>${esc(desc)}</td><td>${esc(wallet(t.walletId)?.name||'—')}</td><td>${esc(cat(t.categoryId)?.name||'—')}</td><td>${money(t.amount)}</td></tr>`}).join('')}</tbody></table>`;
 }
 function buildReportHTML(){
  let d=reportData(),u=state.profile.name||'FlowTrack Pro';
  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(u)} — FlowTrack Report</title><style>
  @page{size:A4;margin:14mm}body{font-family:Arial,sans-serif;color:#18212f;margin:0;font-size:10pt}h1{font-size:24pt;margin:0 0 4px}h2{font-size:14pt;margin:22px 0 9px;border-bottom:1px solid #ddd;padding-bottom:5px}.muted{color:#718096}.header{border-bottom:2px solid #2563eb;padding-bottom:12px;margin-bottom:16px}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.card{border:1px solid #e1e5eb;border-radius:8px;padding:10px}.card b{display:block;font-size:14pt;margin-top:4px}table{width:100%;border-collapse:collapse;margin-bottom:10px}th,td{border-bottom:1px solid #e5e9f0;padding:6px;text-align:left}th{background:#f5f7fb}.footer{margin-top:20px;color:#718096;font-size:8pt} </style></head><body>
  <div class="header"><h1>${esc(u)} — Financial Report</h1><div class="muted">Generated ${esc(new Date().toLocaleString())}</div></div>
- <div class="cards"><div class="card">Total balance<b>${money(d.total)}</b></div><div class="card">Savings<b>${money(d.savings)}</b></div><div class="card">Spendable<b>${money(d.spendable)}</b></div><div class="card">Net cash flow<b>${money(d.net)}</b></div></div>
+ <div class="cards"><div class="card">Total balance<b>${money(d.total)}</b></div><div class="card">Savings<b>${money(d.savings)}</b></div><div class="card">For disbursement<b>${money(d.held)}</b></div><div class="card">Spendable<b>${money(d.spendable)}</b></div><div class="card">Net cash flow<b>${money(d.net)}</b></div></div>
  ${reportChartsHTML()}${reportTransactionsHTML()}<div class="footer">FlowTrack Pro • Professional A4 financial report</div>
  </body></html>`;
 }
