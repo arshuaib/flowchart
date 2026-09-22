@@ -9,7 +9,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script>window.FLOWTRACK_BUILD_VERSION="3.5.1";</script>
+<script>window.FLOWTRACK_BUILD_VERSION="3.5.2";</script>
 <style>
 :root{--bg:#f5f7fb;--panel:#fff;--text:#18212f;--muted:#718096;--line:#e5e9f0;--primary:#2563eb;--primary2:#1d4ed8;--good:#0f9d67;--bad:#dc4f5f;--shadow:0 10px 30px rgba(20,34,55,.07);--radius:18px}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
@@ -50,6 +50,13 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
   @page{size:A4;margin:14mm}
   body.report-print{background:#fff}
 }
+
+.multi-fund-list{display:grid;gap:8px;max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:10px}
+.multi-fund-item{display:flex;align-items:center;gap:10px;padding:9px;border-radius:8px;background:var(--panel2,#f8fafc)}
+.multi-fund-item input{width:18px;height:18px;flex:0 0 auto}
+.multi-fund-item .fund-info{flex:1;min-width:0}
+.multi-fund-item .fund-info b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.multi-fund-total{display:flex;justify-content:space-between;margin-top:8px;font-weight:700}
 </style>
 </head>
 <body>
@@ -153,7 +160,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 
 <script>
 const KEY='flowtrack_pro_v1';
-const BUILD_VERSION=window.FLOWTRACK_BUILD_VERSION||'3.5.1';
+const BUILD_VERSION=window.FLOWTRACK_BUILD_VERSION||'3.5.2';
 const FLOWTRACK_GOOGLE_CLIENT_ID='963866679895-e0ck074n3ivrprahg8tdicn4aij257mc.apps.googleusercontent.com';
 const ICONS=['💵','🏦','💳','👛','💰','📱','🏠','🚗','✈️','🎓','🛒','🍔','⚡','🔧','🎁','📦','💡','🧾','🎯','⭐','🛍️','🏥','🎵','☪️'];
 const COLORS=['#2563eb','#0f9d67','#dc4f5f','#f59e0b','#7c3aed','#0891b2','#db2777','#475569'];
@@ -368,6 +375,58 @@ function renderAnalytics(){
  let total=totals(),inc=state.transactions.filter(t=>t.type==='income'||t.type==='repayment').reduce((a,t)=>a+t.amount,0),exp=state.transactions.filter(t=>t.type==='expense'||t.type==='lend').reduce((a,t)=>a+t.amount,0);
  document.getElementById('snapshot').innerHTML=`<div class="grid three"><div><span class="sub">Lifetime income</span><b class="positive">${money(inc)}</b></div><div><span class="sub">Lifetime expenses</span><b class="negative">${money(exp)}</b></div><div><span class="sub">Funds held for disbursement</span><b class="negative">${money(total.held)}</b></div><div><span class="sub">Current spendable</span><b>${money(total.spendable)}</b></div></div>`;
 }
+
+function renderDisbursementFundSelector(selectedIds=[]){
+  const box=document.getElementById('dFunds');
+  if(!box) return;
+  const funds=typeof getOutstandingDisbursementFunds==='function'
+    ? getOutstandingDisbursementFunds() : [];
+  if(!funds.length){
+    box.innerHTML='<div class="empty">No outstanding funds available for disbursement.</div>';
+    const total=document.getElementById('dFundsTotal');
+    if(total) total.textContent=money(0);
+    return;
+  }
+  box.innerHTML=funds.map(f=>`
+    <label class="multi-fund-item">
+      <input type="checkbox" value="${esc(f.id)}"
+        ${selectedIds.includes(f.id)?'checked':''}
+        onchange="updateDisbursementFundTotal()">
+      <div class="fund-info">
+        <b>${esc(f.person||f.source||'Fund source')}</b>
+        <span class="sub">${esc(f.description||'')} · Available ${money(f.remaining)}</span>
+      </div>
+      <b>${money(f.remaining)}</b>
+    </label>`).join('');
+  updateDisbursementFundTotal();
+}
+function selectedDisbursementFundIds(){
+  return [...document.querySelectorAll('#dFunds input[type="checkbox"]:checked')].map(x=>x.value);
+}
+function updateDisbursementFundTotal(){
+  const ids=selectedDisbursementFundIds();
+  const funds=(typeof getOutstandingDisbursementFunds==='function'
+    ? getOutstandingDisbursementFunds() : []).filter(f=>ids.includes(f.id));
+  const total=funds.reduce((a,f)=>a+Number(f.remaining||0),0);
+  const el=document.getElementById('dFundsTotal');
+  if(el) el.textContent=money(total);
+  return {ids,funds,total};
+}
+function getSelectedDisbursementAllocations(amount){
+  const s=updateDisbursementFundTotal();
+  let remaining=Number(amount||0);
+  const allocations=[];
+  for(const f of s.funds){
+    if(remaining<=0) break;
+    const take=Math.min(remaining,Number(f.remaining||0));
+    if(take>0){
+      allocations.push({fundId:f.id,amount:take});
+      remaining-=take;
+    }
+  }
+  return {allocations,remaining,totalAvailable:s.total};
+}
+
 function openModal(content){document.getElementById('modal').innerHTML=content;document.getElementById('modalBg').classList.add('open')}
 function closeModal(){document.getElementById('modalBg').classList.remove('open')}
 document.getElementById('modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')closeModal()});
