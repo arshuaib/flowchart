@@ -9,7 +9,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script>window.FLOWTRACK_BUILD_VERSION="3.5.0";</script>
+<script>window.FLOWTRACK_BUILD_VERSION="3.5.1";</script>
 <style>
 :root{--bg:#f5f7fb;--panel:#fff;--text:#18212f;--muted:#718096;--line:#e5e9f0;--primary:#2563eb;--primary2:#1d4ed8;--good:#0f9d67;--bad:#dc4f5f;--shadow:0 10px 30px rgba(20,34,55,.07);--radius:18px}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
@@ -153,7 +153,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 
 <script>
 const KEY='flowtrack_pro_v1';
-const BUILD_VERSION=window.FLOWTRACK_BUILD_VERSION||'3.4.1';
+const BUILD_VERSION=window.FLOWTRACK_BUILD_VERSION||'3.5.1';
 const FLOWTRACK_GOOGLE_CLIENT_ID='963866679895-e0ck074n3ivrprahg8tdicn4aij257mc.apps.googleusercontent.com';
 const ICONS=['💵','🏦','💳','👛','💰','📱','🏠','🚗','✈️','🎓','🛒','🍔','⚡','🔧','🎁','📦','💡','🧾','🎯','⭐','🛍️','🏥','🎵','☪️'];
 const COLORS=['#2563eb','#0f9d67','#dc4f5f','#f59e0b','#7c3aed','#0891b2','#db2777','#475569'];
@@ -200,6 +200,23 @@ function normalizeState(raw){
 let storedState=null;
 try{storedState=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){console.warn('FlowTrack local data could not be parsed; preserving raw backup key.',e);}
 let state=normalizeState(storedState);
+// Repair older disbursement records that were saved without a fundId when there is a single exact matching custody record.
+(function repairDisbursementLinks(){
+ const funds=state.transactions.filter(t=>t.type==='custody_in');
+ const used={};
+ state.transactions.filter(t=>t.type==='disbursement'&&t.fundId).forEach(t=>used[t.fundId]=(used[t.fundId]||0)+Number(t.amount||0));
+ state.transactions.filter(t=>t.type==='disbursement'&&!t.fundId).forEach(d=>{
+   const candidates=funds.filter(f=>{
+     const sameWallet=f.walletId===d.walletId;
+     const sameAmount=Math.abs(Number(f.amount||0)-Number(d.amount||0))<0.000001;
+     const sameParty=!f.counterparty||!d.counterparty||String(f.counterparty).trim().toLowerCase()===String(d.counterparty).trim().toLowerCase();
+     const dateOk=new Date(d.date)>=new Date(f.date);
+     const available=Number(f.amount||0)-(used[f.id]||0);
+     return sameWallet&&sameAmount&&sameParty&&dateOk&&available>=Number(d.amount||0);
+   });
+   if(candidates.length===1){d.fundId=candidates[0].id;used[d.fundId]=(used[d.fundId]||0)+Number(d.amount||0);}
+ });
+})();
 localStorage.setItem(KEY,JSON.stringify(state));
 
 let editingId=null, selectedIcon='💵', selectedColor='#2563eb';
@@ -236,13 +253,15 @@ function calcBalances(){
   if(t.type==='transfer'){let a=wallet(t.walletId),b=wallet(t.toWalletId);if(a)a.balance-=+t.amount;if(b)b.balance+=+t.amount}
  });
 }
+function heldFundsTotal(){
+ return state.transactions.filter(t=>t.type==='custody_in').reduce((sum,fund)=>sum+outstandingForFund(fund.id),0);
+}
 function totals(){
  let total=state.wallets.reduce((a,w)=>a+w.balance,0);
  let savings=state.wallets.filter(w=>w.savings).reduce((a,w)=>a+w.balance,0);
  let lent=state.transactions.filter(t=>t.type==='lend').reduce((a,t)=>a+Number(t.amount||0),0)-state.transactions.filter(t=>t.type==='repayment').reduce((a,t)=>a+Number(t.amount||0),0);
  if(lent<0)lent=0;
- let held=state.transactions.filter(t=>t.type==='custody_in').reduce((a,t)=>a+Number(t.amount||0),0)-state.transactions.filter(t=>t.type==='disbursement').reduce((a,t)=>a+Number(t.amount||0),0);
- if(held<0)held=0;
+ let held=heldFundsTotal();
  return {total,savings,lent,held,spendable:total-savings-held};
 }
 function showPage(p){

@@ -1,4 +1,4 @@
-const CACHE='flowtrack-network-first-v3.5.0';
+const CACHE='flowtrack-network-first-v3.5.1';
 self.addEventListener('install',event=>self.skipWaiting());
 self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
 self.addEventListener('fetch',event=>{
