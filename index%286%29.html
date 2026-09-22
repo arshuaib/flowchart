@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FlowTrack Pro — Cash Flow Manager</title>
+<meta name="description" content="Professional cash-flow, wallets, savings and analytics manager">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>window.FLOWTRACK_BUILD_VERSION="3.5.2";</script>
+<style>
+:root{--bg:#f5f7fb;--panel:#fff;--text:#18212f;--muted:#718096;--line:#e5e9f0;--primary:#2563eb;--primary2:#1d4ed8;--good:#0f9d67;--bad:#dc4f5f;--shadow:0 10px 30px rgba(20,34,55,.07);--radius:18px}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}button{cursor:pointer;border:0}.app{min-height:100vh;display:flex}
+.sidebar{width:250px;background:#101828;color:#d9e2f1;padding:22px 15px;position:fixed;inset:0 auto 0 0;z-index:20}
+.brand{display:flex;gap:10px;align-items:center;padding:8px 10px 25px;font-weight:800;font-size:20px}.brandmark{width:36px;height:36px;border-radius:11px;background:#2563eb;display:grid;place-items:center;color:#fff}
+.nav{display:grid;gap:5px}.nav button{background:transparent;color:#aebbd0;text-align:left;padding:12px 13px;border-radius:11px;display:flex;gap:12px;align-items:center}.nav button:hover,.nav button.active{background:#1d2939;color:#fff}.nav .ico{width:22px;text-align:center}
+.side-bottom{position:absolute;left:15px;right:15px;bottom:20px}.sync-pill{font-size:12px;color:#9fb0c9;background:#182337;padding:10px;border-radius:12px}
+.main{margin-left:250px;width:calc(100% - 250px);padding:28px;max-width:1600px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px}.title h1{margin:0;font-size:28px}.title p{margin:5px 0 0;color:var(--muted)}.actions{display:flex;gap:9px;flex-wrap:wrap}
+.btn{padding:10px 14px;border-radius:11px;background:#fff;border:1px solid var(--line);color:var(--text);box-shadow:0 2px 5px rgba(0,0,0,.02)}.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}.btn.danger{color:var(--bad)}.btn.small{padding:7px 10px;font-size:13px}
+.grid{display:grid;gap:16px}.stats{grid-template-columns:repeat(5,minmax(0,1fr));margin-bottom:16px}.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:19px}.stat-label{font-size:13px;color:var(--muted);display:flex;justify-content:space-between}.stat-value{font-size:28px;font-weight:800;margin-top:9px}.positive{color:var(--good)}.negative{color:var(--bad)}
+.two{grid-template-columns:1.5fr 1fr}.three{grid-template-columns:1.1fr 1fr 1fr}.card h3{margin:0 0 16px;font-size:16px}.chart{height:280px;position:relative}.chart svg{width:100%;height:100%;overflow:visible}.legend{display:flex;gap:16px;font-size:12px;color:var(--muted);margin-top:6px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:12px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;white-space:nowrap}.table th{color:var(--muted);font-weight:600}.row-main{display:flex;align-items:center;gap:10px}.avatar{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:17px}.sub{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.page{display:none}.page.active{display:block}.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}.search{flex:1;min-width:180px}
+input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 11px;color:var(--text);outline:none}input:focus,select:focus,textarea:focus{border-color:#8eb1ff;box-shadow:0 0 0 3px #2563eb12}.field{margin-bottom:13px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.item-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.wallet,.cat{display:flex;align-items:center;gap:12px}.item-card{padding:15px}.item-card .meta{margin-left:auto;text-align:right}.item-card h4{margin:0 0 3px}.item-card p{margin:0;color:var(--muted);font-size:12px}
+.iconpick{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}.iconpick button,.colorpick button{height:35px;border-radius:9px;background:#f1f4f8}.iconpick button.selected{outline:2px solid var(--primary)}.colorpick{display:flex;gap:7px;flex-wrap:wrap}.colorpick button{width:30px;height:30px;border-radius:50%}.colorpick button.selected{outline:2px solid #111;outline-offset:2px}
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.48);display:none;align-items:center;justify-content:center;z-index:50;padding:15px}.modal-bg.open{display:flex}.modal{background:#fff;width:min(560px,100%);max-height:90vh;overflow:auto;border-radius:20px;padding:21px;box-shadow:0 30px 80px rgba(0,0,0,.25)}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.modal-head h2{margin:0;font-size:19px}.x{background:#eef1f5;border-radius:9px;width:34px;height:34px}.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}
+.toast{position:fixed;right:18px;bottom:18px;background:#101828;color:#fff;padding:12px 15px;border-radius:12px;box-shadow:var(--shadow);display:none;z-index:100;font-size:13px}.toast.show{display:block}
+.empty{text-align:center;color:var(--muted);padding:35px}.mobile-nav{display:none}
+@media(max-width:1050px){.stats{grid-template-columns:repeat(2,1fr)}.two,.three{grid-template-columns:1fr}.item-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.sidebar{display:none}.main{margin-left:0;width:100%;padding:16px 14px 95px}.topbar{align-items:flex-start}.title h1{font-size:22px}.actions{width:100%;justify-content:flex-end}.actions .btn:nth-child(1),.actions .btn:nth-child(2){display:none}.actions .btn:nth-child(3){display:inline-flex}.stats{grid-template-columns:1fr 1fr;gap:10px}.stat-value{font-size:21px}.card{padding:15px}.item-grid{grid-template-columns:1fr}.mobile-nav{position:fixed;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);z-index:30;padding:7px 2px}.mobile-nav button{background:transparent;color:var(--muted);font-size:9px;min-width:0;padding:5px 1px}.mobile-nav button.active{color:var(--primary);font-weight:700}.mobile-nav span{display:block;font-size:17px;margin-bottom:2px}.formgrid{grid-template-columns:1fr}.table th,.table td{font-size:12px;padding:10px 7px}.table-wrap{overflow-x:auto}.table th:nth-child(4),.table td:nth-child(4){display:table-cell}.table th:nth-child(5),.table td:nth-child(5){min-width:132px}.table td:nth-child(4){min-width:92px}.modal-bg{padding:8px}.modal{width:100%;max-height:92vh;padding:16px}.iconpick{grid-template-columns:repeat(6,1fr)}.modal-actions{position:sticky;bottom:0;background:#fff;padding-top:10px}.modal-actions .btn{flex:1}}
+
+.report-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
+.chart-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;min-height:320px}
+.chart-card h3{margin:0 0 12px}
+.chart-svg{width:100%;height:250px;display:block}
+.wallet-summary-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.wallet-summary-item:last-child{border-bottom:0}
+.wallet-summary-item .wallet-name{flex:1;min-width:0}
+.wallet-summary-item .wallet-name b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wallet-summary-item .wallet-bar{height:6px;background:#edf1f6;border-radius:99px;margin-top:6px;overflow:hidden}
+.wallet-summary-item .wallet-bar span{display:block;height:100%;border-radius:99px}
+.report-window{font-family:Arial,sans-serif}
+@media(max-width:720px){.chart-grid{grid-template-columns:1fr}.chart-card{min-height:290px}.report-actions .btn{flex:1}}
+@media print{
+  @page{size:A4;margin:14mm}
+  body.report-print{background:#fff}
+}
+
+.multi-fund-list{display:grid;gap:8px;max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:10px}
+.multi-fund-item{display:flex;align-items:center;gap:10px;padding:9px;border-radius:8px;background:var(--panel2,#f8fafc)}
+.multi-fund-item input{width:18px;height:18px;flex:0 0 auto}
+.multi-fund-item .fund-info{flex:1;min-width:0}
+.multi-fund-item .fund-info b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.multi-fund-total{display:flex;justify-content:space-between;margin-top:8px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="brandmark">₣</div> FlowTrack Pro</div>
+  <div class="nav" id="nav">
+    <button data-page="dashboard" class="active"><span class="ico">⌂</span>Dashboard</button>
+    <button data-page="transactions"><span class="ico">↕</span>Transactions</button>
+    <button data-page="wallets"><span class="ico">▣</span>Wallets</button>
+    <button data-page="categories"><span class="ico">◈</span>Categories</button>
+    <button data-page="analytics"><span class="ico">◒</span>Analytics</button>
+    <button data-page="settings"><span class="ico">⚙</span>Settings</button>
+  </div>
+  <div class="side-bottom"><div class="sync-pill">● <span id="syncText">Local data ready</span></div></div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+ <div class="title"><h1 id="pageTitle">Dashboard</h1><p id="greeting">Your money at a glance.</p></div>
+ <div class="actions"><button class="btn" onclick="exportJSON()">Export JSON</button><button class="btn" onclick="document.getElementById('jsonFile').click()">Import JSON</button><button class="btn" onclick="exportReportPDF()">PDF report</button><button class="btn primary" onclick="openTransaction()">+ Add transaction</button><input id="jsonFile" type="file" accept=".json,application/json" hidden></div>
+</header>
+
+<section id="dashboard" class="page active">
+ <div class="grid stats">
+  <div class="card"><div class="stat-label">Total balance <span>◉</span></div><div class="stat-value" id="totalBalance">₵0.00</div></div>
+  <div class="card"><div class="stat-label">Savings <span>▰</span></div><div class="stat-value" id="savings">₵0.00</div></div>
+  <div class="card"><div class="stat-label">Lent <span>↗</span></div><div class="stat-value negative" id="lent">₵0.00</div></div>
+  <div class="card"><div class="stat-label">For disbursement <span>⇢</span></div><div class="stat-value negative" id="heldFunds">₵0.00</div></div>
+  <div class="card"><div class="stat-label">Spendable <span>✓</span></div><div class="stat-value positive" id="spendable">₵0.00</div></div>
+  <div class="card"><div class="stat-label">This month <span>↗</span></div><div class="stat-value" id="monthNet">₵0.00</div></div>
+ </div>
+ <div class="grid two">
+  <div class="card"><h3>Cash flow</h3><div class="chart" id="cashChart"></div><div class="legend"><span><i class="dot" style="background:#2563eb"></i>Income</span><span><i class="dot" style="background:#dc4f5f"></i>Expenses</span></div></div>
+  <div class="card"><h3>Wallets</h3><div id="walletSummary"></div></div>
+ </div>
+ <div class="card" style="margin-top:16px"><h3>Recent transactions</h3><div id="recent"></div></div>
+</section>
+
+<section id="transactions" class="page">
+ <div class="card">
+  <div class="toolbar"><input class="search" id="txSearch" placeholder="Search transactions…"><select id="txType"><option value="">All types</option><option value="income">Income</option><option value="expense">Expense</option><option value="transfer">Transfer</option><option value="lend">Lend</option><option value="repayment">Loan repayment</option><option value="custody_in">Funds received for disbursement</option><option value="disbursement">Disbursement</option></select><select id="txWallet"><option value="">All wallets</option></select></div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Transaction</th><th>Wallet</th><th>Amount</th><th>Date</th><th>Actions</th></tr></thead><tbody id="txTable"></tbody></table></div>
+ </div>
+</section>
+
+<section id="wallets" class="page">
+ <div class="toolbar"><button class="btn primary" onclick="openWallet()">+ New wallet</button></div>
+ <div class="item-grid" id="walletGrid"></div>
+</section>
+
+<section id="categories" class="page">
+ <div class="toolbar"><button class="btn primary" onclick="openCategory()">+ New category</button></div>
+ <div class="item-grid" id="categoryGrid"></div>
+</section>
+
+<section id="analytics" class="page">
+ <div class="report-actions">
+  <button class="btn primary" onclick="exportReportPDF()">Export PDF report</button>
+  <button class="btn" onclick="exportReportWord()">Export Word report</button>
+ </div>
+ <div class="grid two">
+  <div class="card"><h3>Income vs expenses — 6 months</h3><div class="chart" id="barChart"></div></div>
+  <div class="card"><h3>Expenses by category</h3><div id="categoryAnalytics"></div></div>
+ </div>
+ <div class="chart-grid">
+  <div class="chart-card"><h3>Wallet balances</h3><div id="walletBalanceChart"></div></div>
+  <div class="chart-card"><h3>Monthly net cash flow</h3><div id="netFlowChart"></div></div>
+  <div class="chart-card"><h3>Income by category</h3><div id="incomeCategoryChart"></div></div>
+  <div class="chart-card"><h3>Transaction activity</h3><div id="activityChart"></div></div>
+ </div>
+ <div class="card" style="margin-top:16px"><h3>Financial snapshot</h3><div id="snapshot"></div></div>
+</section>
+
+<section id="settings" class="page">
+ <div class="grid two">
+  <div class="card"><h3>Profile</h3><div class="field"><label>Profile name</label><input id="profileName"></div><div class="field"><label>Currency symbol</label><input id="currency" maxlength="4"></div><button class="btn primary" onclick="saveSettings()">Save profile</button></div>
+  <div class="card"><h3>Google Drive sync</h3>
+<div id="googleSignedOut">
+<p style="color:var(--muted);font-size:13px">Connect FlowTrack to your Google Drive. The app already has its Google connection configured, so you only need to choose your Gmail account.</p>
+<button class="btn primary" onclick="signInGoogle()">Continue with Google</button>
+<p id="driveStatusOut" class="sub"></p>
+</div>
+<div id="googleSignedIn" style="display:none">
+<div class="row-main" style="margin-bottom:14px"><div class="avatar" id="googleAvatar">G</div><div><b id="googleEmail">Google account</b><span class="sub">Connected to FlowTrack</span></div></div>
+<button class="btn primary" onclick="driveSave()">Save to Google Drive</button>
+<button class="btn" onclick="driveLoad()">Load from Google Drive</button>
+<button class="btn danger" onclick="signOutGoogle()">Sign out</button>
+<p id="driveStatus" class="sub"></p>
+</div></div>
+ <div class="card" style="margin-top:16px"><h3>Data management</h3><button class="btn" onclick="exportJSON()">Backup JSON</button> <button class="btn danger" onclick="resetData()">Reset all data</button><p class="sub">Tip: keep a JSON backup before resetting or importing a large dataset.</p></div>
+</section>
+</main>
+</div>
+<nav class="mobile-nav" id="mobileNav">
+<button data-page="dashboard" class="active"><span>⌂</span>Home</button><button data-page="transactions"><span>↕</span>Transactions</button><button data-page="wallets"><span>▣</span>Wallets</button><button data-page="categories"><span>◈</span>Categories</button><button data-page="analytics"><span>◒</span>Analytics</button><button data-page="settings"><span>⚙</span>Settings</button>
+</nav>
+
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY='flowtrack_pro_v1';
+const BUILD_VERSION=window.FLOWTRACK_BUILD_VERSION||'3.6.0';
+const FLOWTRACK_GOOGLE_CLIENT_ID='963866679895-e0ck074n3ivrprahg8tdicn4aij257mc.apps.googleusercontent.com';
+const ICONS=['💵','🏦','💳','👛','💰','📱','🏠','🚗','✈️','🎓','🛒','🍔','⚡','🔧','🎁','📦','💡','🧾','🎯','⭐','🛍️','🏥','🎵','☪️'];
+const COLORS=['#2563eb','#0f9d67','#dc4f5f','#f59e0b','#7c3aed','#0891b2','#db2777','#475569'];
+const DEFAULT_STATE={
+ profile:{name:'My Finance',currency:'₵',clientId:FLOWTRACK_GOOGLE_CLIENT_ID},
+ wallets:[
+  {id:'w1',name:'Cash',icon:'💵',color:'#0f9d67',balance:0,savings:false},
+  {id:'w2',name:'Bank',icon:'🏦',color:'#2563eb',balance:0,savings:false},
+  {id:'w3',name:'Savings',icon:'💰',color:'#7c3aed',balance:0,savings:true}
+ ],
+ categories:[
+  {id:'c1',name:'Salary',icon:'💵',color:'#0f9d67',type:'income'},
+  {id:'c2',name:'Food',icon:'🍔',color:'#f59e0b',type:'expense'},
+  {id:'c3',name:'Transport',icon:'🚗',color:'#2563eb',type:'expense'},
+  {id:'c4',name:'Bills',icon:'🧾',color:'#dc4f5f',type:'expense'},
+  {id:'c5',name:'Shopping',icon:'🛍️',color:'#db2777',type:'expense'},
+  {id:'c6',name:'Other income',icon:'💰',color:'#0891b2',type:'income'}
+ ],
+ transactions:[]
+};
+
+function cloneDefault(){return JSON.parse(JSON.stringify(DEFAULT_STATE));}
+function normalizeState(raw){
+ const base=cloneDefault();
+ if(!raw || typeof raw!=='object') return base;
+ const profile=(raw.profile&&typeof raw.profile==='object')?raw.profile:{};
+ base.profile={...base.profile,...profile,clientId:FLOWTRACK_GOOGLE_CLIENT_ID};
+ if(Array.isArray(raw.wallets)) base.wallets=raw.wallets.map((w,i)=>({
+   id:w?.id||('w_migrated_'+i),name:w?.name||'Wallet',icon:w?.icon||ICONS[0],color:w?.color||COLORS[i%COLORS.length],balance:Number(w?.balance)||0,savings:!!w?.savings,updatedAt:w?.updatedAt||new Date().toISOString()
+ }));
+ if(Array.isArray(raw.categories)) base.categories=raw.categories.map((c,i)=>({
+   id:c?.id||('c_migrated_'+i),name:c?.name||'Category',icon:c?.icon||ICONS[0],color:c?.color||COLORS[i%COLORS.length],type:c?.type==='income'?'income':'expense',updatedAt:c?.updatedAt||new Date().toISOString()
+ }));
+ if(Array.isArray(raw.transactions)) base.transactions=raw.transactions.map((t,i)=>({
+   id:t?.id||('t_migrated_'+i),type:['income','expense','transfer','lend','repayment','custody_in','disbursement'].includes(t?.type)?t.type:'expense',amount:Number(t?.amount)||0,
+   walletId:t?.walletId||null,toWalletId:t?.toWalletId||null,categoryId:t?.categoryId||null,loanId:t?.loanId||null,fundId:t?.fundId||null,
+   allocations:Array.isArray(t?.allocations)?t.allocations.map(a=>({fundId:a?.fundId||null,amount:Number(a?.amount)||0})).filter(a=>a.fundId&&a.amount>0):((t?.type==='disbursement'&&t?.fundId)?[{fundId:t.fundId,amount:Number(t?.amount)||0}]:[]),
+   counterparty:String(t?.counterparty||''),
+   date:t?.date||new Date().toISOString(),description:String(t?.description||''),
+   createdAt:t?.createdAt||t?.updatedAt||new Date().toISOString(),updatedAt:t?.updatedAt||t?.createdAt||new Date().toISOString()
+ }));
+ base.meta={...(raw.meta||{}),appVersion:BUILD_VERSION,updatedAt:raw.meta?.updatedAt||new Date().toISOString()};
+ return base;
+}
+
+let storedState=null;
+try{storedState=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){console.warn('FlowTrack local data could not be parsed; preserving raw backup key.',e);}
+let state=normalizeState(storedState);
+// Repair older disbursement records that were saved without a fundId when there is a single exact matching custody record.
+(function repairDisbursementLinks(){
+ const funds=state.transactions.filter(t=>t.type==='custody_in');
+ const used={};
+ state.transactions.filter(t=>t.type==='disbursement'&&t.fundId).forEach(t=>used[t.fundId]=(used[t.fundId]||0)+Number(t.amount||0));
+ state.transactions.filter(t=>t.type==='disbursement'&&!t.fundId).forEach(d=>{
+   const candidates=funds.filter(f=>{
+     const sameWallet=f.walletId===d.walletId;
+     const sameAmount=Math.abs(Number(f.amount||0)-Number(d.amount||0))<0.000001;
+     const sameParty=!f.counterparty||!d.counterparty||String(f.counterparty).trim().toLowerCase()===String(d.counterparty).trim().toLowerCase();
+     const dateOk=new Date(d.date)>=new Date(f.date);
+     const available=Number(f.amount||0)-(used[f.id]||0);
+     return sameWallet&&sameAmount&&sameParty&&dateOk&&available>=Number(d.amount||0);
+   });
+   if(candidates.length===1){d.fundId=candidates[0].id;used[d.fundId]=(used[d.fundId]||0)+Number(d.amount||0);}
+ });
+})();
+localStorage.setItem(KEY,JSON.stringify(state));
+
+let editingId=null, selectedIcon='💵', selectedColor='#2563eb';
+
+function save(options={}){
+ const now=new Date().toISOString();
+ state.meta={...(state.meta||{}),appVersion:BUILD_VERSION,updatedAt:now};
+ localStorage.setItem(KEY,JSON.stringify(state));
+ render();
+ document.getElementById('syncText').textContent=driveToken?'Saving to Google Drive…':'Saved locally • '+new Date().toLocaleTimeString();
+ if(driveToken){clearTimeout(driveSyncTimer);driveSyncTimer=setTimeout(()=>driveSave(),options.immediate?0:800);}
+}
+function money(n){return (state.profile.currency||'₵')+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function toast(s){let t=document.getElementById('toast');t.textContent=s;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600)}
+function id(p){return p+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function wallet(id){return state.wallets.find(x=>x.id===id)}
+function cat(id){return state.categories.find(x=>x.id===id)}
+function dateInputValue(value){
+ let d=value instanceof Date?value:new Date(value);
+ if(Number.isNaN(d.getTime())) return new Date().toISOString().slice(0,10);
+ return d.toLocaleDateString('en-CA');
+}
+function transactionDateISO(value){
+ return new Date(value+'T12:00:00').toISOString();
+}
+function calcBalances(){
+ state.wallets.forEach(w=>w.balance=0);
+ state.transactions.forEach(t=>{
+  if(t.type==='income'){let w=wallet(t.walletId);if(w)w.balance+=+t.amount}
+  if(t.type==='expense'||t.type==='lend'){let w=wallet(t.walletId);if(w)w.balance-=+t.amount}
+  if(t.type==='repayment'||t.type==='custody_in'){let w=wallet(t.walletId);if(w)w.balance+=+t.amount}
+  if(t.type==='disbursement'){let w=wallet(t.walletId);if(w)w.balance-=+t.amount}
+  if(t.type==='transfer'){let a=wallet(t.walletId),b=wallet(t.toWalletId);if(a)a.balance-=+t.amount;if(b)b.balance+=+t.amount}
+ });
+}
+function heldFundsTotal(){
+ return state.transactions.filter(t=>t.type==='custody_in').reduce((sum,fund)=>sum+outstandingForFund(fund.id),0);
+}
+function totals(){
+ let total=state.wallets.reduce((a,w)=>a+w.balance,0);
+ let savings=state.wallets.filter(w=>w.savings).reduce((a,w)=>a+w.balance,0);
+ let lent=state.transactions.filter(t=>t.type==='lend').reduce((a,t)=>a+Number(t.amount||0),0)-state.transactions.filter(t=>t.type==='repayment').reduce((a,t)=>a+Number(t.amount||0),0);
+ if(lent<0)lent=0;
+ let held=heldFundsTotal();
+ return {total,savings,lent,held,spendable:total-savings-held};
+}
+function showPage(p){
+ document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===p));
+ document.querySelectorAll('[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===p));
+ let names={dashboard:'Dashboard',transactions:'Transactions',wallets:'Wallets',categories:'Categories',analytics:'Analytics',settings:'Settings'};
+ document.getElementById('pageTitle').textContent=names[p]||'FlowTrack';
+ document.getElementById('greeting').textContent=p==='dashboard'?`Welcome back, ${state.profile.name||'there'}. Here's your money at a glance.`:'Manage your financial data and preferences.';
+}
+document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+
+function render(){
+ calcBalances();
+ let t=totals();document.getElementById('totalBalance').textContent=money(t.total);document.getElementById('savings').textContent=money(t.savings);document.getElementById('lent').textContent=money(t.lent);document.getElementById('heldFunds').textContent=money(t.held);document.getElementById('spendable').textContent=money(t.spendable);
+ let now=new Date(),m=now.getMonth(),y=now.getFullYear();let mi=state.transactions.filter(x=>{let d=new Date(x.date);return d.getMonth()===m&&d.getFullYear()===y});let inc=mi.filter(x=>x.type==='income'||x.type==='repayment').reduce((a,x)=>a+x.amount,0),exp=mi.filter(x=>x.type==='expense'||x.type==='lend').reduce((a,x)=>a+x.amount,0);document.getElementById('monthNet').textContent=money(inc-exp);document.getElementById('monthNet').className='stat-value '+(inc-exp>=0?'positive':'negative');
+ document.getElementById('profileName').value=state.profile.name||'';document.getElementById('currency').value=state.profile.currency||'₵';
+ fillWalletSelects();renderWallets();renderWalletSummary();renderCategories();
+ // Keep dashboard recent transactions independent from transaction-table filters/rendering.
+ renderRecent();
+ try{renderTransactions();}catch(e){console.error('Transaction list render failed',e);}
+ try{renderCashChart();}catch(e){console.error('Cash chart render failed',e);}
+ try{renderAnalytics();}catch(e){console.error('Analytics render failed',e);}
+}
+function fillWalletSelects(){
+ let opts=state.wallets.map(w=>`<option value="${w.id}">${esc(w.icon)} ${esc(w.name)}</option>`).join('');
+ let f=document.getElementById('txWallet');let cur=f.value;f.innerHTML='<option value="">All wallets</option>'+opts;f.value=cur;
+}
+function renderWallets(){
+ let box=document.getElementById('walletGrid');box.innerHTML=state.wallets.map(w=>`<div class="card item-card"><div class="wallet"><div class="avatar" style="background:${w.color}22">${w.icon}</div><div><h4>${esc(w.name)}</h4><p>${w.savings?'Savings wallet':'Spendable wallet'}</p></div><div class="meta"><b>${money(w.balance)}</b><div><button class="btn small" onclick="openWallet('${w.id}')">Edit</button> <button class="btn small danger" onclick="deleteWallet('${w.id}')">Delete</button></div></div></div></div>`).join('')||'<div class="empty">No wallets yet.</div>';
+}
+function renderWalletSummary(){
+ let box=document.getElementById('walletSummary'), total=Math.abs(totals().total)||1;
+ box.innerHTML=state.wallets.length?state.wallets.map(w=>{
+   let pct=Math.min(100,Math.abs(w.balance)/total*100);
+   return `<div class="wallet-summary-item" onclick="showPage('wallets')" style="cursor:pointer">
+    <div class="avatar" style="background:${w.color}22">${w.icon}</div>
+    <div class="wallet-name"><b>${esc(w.name)}</b><span class="sub">${w.savings?'Savings':'Spendable'}</span><div class="wallet-bar"><span style="width:${pct}%;background:${w.color}"></span></div></div>
+    <b>${money(w.balance)}</b>
+   </div>`;
+ }).join(''):'<div class="empty">No wallets yet.</div>';
+}
+function renderCategories(){
+ let box=document.getElementById('categoryGrid');box.innerHTML=state.categories.map(c=>`<div class="card item-card"><div class="cat"><div class="avatar" style="background:${c.color}22">${c.icon}</div><div><h4>${esc(c.name)}</h4><p>${c.type}</p></div><div class="meta"><button class="btn small" onclick="openCategory('${c.id}')">Edit</button> <button class="btn small danger" onclick="deleteCategory('${c.id}')">Delete</button></div></div></div>`).join('');
+}
+function renderTransactions(){
+ let q=(document.getElementById('txSearch').value||'').toLowerCase(),type=document.getElementById('txType').value,wid=document.getElementById('txWallet').value;
+ let arr=state.transactions.filter(t=>(!type||t.type===type)&&(!wid||t.walletId===wid)&&(!q||JSON.stringify(t).toLowerCase().includes(q))).sort((a,b)=>{
+   const db=Date.parse(b.date)||0, da=Date.parse(a.date)||0;
+   if(db!==da)return db-da;
+   return (Date.parse(b.updatedAt||b.createdAt)||0)-(Date.parse(a.updatedAt||a.createdAt)||0);
+ });
+ document.getElementById('txTable').innerHTML=arr.map(t=>{let w=wallet(t.walletId),c=cat(t.categoryId);let sign=(t.type==='income'||t.type==='repayment'||t.type==='custody_in')?'+':(t.type==='expense'||t.type==='lend'||t.type==='disbursement')?'-':'↔';let label=t.type==='lend'?'Lent':t.type==='repayment'?'Loan repayment':t.type==='custody_in'?'Funds received for disbursement':t.type==='disbursement'?'Disbursement':t.type;let cls=(t.type==='income'||t.type==='repayment'||t.type==='custody_in')?'positive':(t.type==='expense'||t.type==='lend'||t.type==='disbursement')?'negative':'';return `<tr><td><div class="row-main"><div class="avatar" style="background:${t.type==='lend'?'#dc4f5f22':(c?.color||'#64748b')+'22'}">${t.type==='lend'?'↗':(c?.icon||'↕')}</div><div><b>${esc(t.description||c?.name||label)}</b><span class="sub">${label}</span></div></div></td><td>${esc(w?.name||'—')}</td><td class="${cls}"><b>${sign}${money(t.amount)}</b></td><td><span class="sub">Date</span><br><b>${dateInputValue(t.date)}</b></td><td><button class="btn small" onclick="openTransaction('${t.id}')">Edit</button> <button class="btn small danger" onclick="deleteTransaction('${t.id}')">Delete</button></td></tr>`}).join('')||'<tr><td colspan="5"><div class="empty">No transactions found.</div></td></tr>';
+}
+['txSearch','txType','txWallet'].forEach(x=>document.getElementById(x).addEventListener('input',renderTransactions));
+function renderRecent(){
+ const box=document.getElementById('recent');
+ if(!box)return;
+ const arr=[...state.transactions].sort((a,b)=>{
+   // Recent transactions are ordered by transaction date (newest first).
+   // If two transactions share the same date, the most recently added/edited
+   // transaction appears first.
+   const da=Date.parse(a.date)||0, db=Date.parse(b.date)||0;
+   if(db!==da) return db-da;
+   const ca=Date.parse(a.createdAt||a.updatedAt)||0;
+   const cb=Date.parse(b.createdAt||b.updatedAt)||0;
+   return cb-ca;
+ }).slice(0,6);
+ box.innerHTML=arr.length?`<div class="table-wrap"><table class="table"><tbody>${arr.map(t=>{
+   let c=cat(t.categoryId),w=wallet(t.walletId);
+   let sign=(t.type==='income'||t.type==='repayment'||t.type==='custody_in')?'+':(t.type==='expense'||t.type==='lend'||t.type==='disbursement')?'-':'↔';
+   let cls=(t.type==='income'||t.type==='repayment'||t.type==='custody_in')?'positive':(t.type==='expense'||t.type==='lend'||t.type==='disbursement')?'negative':'';
+   let date=t.date?new Date(t.date).toLocaleDateString():'—';
+   return `<tr><td><div class="row-main"><div class="avatar" style="background:${c?.color||w?.color||'#64748b'}22">${c?.icon||w?.icon||'↕'}</div><div><b>${esc(t.description||c?.name||t.type)}</b><span class="sub">${date} • ${esc(w?.name||'')}</span></div></div></td><td class="${cls}">${sign}${money(t.amount)}</td></tr>`;
+ }).join('')}</tbody></table></div>`:'<div class="empty">No transactions yet. Add your first income or expense.</div>';
+}
+function series(months=6){
+ let out=[];let d=new Date();d.setDate(1);for(let i=months-1;i>=0;i--){let x=new Date(d.getFullYear(),d.getMonth()-i,1),mo=x.getMonth(),yr=x.getFullYear();let a=state.transactions.filter(t=>{let z=new Date(t.date);return z.getMonth()===mo&&z.getFullYear()===yr});out.push({label:x.toLocaleString(undefined,{month:'short'}),income:a.filter(t=>t.type==='income'||t.type==='repayment').reduce((s,t)=>s+t.amount,0),expense:a.filter(t=>t.type==='expense'||t.type==='lend').reduce((s,t)=>s+t.amount,0)});}return out;
+}
+function renderCashChart(){
+ let s=series(6),max=Math.max(1,...s.flatMap(x=>[x.income,x.expense])),W=700,H=250,p=35,step=(W-p*2)/(s.length-1);
+ let pts=(key)=>s.map((x,i)=>`${p+i*step},${H-p-(x[key]/max)*(H-p*2)}`).join(' ');
+ document.getElementById('cashChart').innerHTML=`<svg viewBox="0 0 ${W} ${H}"><line x1="${p}" y1="${H-p}" x2="${W-p}" y2="${H-p}" stroke="#e5e9f0"/>${s.map((x,i)=>`<text x="${p+i*step}" y="${H-8}" text-anchor="middle" font-size="11" fill="#718096">${x.label}</text>`).join('')}<polyline fill="none" stroke="#2563eb" stroke-width="3" points="${pts('income')}"/><polyline fill="none" stroke="#dc4f5f" stroke-width="3" points="${pts('expense')}"/>${s.map((x,i)=>`<circle cx="${p+i*step}" cy="${H-p-(x.income/max)*(H-p*2)}" r="4" fill="#2563eb"/><circle cx="${p+i*step}" cy="${H-p-(x.expense/max)*(H-p*2)}" r="4" fill="#dc4f5f"/>`).join('')}</svg>`;
+}
+function svgBars(rows, key, color, height=230){
+ let max=Math.max(1,...rows.map(r=>Number(r[key])||0)),W=700,H=height,base=H-35,bw=Math.max(24,Math.min(55,620/Math.max(rows.length,1)-10)),gap=620/Math.max(rows.length,1);
+ return `<svg class="chart-svg" viewBox="0 0 ${W} ${H}"><line x1="35" y1="${base}" x2="680" y2="${base}" stroke="#e5e9f0"/>${rows.map((r,i)=>{let v=Number(r[key])||0,h=v/max*(base-25),x=45+i*gap;return `<rect x="${x}" y="${base-h}" width="${bw}" height="${h}" rx="5" fill="${color}"/><text x="${x+bw/2}" y="${H-10}" text-anchor="middle" font-size="11" fill="#718096">${esc(r.label)}</text><text x="${x+bw/2}" y="${Math.max(14,base-h-6)}" text-anchor="middle" font-size="10" fill="#475569">${money(v)}</text>`}).join('')}</svg>`;
+}
+function renderAnalytics(){
+ let s=series(6),max=Math.max(1,...s.flatMap(x=>[x.income,x.expense])),W=700,H=260,base=205,bw=30,gap=85;
+ document.getElementById('barChart').innerHTML=`<svg viewBox="0 0 ${W} ${H}">${s.map((x,i)=>{let X=35+i*gap,ih=(x.income/max)*165,eh=(x.expense/max)*165;return `<rect x="${X}" y="${base-ih}" width="${bw}" height="${ih}" rx="5" fill="#2563eb"/><rect x="${X+bw+5}" y="${base-eh}" width="${bw}" height="${eh}" rx="5" fill="#dc4f5f"/><text x="${X+bw}" y="230" text-anchor="middle" font-size="11" fill="#718096">${x.label}</text>`}).join('')}</svg>`;
+ let cats=state.categories.filter(c=>c.type==='expense').map(c=>({c,v:state.transactions.filter(t=>(t.type==='expense'||t.type==='lend')&&t.categoryId===c.id).reduce((s,t)=>s+t.amount,0)})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v),sum=cats.reduce((a,x)=>a+x.v,0)||1;
+ document.getElementById('categoryAnalytics').innerHTML=cats.length?cats.map(x=>`<div style="margin:12px 0"><div style="display:flex;justify-content:space-between;font-size:13px"><span>${x.c.icon} ${esc(x.c.name)}</span><b>${money(x.v)}</b></div><div style="height:8px;background:#eef1f5;border-radius:9px;margin-top:6px"><div style="width:${x.v/sum*100}%;height:100%;background:${x.c.color};border-radius:9px"></div></div></div>`).join(''):'<div class="empty">Expense analytics will appear after you add expenses.</div>';
+
+ let walletRows=state.wallets.map(w=>({label:w.name,value:w.balance})), netRows=s.map(x=>({label:x.label,value:x.income-x.expense}));
+ document.getElementById('walletBalanceChart').innerHTML=walletRows.length?svgBars(walletRows,'value','#2563eb'):'<div class="empty">No wallets yet.</div>';
+ document.getElementById('netFlowChart').innerHTML=svgBars(netRows,'value','#0f9d67');
+
+ let incomeCats=state.categories.filter(c=>c.type==='income').map(c=>({label:c.name,value:state.transactions.filter(t=>t.type==='income'&&t.categoryId===c.id).reduce((s,t)=>s+t.amount,0)})).filter(x=>x.value>0).sort((a,b)=>b.value-a.value);
+ document.getElementById('incomeCategoryChart').innerHTML=incomeCats.length?svgBars(incomeCats,'value','#0f9d67'):'<div class="empty">Income analytics will appear after you add income.</div>';
+
+ let activity=s.map((x,i)=>{let anchor=new Date(new Date().getFullYear(),new Date().getMonth()-(5-i),1);let monthTx=state.transactions.filter(t=>{let d=new Date(t.date);return d.getMonth()===anchor.getMonth()&&d.getFullYear()===anchor.getFullYear()});return {label:x.label,value:monthTx.length}}); 
+ document.getElementById('activityChart').innerHTML=svgBars(activity,'value','#7c3aed');
+
+ let total=totals(),inc=state.transactions.filter(t=>t.type==='income'||t.type==='repayment').reduce((a,t)=>a+t.amount,0),exp=state.transactions.filter(t=>t.type==='expense'||t.type==='lend').reduce((a,t)=>a+t.amount,0);
+ document.getElementById('snapshot').innerHTML=`<div class="grid three"><div><span class="sub">Lifetime income</span><b class="positive">${money(inc)}</b></div><div><span class="sub">Lifetime expenses</span><b class="negative">${money(exp)}</b></div><div><span class="sub">Funds held for disbursement</span><b class="negative">${money(total.held)}</b></div><div><span class="sub">Current spendable</span><b>${money(total.spendable)}</b></div></div>`;
+}
+
+function renderDisbursementFundSelector(selectedIds=[]){
+  const box=document.getElementById('dFunds');
+  if(!box) return;
+  const funds=typeof getOutstandingDisbursementFunds==='function'
+    ? getOutstandingDisbursementFunds() : [];
+  if(!funds.length){
+    box.innerHTML='<div class="empty">No outstanding funds available for disbursement.</div>';
+    const total=document.getElementById('dFundsTotal');
+    if(total) total.textContent=money(0);
+    return;
+  }
+  box.innerHTML=funds.map(f=>`
+    <label class="multi-fund-item">
+      <input type="checkbox" value="${esc(f.id)}"
+        ${selectedIds.includes(f.id)?'checked':''}
+        onchange="updateDisbursementFundTotal()">
+      <div class="fund-info">
+        <b>${esc(f.person||f.source||'Fund source')}</b>
+        <span class="sub">${esc(f.description||'')} · Available ${money(f.remaining)}</span>
+      </div>
+      <b>${money(f.remaining)}</b>
+    </label>`).join('');
+  updateDisbursementFundTotal();
+}
+function selectedDisbursementFundIds(){
+  return [...document.querySelectorAll('#dFunds input[type="checkbox"]:checked')].map(x=>x.value);
+}
+function updateDisbursementFundTotal(){
+  const ids=selectedDisbursementFundIds();
+  const funds=(typeof getOutstandingDisbursementFunds==='function'
+    ? getOutstandingDisbursementFunds() : []).filter(f=>ids.includes(f.id));
+  const total=funds.reduce((a,f)=>a+Number(f.remaining||0),0);
+  const el=document.getElementById('dFundsTotal');
+  if(el) el.textContent=money(total);
+  return {ids,funds,total};
+}
+function getSelectedDisbursementAllocations(amount){
+  const s=updateDisbursementFundTotal();
+  let remaining=Number(amount||0);
+  const allocations=[];
+  for(const f of s.funds){
+    if(remaining<=0) break;
+    const take=Math.min(remaining,Number(f.remaining||0));
+    if(take>0){
+      allocations.push({fundId:f.id,amount:take});
+      remaining-=take;
+    }
+  }
+  return {allocations,remaining,totalAvailable:s.total};
+}
+
+function openModal(content){document.getElementById('modal').innerHTML=content;document.getElementById('modalBg').classList.add('open')}
+function closeModal(){document.getElementById('modalBg').classList.remove('open')}
+document.getElementById('modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')closeModal()});
+function picker(){
+ return `<div class="field"><label>Icon</label><div class="iconpick">${ICONS.map(i=>`<button type="button" class="${i===selectedIcon?'selected':''}" onclick="pickIcon('${i}')">${i}</button>`).join('')}</div></div><div class="field"><label>Color</label><div class="colorpick">${COLORS.map(c=>`<button type="button" class="${c===selectedColor?'selected':''}" style="background:${c}" data-color="${c}" onclick="pickColor('${c}')"></button>`).join('')}</div></div>`;
+}
+let currentWalletId=null;
+function openWallet(wid=null){
+ currentWalletId=wid;let w=wid?wallet(wid):null;selectedIcon=w?.icon||'💵';selectedColor=w?.color||'#2563eb';
+ openModal(`<div class="modal-head"><h2>${w?'Edit':'New'} wallet</h2><button class="x" onclick="closeModal()">×</button></div><div class="field"><label>Name</label><input id="mName" value="${esc(w?.name||'')}"></div><div class="field"><label>Wallet type</label><select id="mSavings"><option value="false" ${!w?.savings?'selected':''}>Spendable</option><option value="true" ${w?.savings?'selected':''}>Savings</option></select></div>${picker()}<div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveWallet()">Save wallet</button></div>`);
+}
+function pickIcon(i){selectedIcon=i;document.querySelectorAll('.iconpick button').forEach(b=>b.classList.toggle('selected',b.textContent===i))}
+function pickColor(c){selectedColor=c;document.querySelectorAll('.colorpick button').forEach(b=>b.classList.toggle('selected',b.getAttribute('data-color')===c))}
+function saveWallet(){let name=document.getElementById('mName').value.trim();if(!name)return toast('Wallet name is required');if(currentWalletId){let w=wallet(currentWalletId);Object.assign(w,{name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true',updatedAt:new Date().toISOString()})}else state.wallets.push({id:id('w'),name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true',balance:0,updatedAt:new Date().toISOString()});closeModal();save({immediate:true});toast('Wallet saved')}
+function deleteWallet(wid){if(state.wallets.length<=1)return toast('Keep at least one wallet');if(state.transactions.some(t=>t.walletId===wid||t.toWalletId===wid))return toast('Cannot delete a wallet with transactions');if(confirm('Delete this wallet?')){state.wallets=state.wallets.filter(w=>w.id!==wid);save({immediate:true});}}
+let currentCatId=null;
+function openCategory(cid=null){
+ currentCatId=cid;let c=cid?cat(cid):null;selectedIcon=c?.icon||'💵';selectedColor=c?.color||'#2563eb';
+ openModal(`<div class="modal-head"><h2>${c?'Edit':'New'} category</h2><button class="x" onclick="closeModal()">×</button></div><div class="field"><label>Name</label><input id="cName" value="${esc(c?.name||'')}"></div><div class="field"><label>Type</label><select id="cType"><option value="income" ${c?.type==='income'?'selected':''}>Income</option><option value="expense" ${c?.type!=='income'?'selected':''}>Expense</option></select></div>${picker()}<div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveCategory()">Save category</button></div>`);
+}
+function saveCategory(){
+ let name=document.getElementById('cName').value.trim();if(!name)return toast('Category name is required');
+ let type=document.getElementById('cType').value;
+ if(currentCatId){
+  let existing=cat(currentCatId);
+  if(existing && existing.type!==type && state.transactions.some(t=>t.categoryId===currentCatId)) return toast('Cannot change category type while transactions use it. Create a new category instead.');
+  Object.assign(existing,{name,type,icon:selectedIcon,color:selectedColor,updatedAt:new Date().toISOString()});
+ }else state.categories.push({id:id('c'),name,type,icon:selectedIcon,color:selectedColor,updatedAt:new Date().toISOString()});
+ closeModal();save({immediate:true});toast('Category saved');
+}
+function deleteCategory(cid){if(state.transactions.some(t=>t.categoryId===cid))return toast('Cannot delete a category used by transactions');if(confirm('Delete this category?')){state.categories=state.categories.filter(c=>c.id!==cid);save({immediate:true});}}
+function openTransaction(tid=null){
+ editingId=tid;let t=tid?state.transactions.find(x=>x.id===tid):null;let type=t?.type||'expense';
+ openModal(`<div class="modal-head"><h2>${t?'Edit':'New'} transaction</h2><button class="x" onclick="closeModal()">×</button></div>
+ <div class="formgrid"><div class="field"><label>Type</label><select id="tType" onchange="refreshTxForm()"><option value="expense" ${type==='expense'?'selected':''}>Expense</option><option value="lend" ${type==='lend'?'selected':''}>Lend</option><option value="repayment" ${type==='repayment'?'selected':''}>Loan repayment</option><option value="income" ${type==='income'?'selected':''}>Income</option><option value="transfer" ${type==='transfer'?'selected':''}>Transfer</option><option value="custody_in" ${type==='custody_in'?'selected':''}>Funds received for disbursement</option><option value="disbursement" ${type==='disbursement'?'selected':''}>Disbursement</option></select></div><div class="field"><label>Amount</label><input id="tAmount" type="number" min="0" step="0.01" value="${t?.amount??''}"></div></div>
+ <div class="formgrid"><div class="field"><label>Wallet</label><select id="tWallet">${state.wallets.map(w=>`<option value="${w.id}" ${t?.walletId===w.id?'selected':''}>${w.icon} ${esc(w.name)}</option>`).join('')}</select></div><div class="field" id="catField"><label>Category</label><select id="tCat">${state.categories.map(c=>`<option value="${c.id}" ${t?.categoryId===c.id?'selected':''}>${c.icon} ${esc(c.name)}</option>`).join('')}</select></div></div>
+ <div class="field" id="toWalletField" style="display:none"><label>Transfer to</label><select id="tToWallet">${state.wallets.map(w=>`<option value="${w.id}" ${t?.toWalletId===w.id?'selected':''}>${w.icon} ${esc(w.name)}</option>`).join('')}</select></div>
+ <div class="field" id="loanField" style="display:none"><label>Loan being repaid</label><select id="tLoan"></select></div>
+ <div class="field" id="fundField" style="display:none"><label>Funds sources <span class="sub">(select one or more)</span></label><div id="dFunds" class="multi-fund-list"></div><div class="multi-fund-total"><span>Selected funds available</span><b id="dFundsTotal">₵0.00</b></div><span class="sub">The disbursement amount is allocated across the selected sources automatically.</span></div>
+ <div class="field" id="partyField" style="display:none"><label id="partyLabel">Person / organization</label><input id="tParty" value="${esc(t?.counterparty||'')}"></div>
+ <div class="formgrid"><div class="field"><label>Date</label><input id="tDate" type="date" value="${t?dateInputValue(t.date):dateInputValue(new Date())}"></div><div class="field"><label>Description / note</label><input id="tDesc" value="${esc(t?.description||'')}"></div></div>
+ <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveTransaction()">Save transaction</button></div>`);
+ refreshTxForm();
+}
+function outstandingForLoan(loanId,excludeId=null){
+ const loan=state.transactions.find(x=>x.id===loanId&&x.type==='lend');
+ if(!loan)return 0;
+ const repaid=state.transactions.filter(x=>x.type==='repayment'&&x.loanId===loanId&&x.id!==excludeId).reduce((a,x)=>a+Number(x.amount||0),0);
+ return Math.max(0,Number(loan.amount||0)-repaid);
+}
+function refreshTxForm(){
+ let type=document.getElementById('tType').value;
+ let catField=document.getElementById('catField'),toField=document.getElementById('toWalletField'),loanField=document.getElementById('loanField'),fundField=document.getElementById('fundField'),partyField=document.getElementById('partyField');
+ catField.style.display=(type==='transfer'||type==='lend'||type==='repayment'||type==='custody_in'||type==='disbursement')?'none':'';
+ toField.style.display=type==='transfer'?'':'none';
+ loanField.style.display=type==='repayment'?'':'none';
+ fundField.style.display=type==='disbursement'?'':'none';
+ partyField.style.display=(type==='custody_in'||type==='disbursement')?'':'none';
+ if(type==='custody_in'||type==='disbursement') document.getElementById('partyLabel').textContent=type==='custody_in'?'Received from':'Disburse to';
+ if(type==='income'||type==='expense'){
+   const catSelect=document.getElementById('tCat');
+   const previousCategoryId=catSelect?.value||state.transactions.find(x=>x.id===editingId)?.categoryId||'';
+   catSelect.innerHTML=state.categories.filter(c=>c.type===type).map(c=>`<option value="${c.id}">${c.icon} ${esc(c.name)}</option>`).join('');
+   if(previousCategoryId && state.categories.some(c=>c.id===previousCategoryId && c.type===type)) catSelect.value=previousCategoryId;
+ }
+ if(type==='repayment'){
+   let currentLoan=document.getElementById('tLoan').value||state.transactions.find(x=>x.id===editingId)?.loanId||'';
+   let loans=state.transactions.filter(x=>x.type==='lend'&&outstandingForLoan(x.id,editingId)>0);
+   document.getElementById('tLoan').innerHTML=loans.map(x=>`<option value="${x.id}" ${x.id===currentLoan?'selected':''}>${esc(x.description||'Loan')} — ${money(outstandingForLoan(x.id,editingId))} outstanding</option>`).join('');
+ }
+ if(type==='disbursement'){
+   const tx=state.transactions.find(x=>x.id===editingId);
+   const selected=disbursementAllocations(tx).map(a=>a.fundId);
+   renderDisbursementFundSelector(selected);
+ }
+}
+function disbursementAllocations(tx){
+ const raw=Array.isArray(tx?.allocations)?tx.allocations:[];
+ if(raw.length)return raw.map(a=>({fundId:a.fundId,amount:Number(a.amount)||0})).filter(a=>a.fundId&&a.amount>0);
+ return tx?.fundId?[{fundId:tx.fundId,amount:Number(tx.amount)||0}]:[];
+}
+function outstandingForFund(fundId,excludeId=null){
+ const fund=state.transactions.find(x=>x.id===fundId&&x.type==='custody_in');
+ if(!fund)return 0;
+ const used=state.transactions.filter(x=>x.type==='disbursement'&&x.id!==excludeId).reduce((a,x)=>a+disbursementAllocations(x).filter(a=>a.fundId===fundId).reduce((ss,a)=>ss+Number(a.amount||0),0),0);
+ return Math.max(0,Number(fund.amount||0)-used);
+}
+function getOutstandingDisbursementFunds(excludeId=editingId){
+ return state.transactions.filter(t=>t.type==='custody_in').map(f=>({id:f.id,person:f.counterparty||'',source:f.counterparty||'',description:f.description||'',remaining:outstandingForFund(f.id,excludeId)})).filter(f=>f.remaining>0.000001);
+}
+function fingerprint(t){return [t.type,Number(t.amount).toFixed(2),t.walletId,t.toWalletId||'',t.categoryId||'',t.loanId||'',t.fundId||'',JSON.stringify(disbursementAllocations(t)),String(t.counterparty||'').trim().toLowerCase(),dateInputValue(t.date),String(t.description||'').trim().toLowerCase()].join('|')}
+function saveTransaction(){
+ let type=document.getElementById('tType').value,amount=Number(document.getElementById('tAmount').value),walletId=document.getElementById('tWallet').value,dateValue=document.getElementById('tDate').value,description=document.getElementById('tDesc').value.trim(),categoryId=(type==='transfer'||type==='lend'||type==='repayment'||type==='custody_in'||type==='disbursement')?null:document.getElementById('tCat').value,toWalletId=type==='transfer'?document.getElementById('tToWallet').value:null,loanId=type==='repayment'?(document.getElementById('tLoan')?.value||null):null,counterparty=(type==='custody_in'||type==='disbursement')?(document.getElementById('tParty')?.value.trim()||''):'';
+ let allocations=[],fundId=null;
+ if(!amount||amount<=0)return toast('Enter a valid amount');
+ if(!walletId)return toast('Choose a wallet');
+ if(!dateValue)return toast('Choose a transaction date');
+ if(type==='transfer'&&walletId===toWalletId)return toast('Choose different wallets');
+ if(type!=='transfer'&&type!=='lend'&&type!=='repayment'&&type!=='custody_in'&&type!=='disbursement'&&!categoryId)return toast('Choose a category');
+ if(type==='repayment'){if(!loanId)return toast('Choose the loan being repaid');let outstanding=outstandingForLoan(loanId,editingId);if(amount>outstanding+0.000001)return toast(`Repayment cannot exceed ${money(outstanding)} outstanding`);}
+ if(type==='disbursement'){
+   const selected=selectedDisbursementFundIds();
+   if(!selected.length)return toast('Select at least one funds source');
+   const result=getSelectedDisbursementAllocations(amount);
+   if(result.remaining>0.000001)return toast(`Selected sources have only ${money(result.totalAvailable)} available`);
+   allocations=result.allocations;
+   fundId=allocations.length===1?allocations[0].fundId:null;
+ }
+ let now=new Date().toISOString();
+ let index=editingId?state.transactions.findIndex(x=>x.id===editingId):-1;
+ let existingTx=index>=0?state.transactions[index]:null;
+ let obj={id:editingId||id('t'),type,amount,walletId,toWalletId,categoryId,loanId,fundId,allocations,counterparty,date:transactionDateISO(dateValue),description,createdAt:existingTx?.createdAt||now,updatedAt:now};
+ let dup=state.transactions.find(x=>fingerprint(x)===fingerprint(obj)&&x.id!==editingId);
+ if(dup&&!confirm(`A matching transaction already exists (${money(dup.amount)}). Save this as a separate transaction anyway?`))return;
+ if(index>=0)state.transactions[index]=obj;else state.transactions.push(obj);
+ closeModal();save({immediate:true});toast(index>=0?'Transaction updated':'Transaction saved');
+}
+function deleteTransaction(tid){let tx=state.transactions.find(t=>t.id===tid);if(tx?.type==='custody_in'&&state.transactions.some(t=>t.type==='disbursement'&&disbursementAllocations(t).some(a=>a.fundId===tid)))return toast('Cannot delete funds received while a disbursement is linked to them');if(confirm('Delete this transaction?')){state.transactions=state.transactions.filter(t=>t.id!==tid);save({immediate:true});}}
+function reportData(){
+ let inc=state.transactions.filter(t=>t.type==='income'||t.type==='repayment').reduce((a,t)=>a+Number(t.amount),0);
+ let exp=state.transactions.filter(t=>t.type==='expense'||t.type==='lend').reduce((a,t)=>a+Number(t.amount),0);
+ let t=totals();
+ return {inc,exp,net:inc-exp,total:t.total,savings:t.savings,held:t.held,spendable:t.spendable};
+}
+function reportChartsHTML(){
+ let s=series(6);
+ let rows=s.map(x=>`<tr><td>${esc(x.label)}</td><td>${money(x.income)}</td><td>${money(x.expense)}</td><td>${money(x.income-x.expense)}</td></tr>`).join('');
+ let cats=state.categories.filter(c=>c.type==='expense').map(c=>({name:c.name,v:state.transactions.filter(t=>(t.type==='expense'||t.type==='lend')&&t.categoryId===c.id).reduce((a,t)=>a+Number(t.amount),0)})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+ let catRows=cats.map(x=>`<tr><td>${esc(x.name)}</td><td>${money(x.v)}</td></tr>`).join('');
+ return `<h2>Cash flow analysis</h2>
+ <table><thead><tr><th>Month</th><th>Income</th><th>Expenses</th><th>Net</th></tr></thead><tbody>${rows}</tbody></table>
+ <h2>Expenses by category</h2><table><thead><tr><th>Category</th><th>Amount</th></tr></thead><tbody>${catRows||'<tr><td colspan="2">No expense data</td></tr>'}</tbody></table>`;
+}
+function reportTransactionsHTML(){
+ let arr=[...state.transactions].sort((a,b)=>new Date(b.date)-new Date(a.date));
+ return `<h2>Transaction history</h2><table><thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Wallet</th><th>Category</th><th>Amount</th></tr></thead><tbody>${arr.map(t=>{let label=t.type==='custody_in'?'Funds received for disbursement':t.type==='disbursement'?'Disbursement':t.type==='repayment'?'Loan repayment':t.type==='lend'?'Lend':t.type;let desc=t.description||t.counterparty||'';return `<tr><td>${esc(dateInputValue(t.date))}</td><td>${esc(label)}</td><td>${esc(desc)}</td><td>${esc(wallet(t.walletId)?.name||'—')}</td><td>${esc(cat(t.categoryId)?.name||'—')}</td><td>${money(t.amount)}</td></tr>`}).join('')}</tbody></table>`;
+}
+function buildReportHTML(){
+ let d=reportData(),u=state.profile.name||'FlowTrack Pro';
+ return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(u)} — FlowTrack Report</title><style>
+ @page{size:A4;margin:14mm}body{font-family:Arial,sans-serif;color:#18212f;margin:0;font-size:10pt}h1{font-size:24pt;margin:0 0 4px}h2{font-size:14pt;margin:22px 0 9px;border-bottom:1px solid #ddd;padding-bottom:5px}.muted{color:#718096}.header{border-bottom:2px solid #2563eb;padding-bottom:12px;margin-bottom:16px}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.card{border:1px solid #e1e5eb;border-radius:8px;padding:10px}.card b{display:block;font-size:14pt;margin-top:4px}table{width:100%;border-collapse:collapse;margin-bottom:10px}th,td{border-bottom:1px solid #e5e9f0;padding:6px;text-align:left}th{background:#f5f7fb}.footer{margin-top:20px;color:#718096;font-size:8pt} </style></head><body>
+ <div class="header"><h1>${esc(u)} — Financial Report</h1><div class="muted">Generated ${esc(new Date().toLocaleString())}</div></div>
+ <div class="cards"><div class="card">Total balance<b>${money(d.total)}</b></div><div class="card">Savings<b>${money(d.savings)}</b></div><div class="card">For disbursement<b>${money(d.held)}</b></div><div class="card">Spendable<b>${money(d.spendable)}</b></div><div class="card">Net cash flow<b>${money(d.net)}</b></div></div>
+ ${reportChartsHTML()}${reportTransactionsHTML()}<div class="footer">FlowTrack Pro • Professional A4 financial report</div>
+ </body></html>`;
+}
+function exportReportPDF(){
+ let w=window.open('','_blank','width=900,height=1100');
+ if(!w)return toast('Please allow pop-ups to export the PDF');
+ w.document.write(buildReportHTML());w.document.close();w.focus();setTimeout(()=>w.print(),500);
+}
+function exportReportWord(){
+ let blob=new Blob([buildReportHTML()],{type:'application/msword'});
+ let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='flowtrack-financial-report-'+new Date().toISOString().slice(0,10)+'.doc';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Word report exported');
+}
+
+function saveSettings(){state.profile.name=document.getElementById('profileName').value.trim()||'My Finance';state.profile.currency=document.getElementById('currency').value||'₵';state.profile.clientId=FLOWTRACK_GOOGLE_CLIENT_ID;save();toast('Settings saved')}
+function resetData(){
+ if(!confirm('This will permanently clear the local FlowTrack data on this device. Your Google Drive backup will not be deleted. Continue?'))return;
+ let phrase=prompt('To confirm the reset, type RESET');
+ if(phrase!=='RESET')return toast('Reset cancelled');
+ localStorage.removeItem(KEY);location.reload();
+}
+let driveToken=null,driveFileId=null,driveModifiedTime=null,googleUser=null,driveSyncTimer=null,drivePollTimer=null;
+const DRIVE_SCOPE='https://www.googleapis.com/auth/drive.appdata';
+function googleConfigured(){return typeof google!=='undefined'&&google.accounts&&google.accounts.oauth2}
+function signInGoogle(){
+ let clientId=FLOWTRACK_GOOGLE_CLIENT_ID;
+ if(!clientId)return toast('Google sign-in is not configured in this build');
+ state.profile.clientId=FLOWTRACK_GOOGLE_CLIENT_ID;localStorage.setItem(KEY,JSON.stringify(state));
+ if(!googleConfigured())return toast('Google sign-in is still loading. Try again in a moment.');
+ const client=google.accounts.oauth2.initTokenClient({
+  client_id:clientId,scope:DRIVE_SCOPE,prompt:'select_account',
+  callback: async (resp)=>{
+   if(resp.error)return toast('Google sign-in was not completed');
+   driveToken=resp.access_token;
+   try{
+    const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+driveToken}});
+    googleUser=await r.json();
+    localStorage.setItem('flowtrack_google_user',JSON.stringify({email:googleUser.email,name:googleUser.name,picture:googleUser.picture}));
+    showGoogleSignedIn();toast('Signed in as '+(googleUser.email||'Google account'));
+    await findDriveFile();
+   }catch(e){toast('Google account connected, but profile lookup failed')}
+  }
+ });
+ client.requestAccessToken({prompt:'select_account'});
+}
+function showGoogleSignedIn(){
+ document.getElementById('googleSignedOut').style.display='none';
+ document.getElementById('googleSignedIn').style.display='';
+ let u=googleUser||JSON.parse(localStorage.getItem('flowtrack_google_user')||'null')||{};
+ document.getElementById('googleEmail').textContent=u.email||'Google account';
+ document.getElementById('googleAvatar').innerHTML=u.picture?`<img src="${esc(u.picture)}" style="width:100%;height:100%;border-radius:10px">`:'G';
+}
+function signOutGoogle(){
+ driveToken=null;googleUser=null;driveFileId=null;driveModifiedTime=null;clearInterval(drivePollTimer);localStorage.removeItem('flowtrack_google_user');
+ document.getElementById('googleSignedOut').style.display='';
+ document.getElementById('googleSignedIn').style.display='none';toast('Signed out of Google');
+}
+async function driveApi(url,options={}){
+ if(!driveToken)throw Error('Not signed in to Google');
+ options.headers={...(options.headers||{}),Authorization:'Bearer '+driveToken};return fetch(url,options);
+}
+async function findDriveFile(){
+ let q=encodeURIComponent("name='flowtrack-data.json' and trashed=false");
+ let r=await driveApi('https://www.googleapis.com/drive/v3/files?q='+q+'&spaces=appDataFolder&fields=files(id,name,modifiedTime)');
+ if(!r.ok)throw Error('Drive lookup failed');
+ let j=await r.json();
+ let file=(j.files||[]).sort((a,b)=>new Date(b.modifiedTime)-new Date(a.modifiedTime))[0];
+ driveFileId=file?.id||null;driveModifiedTime=file?.modifiedTime||null;
+ document.getElementById('driveStatus').textContent=driveFileId?'Existing FlowTrack backup found in Google Drive.':'No FlowTrack backup found yet.';
+ if(driveFileId)await syncWithDrive({initial:true});
+ startDrivePolling();
+}
+function makeMultipart(meta,data){
+ const boundary='flowtrack_boundary_'+Date.now();
+ const body='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(meta)+'\r\n--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+data+'\r\n--'+boundary+'--';
+ return new Blob([body],{type:'multipart/related; boundary='+boundary});
+}
+async function driveSave(){
+ try{
+  if(!driveToken)return signInGoogle();
+  let body=JSON.stringify(state,null,2),r;
+  if(driveFileId){
+   // Existing appDataFolder files are updated as media only; do not resend parents.
+   r=await driveApi('https://www.googleapis.com/upload/drive/v3/files/'+encodeURIComponent(driveFileId)+'?uploadType=media',{method:'PATCH',headers:{'Content-Type':'application/json'},body});
+  }else{
+   let meta={name:'flowtrack-data.json',parents:['appDataFolder'],mimeType:'application/json'};
+   r=await driveApi('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',body:makeMultipart(meta,body)});
+  }
+  if(!r.ok){let detail=await r.text().catch(()=> '');throw Error('Upload failed ('+r.status+')'+(detail?' — '+detail.slice(0,180):''));}
+  let j=await r.json();driveFileId=j.id||driveFileId;driveModifiedTime=j.modifiedTime||new Date().toISOString();
+  state.meta={...(state.meta||{}),lastDriveSyncAt:new Date().toISOString()};localStorage.setItem(KEY,JSON.stringify(state));
+  document.getElementById('driveStatus').textContent='Saved to Google Drive • '+new Date().toLocaleTimeString();
+  document.getElementById('syncText').textContent='Google Drive synced';
+  toast('Saved to Google Drive');
+ }catch(e){console.error('Drive save error',e);toast('Drive save failed: '+e.message)}
+}
+async function driveLoad(){
+ try{
+  if(!driveToken)return signInGoogle();
+  if(!driveFileId)await findDriveFile();
+  if(!driveFileId)return toast('No FlowTrack backup found in this Google Drive account');
+  let incoming=await fetchDriveState();
+  if(!incoming)return;
+  if(!confirm('Load the Google Drive backup? Your current local data will be replaced.'))return;
+  state=normalizeState(incoming.data);
+  state.meta={...(state.meta||{}),lastDriveSyncAt:new Date().toISOString()};
+  localStorage.setItem(KEY,JSON.stringify(state));render();toast('Loaded from Google Drive');
+ }catch(e){console.error(e);toast('Drive load failed: '+e.message)}
+}
+async function fetchDriveState(){
+ let r=await driveApi('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(driveFileId)+'?alt=media');
+ if(!r.ok){let detail=await r.text().catch(()=> '');throw Error('Download failed ('+r.status+')'+(detail?' — '+detail.slice(0,180):''));}
+ let data=await r.json();
+ if(!data.transactions||!Array.isArray(data.transactions))throw Error('Drive file is not a valid FlowTrack backup');
+ return {data};
+}
+function mergeStates(local,remote){
+ const merged=normalizeState(local);
+ const byId=new Map();
+ [...(remote.transactions||[]),...(local.transactions||[])].forEach(t=>{
+   if(!t?.id)return;
+   const prev=byId.get(t.id);
+   if(!prev || (Date.parse(t.updatedAt||t.createdAt||t.date)||0)>(Date.parse(prev.updatedAt||prev.createdAt||prev.date)||0))byId.set(t.id,t);
+ });
+ merged.transactions=[...byId.values()].map(t=>({...t,amount:Number(t.amount)||0}));
+ // Merge wallets/categories by id or name, preferring the most recently changed local/remote object when available.
+ const mergeCollection=(a,b)=>{const out=[...a.map(x=>({...x}))];(b||[]).forEach(x=>{if(!x?.name)return;let i=out.findIndex(y=>y.id===x.id||String(y.name).toLowerCase()===String(x.name).toLowerCase());if(i<0)out.push({...x});else if(x.updatedAt && (!out[i].updatedAt || Date.parse(x.updatedAt)>Date.parse(out[i].updatedAt)))out[i]={...out[i],...x};});return out};
+ merged.wallets=mergeCollection(local.wallets||[],remote.wallets||[]);
+ merged.categories=mergeCollection(local.categories||[],remote.categories||[]);
+ merged.profile={...(remote.profile||{}),...(local.profile||{})};
+ merged.meta={...(remote.meta||{}),...(local.meta||{}),appVersion:BUILD_VERSION,updatedAt:new Date().toISOString(),lastDriveSyncAt:new Date().toISOString()};
+ return merged;
+}
+async function syncWithDrive(opts={}){
+ if(!driveToken||!driveFileId)return;
+ try{
+   let remote=await fetchDriveState();
+   let localUpdated=Date.parse(state.meta?.updatedAt||0)||0;
+   let remoteUpdated=Date.parse(remote.data.meta?.updatedAt||driveModifiedTime||0)||0;
+   if(opts.initial){
+     if(remoteUpdated>localUpdated && !state.transactions.length){
+       state=normalizeState(remote.data);localStorage.setItem(KEY,JSON.stringify(state));render();toast('Synced latest data from Google Drive');
+     }else if(localUpdated>remoteUpdated){await driveSave();return;}else if(remote.data.transactions.length && JSON.stringify(remote.data.transactions)!==JSON.stringify(state.transactions)){
+       state=mergeStates(state,remote.data);localStorage.setItem(KEY,JSON.stringify(state));render();await driveSave();
+     }
+   }else if(remoteUpdated>localUpdated){
+     state=mergeStates(state,remote.data);localStorage.setItem(KEY,JSON.stringify(state));render();toast('Updated with newer Google Drive data');
+   }
+   document.getElementById('driveStatus').textContent='Google Drive synced • '+new Date().toLocaleTimeString();
+ }catch(e){console.error('Drive sync error',e);}
+}
+function startDrivePolling(){
+ clearInterval(drivePollTimer);
+ if(!driveToken)return;
+ drivePollTimer=setInterval(()=>syncWithDrive(),30000);
+}
+
+function restoreGoogleUI(){
+ let u=JSON.parse(localStorage.getItem('flowtrack_google_user')||'null');if(u){googleUser=u;showGoogleSignedIn();}
+}
+
+state.profile.clientId=FLOWTRACK_GOOGLE_CLIENT_ID;
+state.meta={...(state.meta||{}),appVersion:BUILD_VERSION,updatedAt:state.meta?.updatedAt||new Date().toISOString()};
+localStorage.setItem(KEY,JSON.stringify(state));
+
+// Version-aware cache protection. Network-first service worker prevents an older
+// cached deployment from masking future FlowTrack releases. It never clears local data.
+if('serviceWorker' in navigator){
+ navigator.serviceWorker.register('./sw.js?v='+encodeURIComponent(BUILD_VERSION),{updateViaCache:'none'})
+  .then(reg=>reg.update().catch(()=>{}))
+  .catch(()=>{});
+}
+
+render();
+restoreGoogleUI();
+</script>
+</body>
+</html>
