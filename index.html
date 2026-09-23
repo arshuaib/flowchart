@@ -9,7 +9,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script>window.FLOWTRACK_BUILD_VERSION="3.5.2";</script>
+<script>window.FLOWTRACK_BUILD_VERSION="3.6.1";</script>
 <style>
 :root{--bg:#f5f7fb;--panel:#fff;--text:#18212f;--muted:#718096;--line:#e5e9f0;--primary:#2563eb;--primary2:#1d4ed8;--good:#0f9d67;--bad:#dc4f5f;--shadow:0 10px 30px rgba(20,34,55,.07);--radius:18px}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
@@ -160,7 +160,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 
 <script>
 const KEY='flowtrack_pro_v1';
-const BUILD_VERSION=window.FLOWTRACK_BUILD_VERSION||'3.6.0';
+const BUILD_VERSION=window.FLOWTRACK_BUILD_VERSION||'3.6.1';
 const FLOWTRACK_GOOGLE_CLIENT_ID='963866679895-e0ck074n3ivrprahg8tdicn4aij257mc.apps.googleusercontent.com';
 const ICONS=['💵','🏦','💳','👛','💰','📱','🏠','🚗','✈️','🎓','🛒','🍔','⚡','🔧','🎁','📦','💡','🧾','🎯','⭐','🛍️','🏥','🎵','☪️'];
 const COLORS=['#2563eb','#0f9d67','#dc4f5f','#f59e0b','#7c3aed','#0891b2','#db2777','#475569'];
@@ -247,10 +247,14 @@ function cat(id){return state.categories.find(x=>x.id===id)}
 function dateInputValue(value){
  let d=value instanceof Date?value:new Date(value);
  if(Number.isNaN(d.getTime())) return new Date().toISOString().slice(0,10);
- return d.toLocaleDateString('en-CA');
+ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+ return `${y}-${m}-${day}`;
 }
 function transactionDateISO(value){
- return new Date(value+'T12:00:00').toISOString();
+ if(!value)return new Date().toISOString();
+ const m=String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+ if(!m)return new Date(value).toISOString();
+ return new Date(Number(m[1]),Number(m[2])-1,Number(m[3]),12,0,0).toISOString();
 }
 function calcBalances(){
  state.wallets.forEach(w=>w.balance=0);
@@ -517,7 +521,8 @@ function outstandingForFund(fundId,excludeId=null){
  return Math.max(0,Number(fund.amount||0)-used);
 }
 function getOutstandingDisbursementFunds(excludeId=editingId){
- return state.transactions.filter(t=>t.type==='custody_in').map(f=>({id:f.id,person:f.counterparty||'',source:f.counterparty||'',description:f.description||'',remaining:outstandingForFund(f.id,excludeId)})).filter(f=>f.remaining>0.000001);
+ const currentWallet=document.getElementById('tWallet')?.value||null;
+ return state.transactions.filter(t=>t.type==='custody_in'&&(!currentWallet||t.walletId===currentWallet)).map(f=>({id:f.id,person:f.counterparty||'',source:f.counterparty||'',description:f.description||'',remaining:outstandingForFund(f.id,excludeId)})).filter(f=>f.remaining>0.000001);
 }
 function fingerprint(t){return [t.type,Number(t.amount).toFixed(2),t.walletId,t.toWalletId||'',t.categoryId||'',t.loanId||'',t.fundId||'',JSON.stringify(disbursementAllocations(t)),String(t.counterparty||'').trim().toLowerCase(),dateInputValue(t.date),String(t.description||'').trim().toLowerCase()].join('|')}
 function saveTransaction(){
@@ -532,6 +537,8 @@ function saveTransaction(){
  if(type==='disbursement'){
    const selected=selectedDisbursementFundIds();
    if(!selected.length)return toast('Select at least one funds source');
+   const selectedFunds=selected.map(id=>state.transactions.find(x=>x.id===id&&x.type==='custody_in')).filter(Boolean);
+   if(selectedFunds.some(f=>f.walletId!==walletId))return toast('All selected fund sources must belong to the disbursement wallet');
    const result=getSelectedDisbursementAllocations(amount);
    if(result.remaining>0.000001)return toast(`Selected sources have only ${money(result.totalAvailable)} available`);
    allocations=result.allocations;
@@ -583,6 +590,40 @@ function exportReportPDF(){
 function exportReportWord(){
  let blob=new Blob([buildReportHTML()],{type:'application/msword'});
  let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='flowtrack-financial-report-'+new Date().toISOString().slice(0,10)+'.doc';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Word report exported');
+}
+
+function exportJSON(){
+ const payload=JSON.stringify(normalizeState(state),null,2);
+ const blob=new Blob([payload],{type:'application/json;charset=utf-8'});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');
+ a.href=url;
+ a.download='flowtrack-backup-'+new Date().toISOString().slice(0,10)+'.json';
+ document.body.appendChild(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+ toast('JSON backup exported');
+}
+function importJSONFile(file){
+ if(!file)return;
+ const reader=new FileReader();
+ reader.onload=()=>{
+  try{
+   const raw=JSON.parse(reader.result);
+   if(!raw||typeof raw!=='object'||!Array.isArray(raw.transactions)||!Array.isArray(raw.wallets))throw new Error('This file is not a valid FlowTrack backup');
+   if(!confirm('Import this JSON backup? Your current local data will be replaced.'))return;
+   const backupKey=KEY+'_before_import';
+   localStorage.setItem(backupKey,localStorage.getItem(KEY)||'');
+   state=normalizeState(raw);
+   state.meta={...(state.meta||{}),appVersion:BUILD_VERSION,updatedAt:new Date().toISOString()};
+   localStorage.setItem(KEY,JSON.stringify(state));
+   render();
+   toast(`Imported ${state.transactions.length} transactions`);
+   if(driveToken){clearTimeout(driveSyncTimer);driveSyncTimer=setTimeout(()=>driveSave(),300);}
+  }catch(e){console.error('JSON import error',e);toast('Import failed: '+e.message)}
+  finally{document.getElementById('jsonFile').value='';}
+ };
+ reader.onerror=()=>{document.getElementById('jsonFile').value='';toast('Could not read the JSON file')};
+ reader.readAsText(file);
 }
 
 function saveSettings(){state.profile.name=document.getElementById('profileName').value.trim()||'My Finance';state.profile.currency=document.getElementById('currency').value||'₵';state.profile.clientId=FLOWTRACK_GOOGLE_CLIENT_ID;save();toast('Settings saved')}
@@ -744,6 +785,7 @@ if('serviceWorker' in navigator){
   .catch(()=>{});
 }
 
+document.getElementById('jsonFile').addEventListener('change',e=>importJSONFile(e.target.files?.[0]));
 render();
 restoreGoogleUI();
 </script>

@@ -1,11 +1,1 @@
-# FlowTrack Pro v3.1.1 — Recent Transactions Fix
-
-Changes:
-- Fixed dashboard Recent transactions so newly added transactions appear immediately.
-- Recent transactions are sorted by creation/update time rather than only transaction date.
-- Added `createdAt` / `updatedAt` metadata while preserving existing transaction dates.
-- Dashboard recent list is rendered independently so a transaction-table rendering error cannot hide it.
-- Existing localStorage data is preserved and migrated safely.
-- Build version updated to 3.1.1.
-
-Deploy the contents of this folder to Vercel. Do not reset localStorage or Google Drive data.
+FlowTrack Pro source package.
