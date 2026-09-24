@@ -8,8 +8,54 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<script>window.FLOWTRACK_BUILD_VERSION="3.6.0";</script>
+<script src="https://accounts.google.com/gsi/client" async defer>
+
+/* FlowTrack 3.8.0 — opening balance and wallet reconciliation */
+function walletOpeningBalance(w){
+  return Number(w?.startingBalance ?? w?.openingBalance ?? 0) || 0;
+}
+function setWalletOpeningBalance(walletId, value){
+  const w=(state.wallets||[]).find(x=>String(x.id)===String(walletId));
+  if(!w) return false;
+  const n=Number(value);
+  if(!Number.isFinite(n)) return false;
+  w.startingBalance=n;
+  w.openingBalance=n;
+  w.updatedAt=Date.now();
+  return true;
+}
+function reconcileWalletBalance(walletId, actualBalance){
+  const w=(state.wallets||[]).find(x=>String(x.id)===String(walletId));
+  if(!w) return false;
+  const actual=Number(actualBalance);
+  if(!Number.isFinite(actual)) return false;
+
+  // Calculate the wallet's balance excluding its opening balance.
+  const currentWithoutOpening = calculateWalletBalance
+    ? Number(calculateWalletBalance(walletId,{excludeOpening:true})||0)
+    : 0;
+  const opening = actual-currentWithoutOpening;
+  setWalletOpeningBalance(walletId,opening);
+  if(typeof saveState==="function") saveState();
+  if(typeof render==="function") render();
+  return true;
+}
+function walletBalanceBreakdown(walletId){
+  const w=(state.wallets||[]).find(x=>String(x.id)===String(walletId));
+  const opening=walletOpeningBalance(w);
+  let calculated=opening;
+  for(const t of (state.transactions||[])){
+    if(String(t.walletId)!==String(walletId)) continue;
+    const amount=Number(t.amount||0);
+    const type=String(t.type||"");
+    if(type==="income"||type==="loan_repayment"||type==="disbursement_received") calculated+=amount;
+    else if(type==="expense"||type==="lend"||type==="disbursement") calculated-=amount;
+  }
+  return {opening,calculated};
+}
+
+</script>
+<script>window.FLOWTRACK_BUILD_VERSION="3.8.0";</script>
 <style>
 :root{--bg:#f5f7fb;--panel:#fff;--text:#18212f;--muted:#718096;--line:#e5e9f0;--primary:#2563eb;--primary2:#1d4ed8;--good:#0f9d67;--bad:#dc4f5f;--shadow:0 10px 30px rgba(20,34,55,.07);--radius:18px}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
@@ -57,6 +103,12 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 .multi-fund-item .fund-info{flex:1;min-width:0}
 .multi-fund-item .fund-info b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .multi-fund-total{display:flex;justify-content:space-between;margin-top:8px;font-weight:700}
+
+.opening-balance-note{font-size:12px;color:var(--muted);margin-top:5px}
+.reconcile-box{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}
+.balance-breakdown{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.balance-breakdown .mini{padding:10px;border:1px solid var(--line);border-radius:10px;background:#fafbfc}
+@media(max-width:720px){.balance-breakdown{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -71,7 +123,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
     <button data-page="analytics"><span class="ico">◒</span>Analytics</button>
     <button data-page="settings"><span class="ico">⚙</span>Settings</button>
   </div>
-  <div class="side-bottom"><div class="sync-pill">● <span id="syncText">Local data ready</span></div></div>
+  <div class="side-bottom"><div class="sync-pill"><span id="buildVersion" style="margin-right:6px">v3.8.0</span>● <span id="syncText">Local data ready</span></div></div>
 </aside>
 
 <main class="main">
@@ -167,9 +219,9 @@ const COLORS=['#2563eb','#0f9d67','#dc4f5f','#f59e0b','#7c3aed','#0891b2','#db27
 const DEFAULT_STATE={
  profile:{name:'My Finance',currency:'₵',clientId:FLOWTRACK_GOOGLE_CLIENT_ID},
  wallets:[
-  {id:'w1',name:'Cash',icon:'💵',color:'#0f9d67',balance:0,startingBalance:0,savings:false},
-  {id:'w2',name:'Bank',icon:'🏦',color:'#2563eb',balance:0,startingBalance:0,savings:false},
-  {id:'w3',name:'Savings',icon:'💰',color:'#7c3aed',balance:0,startingBalance:0,savings:true}
+  {id:'w1',name:'Cash',icon:'💵',color:'#0f9d67',balance:0,savings:false},
+  {id:'w2',name:'Bank',icon:'🏦',color:'#2563eb',balance:0,savings:false},
+  {id:'w3',name:'Savings',icon:'💰',color:'#7c3aed',balance:0,savings:true}
  ],
  categories:[
   {id:'c1',name:'Salary',icon:'💵',color:'#0f9d67',type:'income'},
@@ -189,14 +241,16 @@ function normalizeState(raw){
  const profile=(raw.profile&&typeof raw.profile==='object')?raw.profile:{};
  base.profile={...base.profile,...profile,clientId:FLOWTRACK_GOOGLE_CLIENT_ID};
  if(Array.isArray(raw.wallets)) base.wallets=raw.wallets.map((w,i)=>({
-   id:w?.id||('w_migrated_'+i),name:w?.name||'Wallet',icon:w?.icon||ICONS[0],color:w?.color||COLORS[i%COLORS.length],balance:Number(w?.balance)||0,startingBalance:Number(w?.startingBalance)||0,savings:!!w?.savings,updatedAt:w?.updatedAt||new Date().toISOString()
+   id:w?.id||('w_migrated_'+i),name:w?.name||'Wallet',icon:w?.icon||ICONS[0],color:w?.color||COLORS[i%COLORS.length],balance:Number(w?.balance)||0,savings:!!w?.savings,updatedAt:w?.updatedAt||new Date().toISOString()
  }));
  if(Array.isArray(raw.categories)) base.categories=raw.categories.map((c,i)=>({
    id:c?.id||('c_migrated_'+i),name:c?.name||'Category',icon:c?.icon||ICONS[0],color:c?.color||COLORS[i%COLORS.length],type:c?.type==='income'?'income':'expense',updatedAt:c?.updatedAt||new Date().toISOString()
  }));
  if(Array.isArray(raw.transactions)) base.transactions=raw.transactions.map((t,i)=>({
    id:t?.id||('t_migrated_'+i),type:['income','expense','transfer','lend','repayment','custody_in','disbursement'].includes(t?.type)?t.type:'expense',amount:Number(t?.amount)||0,
-   walletId:t?.walletId||null,toWalletId:t?.toWalletId||null,categoryId:t?.categoryId||null,loanId:t?.loanId||null,fundId:t?.fundId||null,counterparty:String(t?.counterparty||''),
+   walletId:t?.walletId||null,toWalletId:t?.toWalletId||null,categoryId:t?.categoryId||null,loanId:t?.loanId||null,fundId:t?.fundId||null,
+   allocations:Array.isArray(t?.allocations)?t.allocations.map(a=>({fundId:a?.fundId||null,amount:Number(a?.amount)||0})).filter(a=>a.fundId&&a.amount>0):((t?.type==='disbursement'&&t?.fundId)?[{fundId:t.fundId,amount:Number(t?.amount)||0}]:[]),
+   counterparty:String(t?.counterparty||''),
    date:t?.date||new Date().toISOString(),description:String(t?.description||''),
    createdAt:t?.createdAt||t?.updatedAt||new Date().toISOString(),updatedAt:t?.updatedAt||t?.createdAt||new Date().toISOString()
  }));
@@ -251,28 +305,15 @@ function transactionDateISO(value){
  return new Date(value+'T12:00:00').toISOString();
 }
 function calcBalances(){
- state.wallets.forEach(w=>w.balance=Number(w.startingBalance)||0);
+ state.wallets.forEach(w=>w.balance=0);
  state.transactions.forEach(t=>{
-  const amt=Number(t.amount)||0;
-  if(t.type==='income'){let w=wallet(t.walletId);if(w)w.balance+=amt}
-  if(t.type==='expense'||t.type==='lend'){let w=wallet(t.walletId);if(w)w.balance-=amt}
-  if(t.type==='repayment'||t.type==='custody_in'){let w=wallet(t.walletId);if(w)w.balance+=amt}
-  if(t.type==='disbursement'){let w=wallet(t.walletId);if(w)w.balance-=amt}
-  if(t.type==='transfer'){let a=wallet(t.walletId),b=wallet(t.toWalletId);if(a)a.balance-=amt;if(b)b.balance+=amt}
+  if(t.type==='income'){let w=wallet(t.walletId);if(w)w.balance+=+t.amount}
+  if(t.type==='expense'||t.type==='lend'){let w=wallet(t.walletId);if(w)w.balance-=+t.amount}
+  if(t.type==='repayment'||t.type==='custody_in'){let w=wallet(t.walletId);if(w)w.balance+=+t.amount}
+  if(t.type==='disbursement'){let w=wallet(t.walletId);if(w)w.balance-=+t.amount}
+  if(t.type==='transfer'){let a=wallet(t.walletId),b=wallet(t.toWalletId);if(a)a.balance-=+t.amount;if(b)b.balance+=+t.amount}
  });
 }
-function walletNetFromTransactions(wid){
- return state.transactions.reduce((sum,t)=>{
-  const amt=Number(t.amount)||0;
-  if(t.type==='transfer') return sum+(t.walletId===wid?-amt:0)+(t.toWalletId===wid?amt:0);
-  if(t.walletId!==wid)return sum;
-  if(t.type==='income'||t.type==='repayment'||t.type==='custody_in')return sum+amt;
-  if(t.type==='expense'||t.type==='lend'||t.type==='disbursement')return sum-amt;
-  return sum;
- },0);
-}
-function walletCalculatedBalance(wid){return (Number(wallet(wid)?.startingBalance)||0)+walletNetFromTransactions(wid)}
-
 function heldFundsTotal(){
  return state.transactions.filter(t=>t.type==='custody_in').reduce((sum,fund)=>sum+outstandingForFund(fund.id),0);
 }
@@ -310,7 +351,7 @@ function fillWalletSelects(){
  let f=document.getElementById('txWallet');let cur=f.value;f.innerHTML='<option value="">All wallets</option>'+opts;f.value=cur;
 }
 function renderWallets(){
- let box=document.getElementById('walletGrid');box.innerHTML=state.wallets.map(w=>`<div class="card item-card"><div class="wallet"><div class="avatar" style="background:${w.color}22">${w.icon}</div><div><h4>${esc(w.name)}</h4><p>${w.savings?'Savings wallet':'Spendable wallet'}</p></div><div class="meta"><b>${money(w.balance)}</b><span class="sub">Opening: ${money(w.startingBalance)}</span><div><button class="btn small" onclick="openWallet('${w.id}')">Edit</button> <button class="btn small danger" onclick="deleteWallet('${w.id}')">Delete</button></div></div></div></div>`).join('')||'<div class="empty">No wallets yet.</div>';
+ let box=document.getElementById('walletGrid');box.innerHTML=state.wallets.map(w=>`<div class="card item-card"><div class="wallet"><div class="avatar" style="background:${w.color}22">${w.icon}</div><div><h4>${esc(w.name)}</h4><p>${w.savings?'Savings wallet':'Spendable wallet'}</p></div><div class="meta"><b>${money(w.balance)}</b><div><button class="btn small" onclick="openWallet('${w.id}')">Edit</button> <button class="btn small danger" onclick="deleteWallet('${w.id}')">Delete</button></div></div></div></div>`).join('')||'<div class="empty">No wallets yet.</div>';
 }
 function renderWalletSummary(){
  let box=document.getElementById('walletSummary'), total=Math.abs(totals().total)||1;
@@ -449,39 +490,11 @@ function picker(){
 let currentWalletId=null;
 function openWallet(wid=null){
  currentWalletId=wid;let w=wid?wallet(wid):null;selectedIcon=w?.icon||'💵';selectedColor=w?.color||'#2563eb';
- const opening=Number(w?.startingBalance)||0;
- openModal(`<div class="modal-head"><h2>${w?'Edit':'New'} wallet</h2><button class="x" onclick="closeModal()">×</button></div>
- <div class="field"><label>Name</label><input id="mName" value="${esc(w?.name||'')}"></div>
- <div class="formgrid"><div class="field"><label>Wallet type</label><select id="mSavings"><option value="false" ${!w?.savings?'selected':''}>Spendable</option><option value="true" ${w?.savings?'selected':''}>Savings</option></select></div>
- <div class="field"><label>Opening balance</label><input id="mOpening" type="number" step="0.01" value="${opening}"><small class="sub">Money already in this wallet before recorded transactions.</small></div></div>
- ${w?`<div class="field"><label>Current calculated balance</label><div class="card" style="padding:12px;background:#f8fafc"><b>${money(walletCalculatedBalance(wid))}</b><span class="sub">Opening balance + recorded transactions</span></div></div>`:''}
- ${picker()}<div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button>${w?`<button class="btn" onclick="openReconcileWallet('${w.id}')">Reconcile</button>`:''}<button class="btn primary" onclick="saveWallet()">Save wallet</button></div>`);
+ openModal(`<div class="modal-head"><h2>${w?'Edit':'New'} wallet</h2><button class="x" onclick="closeModal()">×</button></div><div class="field"><label>Name</label><input id="mName" value="${esc(w?.name||'')}"></div><div class="field"><label>Wallet type</label><select id="mSavings"><option value="false" ${!w?.savings?'selected':''}>Spendable</option><option value="true" ${w?.savings?'selected':''}>Savings</option></select></div>${picker()}<div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveWallet()">Save wallet</button></div>`);
 }
 function pickIcon(i){selectedIcon=i;document.querySelectorAll('.iconpick button').forEach(b=>b.classList.toggle('selected',b.textContent===i))}
 function pickColor(c){selectedColor=c;document.querySelectorAll('.colorpick button').forEach(b=>b.classList.toggle('selected',b.getAttribute('data-color')===c))}
-function saveWallet(){
- let name=document.getElementById('mName').value.trim();if(!name)return toast('Wallet name is required');
- let opening=Number(document.getElementById('mOpening').value);if(!Number.isFinite(opening))opening=0;
- if(currentWalletId){let w=wallet(currentWalletId);Object.assign(w,{name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true',startingBalance:opening,updatedAt:new Date().toISOString()})}
- else state.wallets.push({id:id('w'),name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true',balance:opening,startingBalance:opening,updatedAt:new Date().toISOString()});
- closeModal();save({immediate:true});toast('Wallet saved')
-}
-function openReconcileWallet(wid){
- const w=wallet(wid);if(!w)return;
- const calculated=walletCalculatedBalance(wid);
- openModal(`<div class="modal-head"><h2>Reconcile ${esc(w.name)}</h2><button class="x" onclick="openWallet('${wid}')">×</button></div>
- <p class="sub">Enter the actual amount currently in this wallet. FlowTrack will adjust only the opening balance; your existing transactions remain unchanged.</p>
- <div class="field"><label>Calculated balance</label><input value="${calculated.toFixed(2)}" disabled></div>
- <div class="field"><label>Actual current balance</label><input id="reconcileAmount" type="number" step="0.01" value="${calculated.toFixed(2)}"></div>
- <div class="modal-actions"><button class="btn" onclick="openWallet('${wid}')">Cancel</button><button class="btn primary" onclick="reconcileWallet('${wid}')">Apply reconciliation</button></div>`);
-}
-function reconcileWallet(wid){
- const w=wallet(wid),actual=Number(document.getElementById('reconcileAmount').value);
- if(!w||!Number.isFinite(actual))return toast('Enter a valid current balance');
- const txNet=walletNetFromTransactions(wid);
- w.startingBalance=actual-txNet;w.updatedAt=new Date().toISOString();
- closeModal();save({immediate:true});toast(`${w.name} reconciled to ${money(actual)}`);
-}
+function saveWallet(){let name=document.getElementById('mName').value.trim();if(!name)return toast('Wallet name is required');if(currentWalletId){let w=wallet(currentWalletId);Object.assign(w,{name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true',updatedAt:new Date().toISOString()})}else state.wallets.push({id:id('w'),name,icon:selectedIcon,color:selectedColor,savings:document.getElementById('mSavings').value==='true',balance:0,updatedAt:new Date().toISOString()});closeModal();save({immediate:true});toast('Wallet saved')}
 function deleteWallet(wid){if(state.wallets.length<=1)return toast('Keep at least one wallet');if(state.transactions.some(t=>t.walletId===wid||t.toWalletId===wid))return toast('Cannot delete a wallet with transactions');if(confirm('Delete this wallet?')){state.wallets=state.wallets.filter(w=>w.id!==wid);save({immediate:true});}}
 let currentCatId=null;
 function openCategory(cid=null){
@@ -506,7 +519,7 @@ function openTransaction(tid=null){
  <div class="formgrid"><div class="field"><label>Wallet</label><select id="tWallet">${state.wallets.map(w=>`<option value="${w.id}" ${t?.walletId===w.id?'selected':''}>${w.icon} ${esc(w.name)}</option>`).join('')}</select></div><div class="field" id="catField"><label>Category</label><select id="tCat">${state.categories.map(c=>`<option value="${c.id}" ${t?.categoryId===c.id?'selected':''}>${c.icon} ${esc(c.name)}</option>`).join('')}</select></div></div>
  <div class="field" id="toWalletField" style="display:none"><label>Transfer to</label><select id="tToWallet">${state.wallets.map(w=>`<option value="${w.id}" ${t?.toWalletId===w.id?'selected':''}>${w.icon} ${esc(w.name)}</option>`).join('')}</select></div>
  <div class="field" id="loanField" style="display:none"><label>Loan being repaid</label><select id="tLoan"></select></div>
- <div class="field" id="fundField" style="display:none"><label>Funds source</label><select id="tFund"></select></div>
+ <div class="field" id="fundField" style="display:none"><label>Funds sources <span class="sub">(select one or more)</span></label><div id="dFunds" class="multi-fund-list"></div><div class="multi-fund-total"><span>Selected funds available</span><b id="dFundsTotal">₵0.00</b></div><span class="sub">The disbursement amount is allocated across the selected sources automatically.</span></div>
  <div class="field" id="partyField" style="display:none"><label id="partyLabel">Person / organization</label><input id="tParty" value="${esc(t?.counterparty||'')}"></div>
  <div class="formgrid"><div class="field"><label>Date</label><input id="tDate" type="date" value="${t?dateInputValue(t.date):dateInputValue(new Date())}"></div><div class="field"><label>Description / note</label><input id="tDesc" value="${esc(t?.description||'')}"></div></div>
  <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveTransaction()">Save transaction</button></div>`);
@@ -539,81 +552,58 @@ function refreshTxForm(){
    document.getElementById('tLoan').innerHTML=loans.map(x=>`<option value="${x.id}" ${x.id===currentLoan?'selected':''}>${esc(x.description||'Loan')} — ${money(outstandingForLoan(x.id,editingId))} outstanding</option>`).join('');
  }
  if(type==='disbursement'){
-   let currentFund=document.getElementById('tFund').value||state.transactions.find(x=>x.id===editingId)?.fundId||'';
-   let funds=state.transactions.filter(x=>x.type==='custody_in'&&outstandingForFund(x.id,editingId)>0);
-   document.getElementById('tFund').innerHTML=funds.map(x=>`<option value="${x.id}" ${x.id===currentFund?'selected':''}>${esc(x.counterparty||x.description||'Funds received')} — ${money(outstandingForFund(x.id,editingId))} available</option>`).join('');
+   const tx=state.transactions.find(x=>x.id===editingId);
+   const selected=disbursementAllocations(tx).map(a=>a.fundId);
+   renderDisbursementFundSelector(selected);
  }
+}
+function disbursementAllocations(tx){
+ const raw=Array.isArray(tx?.allocations)?tx.allocations:[];
+ if(raw.length)return raw.map(a=>({fundId:a.fundId,amount:Number(a.amount)||0})).filter(a=>a.fundId&&a.amount>0);
+ return tx?.fundId?[{fundId:tx.fundId,amount:Number(tx.amount)||0}]:[];
 }
 function outstandingForFund(fundId,excludeId=null){
  const fund=state.transactions.find(x=>x.id===fundId&&x.type==='custody_in');
  if(!fund)return 0;
- const used=state.transactions.filter(x=>x.type==='disbursement'&&x.fundId===fundId&&x.id!==excludeId).reduce((a,x)=>a+Number(x.amount||0),0);
+ const used=state.transactions.filter(x=>x.type==='disbursement'&&x.id!==excludeId).reduce((a,x)=>a+disbursementAllocations(x).filter(a=>a.fundId===fundId).reduce((ss,a)=>ss+Number(a.amount||0),0),0);
  return Math.max(0,Number(fund.amount||0)-used);
 }
-function fingerprint(t){return [t.type,Number(t.amount).toFixed(2),t.walletId,t.toWalletId||'',t.categoryId||'',t.loanId||'',t.fundId||'',String(t.counterparty||'').trim().toLowerCase(),dateInputValue(t.date),String(t.description||'').trim().toLowerCase()].join('|')}
+function getOutstandingDisbursementFunds(excludeId=editingId){
+ return state.transactions.filter(t=>t.type==='custody_in').map(f=>({id:f.id,person:f.counterparty||'',source:f.counterparty||'',description:f.description||'',remaining:outstandingForFund(f.id,excludeId)})).filter(f=>f.remaining>0.000001);
+}
+function fingerprint(t){return [t.type,Number(t.amount).toFixed(2),t.walletId,t.toWalletId||'',t.categoryId||'',t.loanId||'',t.fundId||'',JSON.stringify(disbursementAllocations(t)),String(t.counterparty||'').trim().toLowerCase(),dateInputValue(t.date),String(t.description||'').trim().toLowerCase()].join('|')}
 function saveTransaction(){
- let type=document.getElementById('tType').value,amount=Number(document.getElementById('tAmount').value),walletId=document.getElementById('tWallet').value,dateValue=document.getElementById('tDate').value,description=document.getElementById('tDesc').value.trim(),categoryId=(type==='transfer'||type==='lend'||type==='repayment'||type==='custody_in'||type==='disbursement')?null:document.getElementById('tCat').value,toWalletId=type==='transfer'?document.getElementById('tToWallet').value:null,loanId=type==='repayment'?(document.getElementById('tLoan')?.value||null):null,fundId=type==='disbursement'?(document.getElementById('tFund')?.value||null):null,counterparty=(type==='custody_in'||type==='disbursement')?(document.getElementById('tParty')?.value.trim()||''):'';
+ let type=document.getElementById('tType').value,amount=Number(document.getElementById('tAmount').value),walletId=document.getElementById('tWallet').value,dateValue=document.getElementById('tDate').value,description=document.getElementById('tDesc').value.trim(),categoryId=(type==='transfer'||type==='lend'||type==='repayment'||type==='custody_in'||type==='disbursement')?null:document.getElementById('tCat').value,toWalletId=type==='transfer'?document.getElementById('tToWallet').value:null,loanId=type==='repayment'?(document.getElementById('tLoan')?.value||null):null,counterparty=(type==='custody_in'||type==='disbursement')?(document.getElementById('tParty')?.value.trim()||''):'';
+ let allocations=[],fundId=null;
  if(!amount||amount<=0)return toast('Enter a valid amount');
  if(!walletId)return toast('Choose a wallet');
  if(!dateValue)return toast('Choose a transaction date');
  if(type==='transfer'&&walletId===toWalletId)return toast('Choose different wallets');
  if(type!=='transfer'&&type!=='lend'&&type!=='repayment'&&type!=='custody_in'&&type!=='disbursement'&&!categoryId)return toast('Choose a category');
  if(type==='repayment'){if(!loanId)return toast('Choose the loan being repaid');let outstanding=outstandingForLoan(loanId,editingId);if(amount>outstanding+0.000001)return toast(`Repayment cannot exceed ${money(outstanding)} outstanding`);}
- if(type==='disbursement'){if(!fundId)return toast('Choose the funds source');let available=outstandingForFund(fundId,editingId);if(amount>available+0.000001)return toast(`Disbursement cannot exceed ${money(available)} available`);}
+ if(type==='disbursement'){
+   const selected=selectedDisbursementFundIds();
+   if(!selected.length)return toast('Select at least one funds source');
+   const result=getSelectedDisbursementAllocations(amount);
+   if(result.remaining>0.000001)return toast(`Selected sources have only ${money(result.totalAvailable)} available`);
+   allocations=result.allocations;
+   fundId=allocations.length===1?allocations[0].fundId:null;
+ }
  let now=new Date().toISOString();
  let index=editingId?state.transactions.findIndex(x=>x.id===editingId):-1;
  let existingTx=index>=0?state.transactions[index]:null;
- let obj={id:editingId||id('t'),type,amount,walletId,toWalletId,categoryId,loanId,fundId,counterparty,date:transactionDateISO(dateValue),description,createdAt:existingTx?.createdAt||now,updatedAt:now};
+ let obj={id:editingId||id('t'),type,amount,walletId,toWalletId,categoryId,loanId,fundId,allocations,counterparty,date:transactionDateISO(dateValue),description,createdAt:existingTx?.createdAt||now,updatedAt:now};
  let dup=state.transactions.find(x=>fingerprint(x)===fingerprint(obj)&&x.id!==editingId);
  if(dup&&!confirm(`A matching transaction already exists (${money(dup.amount)}). Save this as a separate transaction anyway?`))return;
  if(index>=0)state.transactions[index]=obj;else state.transactions.push(obj);
  closeModal();save({immediate:true});toast(index>=0?'Transaction updated':'Transaction saved');
 }
-function deleteTransaction(tid){let tx=state.transactions.find(t=>t.id===tid);if(tx?.type==='custody_in'&&state.transactions.some(t=>t.type==='disbursement'&&t.fundId===tid))return toast('Cannot delete funds received while a disbursement is linked to them');if(confirm('Delete this transaction?')){state.transactions=state.transactions.filter(t=>t.id!==tid);save({immediate:true});}}
-function exportJSON(){let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='flowtrack-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);toast('JSON backup exported')}
-document.getElementById('jsonFile').addEventListener('change',e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>importJSON(r.result);r.readAsText(f);e.target.value=''});
-function importJSON(text){
- try{
-  let incoming=JSON.parse(text);
-  if(!incoming||typeof incoming!=='object')throw Error('JSON must contain an object');
-  let rawTx=incoming.transactions||incoming.data?.transactions||[];
-  if(!Array.isArray(rawTx))throw Error('No transactions array found');
-  // Map imported wallets/categories to existing records by ID first, then by name.
-  const walletMap=new Map(),catMap=new Map();
-  (Array.isArray(incoming.wallets)?incoming.wallets:[]).forEach(w=>{
-    if(!w||!w.name)return;
-    let existing=state.wallets.find(x=>x.id===w.id)||state.wallets.find(x=>x.name.toLowerCase()===String(w.name).toLowerCase());
-    if(!existing){existing={...w,id:w.id||id('w'),balance:0,updatedAt:w.updatedAt||new Date().toISOString()};state.wallets.push(existing);}
-    walletMap.set(w.id,existing.id);
-  });
-  (Array.isArray(incoming.categories)?incoming.categories:[]).forEach(c=>{
-    if(!c||!c.name)return;
-    let existing=state.categories.find(x=>x.id===c.id)||state.categories.find(x=>x.name.toLowerCase()===String(c.name).toLowerCase()&&x.type===c.type);
-    if(!existing){existing={...c,id:c.id||id('c'),updatedAt:c.updatedAt||new Date().toISOString()};state.categories.push(existing);}
-    catMap.set(c.id,existing.id);
-  });
-  let existing=new Set(state.transactions.map(fingerprint)),dups=0,add=[];
-  rawTx.forEach(raw=>{
-    if(!raw||!raw.amount||!raw.date)return;
-    let t={...raw,id:raw.id||id('t'),amount:Number(raw.amount),type:['income','expense','transfer','lend','repayment','custody_in','disbursement'].includes(raw.type)?raw.type:'expense',
-      walletId:walletMap.get(raw.walletId)||raw.walletId||null,toWalletId:walletMap.get(raw.toWalletId)||raw.toWalletId||null,categoryId:catMap.get(raw.categoryId)||raw.categoryId||null,loanId:raw.loanId||null,
-      date:raw.date,description:String(raw.description||''),createdAt:raw.createdAt||raw.updatedAt||new Date().toISOString(),updatedAt:raw.updatedAt||raw.createdAt||new Date().toISOString()};
-    if(!t.walletId||!state.wallets.some(w=>w.id===t.walletId))return;
-    if(t.type==='transfer'&&(!t.toWalletId||!state.wallets.some(w=>w.id===t.toWalletId)))return;
-    if(t.type!=='transfer'&&t.type!=='lend'&&t.categoryId&&!state.categories.some(c=>c.id===t.categoryId))t.categoryId=null;
-    if(existing.has(fingerprint(t)))dups++;else{existing.add(fingerprint(t));add.push(t);}
-  });
-  let msg=`Found ${rawTx.length} transaction(s). ${dups} possible duplicate(s), ${add.length} new transaction(s).\n\nImport the ${add.length} new record(s)?`;
-  if(!confirm(msg))return;
-  state.transactions.push(...add);
-  save({immediate:true});toast(`Imported ${add.length} new transaction(s)`);
- }catch(e){console.error('JSON import error',e);toast('Invalid JSON: '+e.message)}
-}
+function deleteTransaction(tid){let tx=state.transactions.find(t=>t.id===tid);if(tx?.type==='custody_in'&&state.transactions.some(t=>t.type==='disbursement'&&disbursementAllocations(t).some(a=>a.fundId===tid)))return toast('Cannot delete funds received while a disbursement is linked to them');if(confirm('Delete this transaction?')){state.transactions=state.transactions.filter(t=>t.id!==tid);save({immediate:true});}}
 function reportData(){
  let inc=state.transactions.filter(t=>t.type==='income'||t.type==='repayment').reduce((a,t)=>a+Number(t.amount),0);
  let exp=state.transactions.filter(t=>t.type==='expense'||t.type==='lend').reduce((a,t)=>a+Number(t.amount),0);
  let t=totals();
- let opening=state.wallets.reduce((a,w)=>a+(Number(w.startingBalance)||0),0); return {inc,exp,net:inc-exp,total:t.total,savings:t.savings,held:t.held,spendable:t.spendable,opening};
+ return {inc,exp,net:inc-exp,total:t.total,savings:t.savings,held:t.held,spendable:t.spendable};
 }
 function reportChartsHTML(){
  let s=series(6);
@@ -633,7 +623,7 @@ function buildReportHTML(){
  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(u)} — FlowTrack Report</title><style>
  @page{size:A4;margin:14mm}body{font-family:Arial,sans-serif;color:#18212f;margin:0;font-size:10pt}h1{font-size:24pt;margin:0 0 4px}h2{font-size:14pt;margin:22px 0 9px;border-bottom:1px solid #ddd;padding-bottom:5px}.muted{color:#718096}.header{border-bottom:2px solid #2563eb;padding-bottom:12px;margin-bottom:16px}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.card{border:1px solid #e1e5eb;border-radius:8px;padding:10px}.card b{display:block;font-size:14pt;margin-top:4px}table{width:100%;border-collapse:collapse;margin-bottom:10px}th,td{border-bottom:1px solid #e5e9f0;padding:6px;text-align:left}th{background:#f5f7fb}.footer{margin-top:20px;color:#718096;font-size:8pt} </style></head><body>
  <div class="header"><h1>${esc(u)} — Financial Report</h1><div class="muted">Generated ${esc(new Date().toLocaleString())}</div></div>
- <div class="cards"><div class="card">Opening balances<b>${money(d.opening)}</b></div><div class="card">Total balance<b>${money(d.total)}</b></div><div class="card">Savings<b>${money(d.savings)}</b></div><div class="card">For disbursement<b>${money(d.held)}</b></div><div class="card">Spendable<b>${money(d.spendable)}</b></div><div class="card">Net cash flow<b>${money(d.net)}</b></div></div>
+ <div class="cards"><div class="card">Total balance<b>${money(d.total)}</b></div><div class="card">Savings<b>${money(d.savings)}</b></div><div class="card">For disbursement<b>${money(d.held)}</b></div><div class="card">Spendable<b>${money(d.spendable)}</b></div><div class="card">Net cash flow<b>${money(d.net)}</b></div></div>
  ${reportChartsHTML()}${reportTransactionsHTML()}<div class="footer">FlowTrack Pro • Professional A4 financial report</div>
  </body></html>`;
 }
