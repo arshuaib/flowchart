@@ -8,54 +8,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<script src="https://accounts.google.com/gsi/client" async defer>
-
-/* FlowTrack 3.8.0 — opening balance and wallet reconciliation */
-function walletOpeningBalance(w){
-  return Number(w?.startingBalance ?? w?.openingBalance ?? 0) || 0;
-}
-function setWalletOpeningBalance(walletId, value){
-  const w=(state.wallets||[]).find(x=>String(x.id)===String(walletId));
-  if(!w) return false;
-  const n=Number(value);
-  if(!Number.isFinite(n)) return false;
-  w.startingBalance=n;
-  w.openingBalance=n;
-  w.updatedAt=Date.now();
-  return true;
-}
-function reconcileWalletBalance(walletId, actualBalance){
-  const w=(state.wallets||[]).find(x=>String(x.id)===String(walletId));
-  if(!w) return false;
-  const actual=Number(actualBalance);
-  if(!Number.isFinite(actual)) return false;
-
-  // Calculate the wallet's balance excluding its opening balance.
-  const currentWithoutOpening = calculateWalletBalance
-    ? Number(calculateWalletBalance(walletId,{excludeOpening:true})||0)
-    : 0;
-  const opening = actual-currentWithoutOpening;
-  setWalletOpeningBalance(walletId,opening);
-  if(typeof saveState==="function") saveState();
-  if(typeof render==="function") render();
-  return true;
-}
-function walletBalanceBreakdown(walletId){
-  const w=(state.wallets||[]).find(x=>String(x.id)===String(walletId));
-  const opening=walletOpeningBalance(w);
-  let calculated=opening;
-  for(const t of (state.transactions||[])){
-    if(String(t.walletId)!==String(walletId)) continue;
-    const amount=Number(t.amount||0);
-    const type=String(t.type||"");
-    if(type==="income"||type==="loan_repayment"||type==="disbursement_received") calculated+=amount;
-    else if(type==="expense"||type==="lend"||type==="disbursement") calculated-=amount;
-  }
-  return {opening,calculated};
-}
-
-</script>
-<script>window.FLOWTRACK_BUILD_VERSION="3.8.0";</script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>window.FLOWTRACK_BUILD_VERSION="3.7.1";</script>
 <style>
 :root{--bg:#f5f7fb;--panel:#fff;--text:#18212f;--muted:#718096;--line:#e5e9f0;--primary:#2563eb;--primary2:#1d4ed8;--good:#0f9d67;--bad:#dc4f5f;--shadow:0 10px 30px rgba(20,34,55,.07);--radius:18px}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
@@ -77,7 +31,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 .toast{position:fixed;right:18px;bottom:18px;background:#101828;color:#fff;padding:12px 15px;border-radius:12px;box-shadow:var(--shadow);display:none;z-index:100;font-size:13px}.toast.show{display:block}
 .empty{text-align:center;color:var(--muted);padding:35px}.mobile-nav{display:none}
 @media(max-width:1050px){.stats{grid-template-columns:repeat(2,1fr)}.two,.three{grid-template-columns:1fr}.item-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:720px){.sidebar{display:none}.main{margin-left:0;width:100%;padding:16px 14px 95px}.topbar{align-items:flex-start}.title h1{font-size:22px}.actions{width:100%;justify-content:flex-end}.actions .btn:nth-child(1),.actions .btn:nth-child(2){display:none}.actions .btn:nth-child(3){display:inline-flex}.stats{grid-template-columns:1fr 1fr;gap:10px}.stat-value{font-size:21px}.card{padding:15px}.item-grid{grid-template-columns:1fr}.mobile-nav{position:fixed;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);z-index:30;padding:7px 2px}.mobile-nav button{background:transparent;color:var(--muted);font-size:9px;min-width:0;padding:5px 1px}.mobile-nav button.active{color:var(--primary);font-weight:700}.mobile-nav span{display:block;font-size:17px;margin-bottom:2px}.formgrid{grid-template-columns:1fr}.table th,.table td{font-size:12px;padding:10px 7px}.table-wrap{overflow-x:auto}.table th:nth-child(4),.table td:nth-child(4){display:table-cell}.table th:nth-child(5),.table td:nth-child(5){min-width:132px}.table td:nth-child(4){min-width:92px}.modal-bg{padding:8px}.modal{width:100%;max-height:92vh;padding:16px}.iconpick{grid-template-columns:repeat(6,1fr)}.modal-actions{position:sticky;bottom:0;background:#fff;padding-top:10px}.modal-actions .btn{flex:1}}
+@media(max-width:720px){.sidebar{display:none}.main{margin-left:0;width:100%;padding:12px 12px 95px}.topbar{display:block;margin-bottom:14px}.title h1{font-size:22px}.title p{font-size:14px;line-height:1.25;margin-top:3px;max-width:280px}.actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px;justify-content:stretch}.actions .btn:nth-child(1),.actions .btn:nth-child(2){display:none}.actions .btn:nth-child(n+3){display:flex;width:100%;min-height:46px;padding:8px 9px;align-items:center;justify-content:center;text-align:center;line-height:1.15;font-size:14px}.actions .btn:nth-child(6){grid-column:1 / -1}.stats{grid-template-columns:1fr 1fr;gap:9px}.stat-value{font-size:21px}.card{padding:14px}.item-grid{grid-template-columns:1fr}.mobile-nav{position:fixed;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);z-index:30;padding:7px 2px}.mobile-nav button{background:transparent;color:var(--muted);font-size:9px;min-width:0;padding:5px 1px}.mobile-nav button.active{color:var(--primary);font-weight:700}.mobile-nav span{display:block;font-size:17px;margin-bottom:2px}.formgrid{grid-template-columns:1fr}.table th,.table td{font-size:12px;padding:10px 7px}.table-wrap{overflow-x:auto}.table th:nth-child(4),.table td:nth-child(4){display:table-cell}.table th:nth-child(5),.table td:nth-child(5){min-width:132px}.table td:nth-child(4){min-width:92px}.modal-bg{padding:8px}.modal{width:100%;max-height:92vh;padding:16px}.iconpick{grid-template-columns:repeat(6,1fr)}.modal-actions{position:sticky;bottom:0;background:#fff;padding-top:10px}.modal-actions .btn{flex:1}}
 
 .report-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
 .chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
@@ -90,6 +44,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 .wallet-summary-item .wallet-name b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wallet-summary-item .wallet-bar{height:6px;background:#edf1f6;border-radius:99px;margin-top:6px;overflow:hidden}
 .wallet-summary-item .wallet-bar span{display:block;height:100%;border-radius:99px}
+.progress{height:8px;background:#edf1f6;border-radius:99px;overflow:hidden;margin-top:6px}.progress span{display:block;height:100%;border-radius:99px}.insight-list{display:grid;gap:9px}.insight{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fafbfc}.mini-actions{display:flex;gap:6px;flex-wrap:wrap}.pill{display:inline-block;padding:3px 8px;border-radius:99px;background:#eef2ff;font-size:11px;color:#334155}
 .report-window{font-family:Arial,sans-serif}
 @media(max-width:720px){.chart-grid{grid-template-columns:1fr}.chart-card{min-height:290px}.report-actions .btn{flex:1}}
 @media print{
@@ -103,12 +58,6 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 .multi-fund-item .fund-info{flex:1;min-width:0}
 .multi-fund-item .fund-info b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .multi-fund-total{display:flex;justify-content:space-between;margin-top:8px;font-weight:700}
-
-.opening-balance-note{font-size:12px;color:var(--muted);margin-top:5px}
-.reconcile-box{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}
-.balance-breakdown{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
-.balance-breakdown .mini{padding:10px;border:1px solid var(--line);border-radius:10px;background:#fafbfc}
-@media(max-width:720px){.balance-breakdown{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -123,13 +72,13 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
     <button data-page="analytics"><span class="ico">◒</span>Analytics</button>
     <button data-page="settings"><span class="ico">⚙</span>Settings</button>
   </div>
-  <div class="side-bottom"><div class="sync-pill"><span id="buildVersion" style="margin-right:6px">v3.8.0</span>● <span id="syncText">Local data ready</span></div></div>
+  <div class="side-bottom"><div class="sync-pill">● <span id="syncText">Local data ready</span></div></div>
 </aside>
 
 <main class="main">
 <header class="topbar">
  <div class="title"><h1 id="pageTitle">Dashboard</h1><p id="greeting">Your money at a glance.</p></div>
- <div class="actions"><button class="btn" onclick="exportJSON()">Export JSON</button><button class="btn" onclick="document.getElementById('jsonFile').click()">Import JSON</button><button class="btn" onclick="exportReportPDF()">PDF report</button><button class="btn primary" onclick="openTransaction()">+ Add transaction</button><input id="jsonFile" type="file" accept=".json,application/json" hidden></div>
+ <div class="actions"><button class="btn" onclick="exportJSON()">Export JSON</button><button class="btn" onclick="document.getElementById('jsonFile').click()">Import JSON</button><button class="btn" onclick="exportReportPDF()">PDF report</button><button class="btn" onclick="exportCSV()">CSV</button><button class="btn" onclick="processRecurring()">Process recurring</button><button class="btn primary" onclick="openTransaction()">+ Add transaction</button><input id="jsonFile" type="file" accept=".json,application/json" hidden></div>
 </header>
 
 <section id="dashboard" class="page active">
@@ -140,6 +89,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
   <div class="card"><div class="stat-label">For disbursement <span>⇢</span></div><div class="stat-value negative" id="heldFunds">₵0.00</div></div>
   <div class="card"><div class="stat-label">Spendable <span>✓</span></div><div class="stat-value positive" id="spendable">₵0.00</div></div>
   <div class="card"><div class="stat-label">This month <span>↗</span></div><div class="stat-value" id="monthNet">₵0.00</div></div>
+  <div class="card"><div class="stat-label">Budget used <span>◫</span></div><div class="stat-value" id="budgetUsed">₵0.00</div><span class="sub" id="budgetLabel">No budgets set</span></div>
  </div>
  <div class="grid two">
   <div class="card"><h3>Cash flow</h3><div class="chart" id="cashChart"></div><div class="legend"><span><i class="dot" style="background:#2563eb"></i>Income</span><span><i class="dot" style="background:#dc4f5f"></i>Expenses</span></div></div>
@@ -150,7 +100,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 
 <section id="transactions" class="page">
  <div class="card">
-  <div class="toolbar"><input class="search" id="txSearch" placeholder="Search transactions…"><select id="txType"><option value="">All types</option><option value="income">Income</option><option value="expense">Expense</option><option value="transfer">Transfer</option><option value="lend">Lend</option><option value="repayment">Loan repayment</option><option value="custody_in">Funds received for disbursement</option><option value="disbursement">Disbursement</option></select><select id="txWallet"><option value="">All wallets</option></select></div>
+  <div class="toolbar"><input class="search" id="txSearch" placeholder="Search transactions…"><input id="txFrom" type="date" title="From date"><input id="txTo" type="date" title="To date"><select id="txType"><option value="">All types</option><option value="income">Income</option><option value="expense">Expense</option><option value="transfer">Transfer</option><option value="lend">Lend</option><option value="repayment">Loan repayment</option><option value="custody_in">Funds received for disbursement</option><option value="disbursement">Disbursement</option></select><select id="txWallet"><option value="">All wallets</option></select></div>
   <div class="table-wrap"><table class="table"><thead><tr><th>Transaction</th><th>Wallet</th><th>Amount</th><th>Date</th><th>Actions</th></tr></thead><tbody id="txTable"></tbody></table></div>
  </div>
 </section>
@@ -181,6 +131,11 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
   <div class="chart-card"><h3>Transaction activity</h3><div id="activityChart"></div></div>
  </div>
  <div class="card" style="margin-top:16px"><h3>Financial snapshot</h3><div id="snapshot"></div></div>
+ <div class="grid two" style="margin-top:16px">
+  <div class="card"><h3>Budget health</h3><div id="budgetAnalytics"></div></div>
+  <div class="card"><h3>Savings goals</h3><div id="goalAnalytics"></div></div>
+ </div>
+ <div class="card" style="margin-top:16px"><h3>Smart insights</h3><div id="insights"></div></div>
 </section>
 
 <section id="settings" class="page">
@@ -199,7 +154,8 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 <button class="btn danger" onclick="signOutGoogle()">Sign out</button>
 <p id="driveStatus" class="sub"></p>
 </div></div>
- <div class="card" style="margin-top:16px"><h3>Data management</h3><button class="btn" onclick="exportJSON()">Backup JSON</button> <button class="btn danger" onclick="resetData()">Reset all data</button><p class="sub">Tip: keep a JSON backup before resetting or importing a large dataset.</p></div>
+ <div class="card" style="margin-top:16px"><h3>Data management</h3><button class="btn" onclick="exportJSON()">Backup JSON</button> <button class="btn" onclick="exportCSV()">Export CSV</button> <button class="btn danger" onclick="resetData()">Reset all data</button><p class="sub">Tip: keep a JSON backup before resetting or importing a large dataset.</p></div>
+ <div class="card" style="margin-top:16px"><h3>Advanced tools</h3><div class="toolbar"><button class="btn primary" onclick="openBudget()">+ Add budget</button><button class="btn primary" onclick="openGoal()">+ Add savings goal</button><button class="btn" onclick="openRecurring()">+ Add recurring</button><button class="btn" onclick="processRecurring()">Process due recurring</button></div><div id="advancedLists"></div></div>
 </section>
 </main>
 </div>
@@ -212,7 +168,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 
 <script>
 const KEY='flowtrack_pro_v1';
-const BUILD_VERSION=window.FLOWTRACK_BUILD_VERSION||'3.6.0';
+const BUILD_VERSION=window.FLOWTRACK_BUILD_VERSION||'3.6.1';
 const FLOWTRACK_GOOGLE_CLIENT_ID='963866679895-e0ck074n3ivrprahg8tdicn4aij257mc.apps.googleusercontent.com';
 const ICONS=['💵','🏦','💳','👛','💰','📱','🏠','🚗','✈️','🎓','🛒','🍔','⚡','🔧','🎁','📦','💡','🧾','🎯','⭐','🛍️','🏥','🎵','☪️'];
 const COLORS=['#2563eb','#0f9d67','#dc4f5f','#f59e0b','#7c3aed','#0891b2','#db2777','#475569'];
@@ -231,7 +187,10 @@ const DEFAULT_STATE={
   {id:'c5',name:'Shopping',icon:'🛍️',color:'#db2777',type:'expense'},
   {id:'c6',name:'Other income',icon:'💰',color:'#0891b2',type:'income'}
  ],
- transactions:[]
+ transactions:[],
+ budgets:[],
+ goals:[],
+ recurring:[]
 };
 
 function cloneDefault(){return JSON.parse(JSON.stringify(DEFAULT_STATE));}
@@ -250,10 +209,19 @@ function normalizeState(raw){
    id:t?.id||('t_migrated_'+i),type:['income','expense','transfer','lend','repayment','custody_in','disbursement'].includes(t?.type)?t.type:'expense',amount:Number(t?.amount)||0,
    walletId:t?.walletId||null,toWalletId:t?.toWalletId||null,categoryId:t?.categoryId||null,loanId:t?.loanId||null,fundId:t?.fundId||null,
    allocations:Array.isArray(t?.allocations)?t.allocations.map(a=>({fundId:a?.fundId||null,amount:Number(a?.amount)||0})).filter(a=>a.fundId&&a.amount>0):((t?.type==='disbursement'&&t?.fundId)?[{fundId:t.fundId,amount:Number(t?.amount)||0}]:[]),
-   counterparty:String(t?.counterparty||''),
+   counterparty:String(t?.counterparty||''),recurringId:t?.recurringId||null,
    date:t?.date||new Date().toISOString(),description:String(t?.description||''),
    createdAt:t?.createdAt||t?.updatedAt||new Date().toISOString(),updatedAt:t?.updatedAt||t?.createdAt||new Date().toISOString()
  }));
+ if(Array.isArray(raw.budgets)) base.budgets=raw.budgets.map((b,i)=>({
+   id:b?.id||('b_migrated_'+i),categoryId:b?.categoryId||null,amount:Number(b?.amount)||0,period:b?.period==='weekly'?'weekly':'monthly',updatedAt:b?.updatedAt||new Date().toISOString()
+ })).filter(b=>b.amount>0);
+ if(Array.isArray(raw.goals)) base.goals=raw.goals.map((g,i)=>({
+   id:g?.id||('g_migrated_'+i),name:String(g?.name||'Savings goal'),target:Number(g?.target)||0,current:Number(g?.current)||0,deadline:g?.deadline||'',updatedAt:g?.updatedAt||new Date().toISOString()
+ })).filter(g=>g.target>0);
+ if(Array.isArray(raw.recurring)) base.recurring=raw.recurring.map((r,i)=>({
+   id:r?.id||('r_migrated_'+i),type:['income','expense'].includes(r?.type)?r.type:'expense',amount:Number(r?.amount)||0,walletId:r?.walletId||null,categoryId:r?.categoryId||null,description:String(r?.description||''),frequency:r?.frequency==='weekly'?'weekly':'monthly',day:Number(r?.day)||1,nextDate:r?.nextDate||new Date().toISOString().slice(0,10),active:r?.active!==false,updatedAt:r?.updatedAt||new Date().toISOString()
+ })).filter(r=>r.amount>0);
  base.meta={...(raw.meta||{}),appVersion:BUILD_VERSION,updatedAt:raw.meta?.updatedAt||new Date().toISOString()};
  return base;
 }
@@ -299,10 +267,14 @@ function cat(id){return state.categories.find(x=>x.id===id)}
 function dateInputValue(value){
  let d=value instanceof Date?value:new Date(value);
  if(Number.isNaN(d.getTime())) return new Date().toISOString().slice(0,10);
- return d.toLocaleDateString('en-CA');
+ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+ return `${y}-${m}-${day}`;
 }
 function transactionDateISO(value){
- return new Date(value+'T12:00:00').toISOString();
+ if(!value)return new Date().toISOString();
+ const m=String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+ if(!m)return new Date(value).toISOString();
+ return new Date(Number(m[1]),Number(m[2])-1,Number(m[3]),12,0,0).toISOString();
 }
 function calcBalances(){
  state.wallets.forEach(w=>w.balance=0);
@@ -345,6 +317,7 @@ function render(){
  try{renderTransactions();}catch(e){console.error('Transaction list render failed',e);}
  try{renderCashChart();}catch(e){console.error('Cash chart render failed',e);}
  try{renderAnalytics();}catch(e){console.error('Analytics render failed',e);}
+ try{renderAdvancedLists();}catch(e){console.error('Advanced lists render failed',e);}
 }
 function fillWalletSelects(){
  let opts=state.wallets.map(w=>`<option value="${w.id}">${esc(w.icon)} ${esc(w.name)}</option>`).join('');
@@ -368,15 +341,15 @@ function renderCategories(){
  let box=document.getElementById('categoryGrid');box.innerHTML=state.categories.map(c=>`<div class="card item-card"><div class="cat"><div class="avatar" style="background:${c.color}22">${c.icon}</div><div><h4>${esc(c.name)}</h4><p>${c.type}</p></div><div class="meta"><button class="btn small" onclick="openCategory('${c.id}')">Edit</button> <button class="btn small danger" onclick="deleteCategory('${c.id}')">Delete</button></div></div></div>`).join('');
 }
 function renderTransactions(){
- let q=(document.getElementById('txSearch').value||'').toLowerCase(),type=document.getElementById('txType').value,wid=document.getElementById('txWallet').value;
- let arr=state.transactions.filter(t=>(!type||t.type===type)&&(!wid||t.walletId===wid)&&(!q||JSON.stringify(t).toLowerCase().includes(q))).sort((a,b)=>{
+ let q=(document.getElementById('txSearch').value||'').toLowerCase(),type=document.getElementById('txType').value,wid=document.getElementById('txWallet').value,from=document.getElementById('txFrom')?.value||'',to=document.getElementById('txTo')?.value||'';
+ let arr=state.transactions.filter(t=>(!type||t.type===type)&&(!wid||t.walletId===wid)&&(!from||dateInputValue(t.date)>=from)&&(!to||dateInputValue(t.date)<=to)&&(!q||JSON.stringify(t).toLowerCase().includes(q))).sort((a,b)=>{
    const db=Date.parse(b.date)||0, da=Date.parse(a.date)||0;
    if(db!==da)return db-da;
    return (Date.parse(b.updatedAt||b.createdAt)||0)-(Date.parse(a.updatedAt||a.createdAt)||0);
  });
  document.getElementById('txTable').innerHTML=arr.map(t=>{let w=wallet(t.walletId),c=cat(t.categoryId);let sign=(t.type==='income'||t.type==='repayment'||t.type==='custody_in')?'+':(t.type==='expense'||t.type==='lend'||t.type==='disbursement')?'-':'↔';let label=t.type==='lend'?'Lent':t.type==='repayment'?'Loan repayment':t.type==='custody_in'?'Funds received for disbursement':t.type==='disbursement'?'Disbursement':t.type;let cls=(t.type==='income'||t.type==='repayment'||t.type==='custody_in')?'positive':(t.type==='expense'||t.type==='lend'||t.type==='disbursement')?'negative':'';return `<tr><td><div class="row-main"><div class="avatar" style="background:${t.type==='lend'?'#dc4f5f22':(c?.color||'#64748b')+'22'}">${t.type==='lend'?'↗':(c?.icon||'↕')}</div><div><b>${esc(t.description||c?.name||label)}</b><span class="sub">${label}</span></div></div></td><td>${esc(w?.name||'—')}</td><td class="${cls}"><b>${sign}${money(t.amount)}</b></td><td><span class="sub">Date</span><br><b>${dateInputValue(t.date)}</b></td><td><button class="btn small" onclick="openTransaction('${t.id}')">Edit</button> <button class="btn small danger" onclick="deleteTransaction('${t.id}')">Delete</button></td></tr>`}).join('')||'<tr><td colspan="5"><div class="empty">No transactions found.</div></td></tr>';
 }
-['txSearch','txType','txWallet'].forEach(x=>document.getElementById(x).addEventListener('input',renderTransactions));
+['txSearch','txType','txWallet','txFrom','txTo'].forEach(x=>document.getElementById(x).addEventListener('input',renderTransactions));
 function renderRecent(){
  const box=document.getElementById('recent');
  if(!box)return;
@@ -427,8 +400,43 @@ function renderAnalytics(){
  document.getElementById('activityChart').innerHTML=svgBars(activity,'value','#7c3aed');
 
  let total=totals(),inc=state.transactions.filter(t=>t.type==='income'||t.type==='repayment').reduce((a,t)=>a+t.amount,0),exp=state.transactions.filter(t=>t.type==='expense'||t.type==='lend').reduce((a,t)=>a+t.amount,0);
- document.getElementById('snapshot').innerHTML=`<div class="grid three"><div><span class="sub">Lifetime income</span><b class="positive">${money(inc)}</b></div><div><span class="sub">Lifetime expenses</span><b class="negative">${money(exp)}</b></div><div><span class="sub">Funds held for disbursement</span><b class="negative">${money(total.held)}</b></div><div><span class="sub">Current spendable</span><b>${money(total.spendable)}</b></div></div>`;
+ document.getElementById('snapshot').innerHTML=`<div class="grid three"><div><span class="sub">Lifetime income</span><b class="positive">${money(inc)}</b></div><div><span class="sub">Lifetime expenses</span><b class="negative">${money(exp)}</b></div><div><span class="sub">Funds held for disbursement</span><b class="negative">${money(total.held)}</b></div><div><span class="sub">Outstanding lent</span><b class="negative">${money(total.lent)}</b></div><div><span class="sub">Current spendable</span><b>${money(total.spendable)}</b></div><div><span class="sub">Savings rate</span><b>${inc>0?((total.savings/inc)*100).toFixed(1):'0.0'}%</b></div></div>`;
+ renderBudgetAnalytics();renderGoalAnalytics();renderInsights();
 }
+
+
+function monthKey(d=new Date()){const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0');}
+function budgetSpend(b){const now=new Date(),mk=monthKey(now);return state.transactions.filter(t=>t.type==='expense'&&t.categoryId===b.categoryId&&monthKey(t.date)===mk).reduce((a,t)=>a+Number(t.amount||0),0);}
+function totalBudget(){return state.budgets.filter(b=>b.period==='monthly').reduce((a,b)=>a+Number(b.amount||0),0);}
+function renderBudgetAnalytics(){
+ const box=document.getElementById('budgetAnalytics');const totalBudgetAmount=totalBudget(),usedTotal=state.budgets.reduce((a,b)=>a+budgetSpend(b),0);const el=document.getElementById('budgetUsed');if(el)el.textContent=money(usedTotal);const lab=document.getElementById('budgetLabel');if(lab)lab.textContent=totalBudgetAmount?money(totalBudgetAmount-usedTotal)+' remaining of '+money(totalBudgetAmount):'No budgets set';
+ if(!box)return;
+ if(!state.budgets.length){box.innerHTML='<div class="empty">No budgets yet. Add category budgets from Settings.</div>';return;}
+ box.innerHTML=state.budgets.map(b=>{const c=cat(b.categoryId),used=budgetSpend(b),pct=Math.min(100,used/Math.max(1,b.amount)*100);return `<div style="margin:12px 0"><div style="display:flex;justify-content:space-between"><span>${esc(c?.icon||'◫')} ${esc(c?.name||'Budget')}</span><b>${money(used)} / ${money(b.amount)}</b></div><div class="progress"><span style="width:${pct}%;background:${pct>=100?'#dc4f5f':c?.color||'#2563eb'}"></span></div><span class="sub">${pct.toFixed(0)}% used this month</span></div>`}).join('');
+}
+
+function renderGoalAnalytics(){
+ const box=document.getElementById('goalAnalytics');if(!box)return;
+ if(!state.goals.length){box.innerHTML='<div class="empty">No savings goals yet. Add one from Settings.</div>';return;}
+ box.innerHTML=state.goals.map(g=>{const pct=Math.min(100,Number(g.current)/Math.max(1,Number(g.target))*100);return `<div style="margin:12px 0"><div style="display:flex;justify-content:space-between"><b>${esc(g.name)}</b><span>${pct.toFixed(0)}%</span></div><div class="progress"><span style="width:${pct}%;background:#7c3aed"></span></div><span class="sub">${money(g.current)} of ${money(g.target)}${g.deadline?' • target '+esc(g.deadline):''}</span></div>`}).join('');
+}
+function renderInsights(){
+ const box=document.getElementById('insights');if(!box)return;const d=totals();const inc=state.transactions.filter(t=>t.type==='income'||t.type==='repayment').reduce((a,t)=>a+Number(t.amount||0),0);const exp=state.transactions.filter(t=>t.type==='expense'||t.type==='lend').reduce((a,t)=>a+Number(t.amount||0),0);const cats=state.categories.filter(c=>c.type==='expense').map(c=>({name:c.name,v:state.transactions.filter(t=>t.type==='expense'&&t.categoryId===c.id).reduce((a,t)=>a+Number(t.amount||0),0)})).sort((a,b)=>b.v-a.v);const top=cats[0];const rate=inc?((inc-exp)/inc*100):0;const due=state.recurring.filter(r=>r.active&&new Date(r.nextDate+'T12:00:00')<=new Date()).length;
+ const items=[`Current spendable balance is ${money(d.spendable)}.`,`Outstanding loans are ${money(d.lent)} and funds awaiting disbursement are ${money(d.held)}.`,`Net lifetime cash flow is ${money(inc-exp)} (${rate.toFixed(1)}% of recorded income).`,top&&top.v?`${top.name} is the highest recorded expense category at ${money(top.v)}.`:'Add expenses to see category insights.',due?`${due} recurring transaction${due===1?' is':'s are'} due to be processed.`:'No recurring transactions are currently due.'];box.innerHTML=`<div class="insight-list">${items.map(x=>`<div class="insight">${esc(x)}</div>`).join('')}</div>`;
+}
+function openBudget(id=null){const b=id?state.budgets.find(x=>x.id===id):null;openModal(`<div class="modal-head"><h2>${b?'Edit':'New'} budget</h2><button class="x" onclick="closeModal()">×</button></div><div class="field"><label>Expense category</label><select id="bCat">${state.categories.filter(c=>c.type==='expense').map(c=>`<option value="${c.id}" ${b?.categoryId===c.id?'selected':''}>${c.icon} ${esc(c.name)}</option>`).join('')}</select></div><div class="field"><label>Monthly limit</label><input id="bAmount" type="number" min="0" step="0.01" value="${b?.amount??''}"></div><div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveBudget('${id||''}')">Save budget</button></div>`);}
+function saveBudget(id=''){const categoryId=document.getElementById('bCat').value,amount=Number(document.getElementById('bAmount').value);if(!categoryId||amount<=0)return toast('Enter a valid budget');const now=new Date().toISOString(),b=id?state.budgets.find(x=>x.id===id):null;if(b)Object.assign(b,{categoryId,amount,updatedAt:now});else state.budgets.push({id:window.id?window.id('b'):('b'+Date.now()),categoryId,amount,period:'monthly',updatedAt:now});closeModal();save({immediate:true});toast('Budget saved');}
+function deleteBudget(id){if(confirm('Delete this budget?')){state.budgets=state.budgets.filter(b=>b.id!==id);save({immediate:true});}}
+function openGoal(id=null){const g=id?state.goals.find(x=>x.id===id):null;openModal(`<div class="modal-head"><h2>${g?'Edit':'New'} savings goal</h2><button class="x" onclick="closeModal()">×</button></div><div class="field"><label>Goal name</label><input id="gName" value="${esc(g?.name||'')}" placeholder="Emergency fund"></div><div class="formgrid"><div class="field"><label>Target amount</label><input id="gTarget" type="number" min="0" step="0.01" value="${g?.target??''}"></div><div class="field"><label>Current amount</label><input id="gCurrent" type="number" min="0" step="0.01" value="${g?.current??0}"></div></div><div class="field"><label>Target date (optional)</label><input id="gDeadline" type="date" value="${g?.deadline||''}"></div><div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveGoal('${id||''}')">Save goal</button></div>`);}
+function saveGoal(id=''){const name=document.getElementById('gName').value.trim(),target=Number(document.getElementById('gTarget').value),current=Number(document.getElementById('gCurrent').value),deadline=document.getElementById('gDeadline').value;if(!name||target<=0||current<0)return toast('Enter valid goal details');const now=new Date().toISOString(),g=id?state.goals.find(x=>x.id===id):null;if(g)Object.assign(g,{name,target,current,deadline,updatedAt:now});else state.goals.push({id:'g'+Date.now(),name,target,current,deadline,updatedAt:now});closeModal();save({immediate:true});toast('Savings goal saved');}
+function deleteGoal(id){if(confirm('Delete this savings goal?')){state.goals=state.goals.filter(g=>g.id!==id);save({immediate:true});}}
+function openRecurring(id=null){const r=id?state.recurring.find(x=>x.id===id):null;openModal(`<div class="modal-head"><h2>${r?'Edit':'New'} recurring transaction</h2><button class="x" onclick="closeModal()">×</button></div><div class="formgrid"><div class="field"><label>Type</label><select id="rType"><option value="expense" ${r?.type==='expense'?'selected':''}>Expense</option><option value="income" ${r?.type==='income'?'selected':''}>Income</option></select></div><div class="field"><label>Amount</label><input id="rAmount" type="number" min="0" step="0.01" value="${r?.amount??''}"></div></div><div class="formgrid"><div class="field"><label>Wallet</label><select id="rWallet">${state.wallets.map(w=>`<option value="${w.id}" ${r?.walletId===w.id?'selected':''}>${w.icon} ${esc(w.name)}</option>`).join('')}</select></div><div class="field"><label>Frequency</label><select id="rFreq"><option value="monthly" ${r?.frequency!=='weekly'?'selected':''}>Monthly</option><option value="weekly" ${r?.frequency==='weekly'?'selected':''}>Weekly</option></select></div></div><div class="formgrid"><div class="field"><label>Category</label><select id="rCat">${state.categories.map(c=>`<option value="${c.id}" ${r?.categoryId===c.id?'selected':''}>${c.icon} ${esc(c.name)}</option>`).join('')}</select></div><div class="field"><label>First / next date</label><input id="rDate" type="date" value="${r?.nextDate||dateInputValue(new Date())}"></div></div><div class="field"><label>Description</label><input id="rDesc" value="${esc(r?.description||'')}"></div><div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveRecurring('${id||''}')">Save recurring</button></div>`);}
+function saveRecurring(id=''){const type=document.getElementById('rType').value,amount=Number(document.getElementById('rAmount').value),walletId=document.getElementById('rWallet').value,frequency=document.getElementById('rFreq').value,categoryId=document.getElementById('rCat').value,nextDate=document.getElementById('rDate').value,description=document.getElementById('rDesc').value.trim();if(amount<=0||!walletId||!nextDate)return toast('Enter valid recurring details');const now=new Date().toISOString(),r=id?state.recurring.find(x=>x.id===id):null;const obj={id:id||'r'+Date.now(),type,amount,walletId,categoryId,description,frequency,day:Number(nextDate.slice(-2))||1,nextDate,active:true,updatedAt:now};if(r)Object.assign(r,obj);else state.recurring.push(obj);closeModal();save({immediate:true});toast('Recurring transaction saved');}
+function deleteRecurring(id){if(confirm('Delete this recurring transaction?')){state.recurring=state.recurring.filter(r=>r.id!==id);save({immediate:true});}}
+function advanceRecurringDate(r){let d=new Date(r.nextDate+'T12:00:00');if(r.frequency==='weekly')d.setDate(d.getDate()+7);else d.setMonth(d.getMonth()+1);r.nextDate=d.toISOString().slice(0,10);r.updatedAt=new Date().toISOString();}
+function processRecurring(){let count=0,now=new Date();state.recurring.filter(r=>r.active).forEach(r=>{let guard=0;while(new Date(r.nextDate+'T12:00:00')<=now&&guard++<120){state.transactions.push({id:'t'+Date.now().toString(36)+Math.random().toString(36).slice(2),type:r.type,amount:r.amount,walletId:r.walletId,toWalletId:null,categoryId:r.categoryId,loanId:null,fundId:null,allocations:[],counterparty:'',recurringId:r.id,date:transactionDateISO(r.nextDate),description:r.description||'Recurring transaction',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()});advanceRecurringDate(r);count++;}});if(count){save({immediate:true});toast(`Processed ${count} recurring transaction${count===1?'':'s'}`);}else toast('No recurring transactions are due');}
+function renderAdvancedLists(){const box=document.getElementById('advancedLists');if(!box)return;box.innerHTML=`<h4 style="margin:14px 0 8px">Budgets</h4>${state.budgets.length?state.budgets.map(b=>`<div class="wallet-summary-item"><div class="wallet-name"><b>${esc(cat(b.categoryId)?.name||'Budget')}</b><span class="sub">${money(b.amount)} monthly</span></div><div class="mini-actions"><button class="btn small" onclick="openBudget('${b.id}')">Edit</button><button class="btn small danger" onclick="deleteBudget('${b.id}')">Delete</button></div></div>`).join(''):'<div class="sub">No budgets configured.</div>'}<h4 style="margin:18px 0 8px">Savings goals</h4>${state.goals.length?state.goals.map(g=>`<div class="wallet-summary-item"><div class="wallet-name"><b>${esc(g.name)}</b><span class="sub">${money(g.current)} / ${money(g.target)}</span></div><div class="mini-actions"><button class="btn small" onclick="openGoal('${g.id}')">Edit</button><button class="btn small danger" onclick="deleteGoal('${g.id}')">Delete</button></div></div>`).join(''):'<div class="sub">No savings goals configured.</div>'}<h4 style="margin:18px 0 8px">Recurring transactions</h4>${state.recurring.length?state.recurring.map(r=>`<div class="wallet-summary-item"><div class="wallet-name"><b>${esc(r.description||r.type)}</b><span class="sub">${r.frequency} • ${money(r.amount)} • next ${esc(r.nextDate)} ${r.active?'':'• paused'}</span></div><div class="mini-actions"><button class="btn small" onclick="openRecurring('${r.id}')">Edit</button><button class="btn small danger" onclick="deleteRecurring('${r.id}')">Delete</button></div></div>`).join(''):'<div class="sub">No recurring transactions configured.</div>'}`;}
+function exportCSV(){const rows=[['Date','Type','Description','Wallet','Category','Amount','Counterparty'],...state.transactions.slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).map(t=>[dateInputValue(t.date),t.type,t.description||'',wallet(t.walletId)?.name||'',cat(t.categoryId)?.name||'',Number(t.amount||0).toFixed(2),t.counterparty||''])];const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='flowtrack-transactions-'+new Date().toISOString().slice(0,10)+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('CSV exported');}
 
 function renderDisbursementFundSelector(selectedIds=[]){
   const box=document.getElementById('dFunds');
@@ -569,7 +577,8 @@ function outstandingForFund(fundId,excludeId=null){
  return Math.max(0,Number(fund.amount||0)-used);
 }
 function getOutstandingDisbursementFunds(excludeId=editingId){
- return state.transactions.filter(t=>t.type==='custody_in').map(f=>({id:f.id,person:f.counterparty||'',source:f.counterparty||'',description:f.description||'',remaining:outstandingForFund(f.id,excludeId)})).filter(f=>f.remaining>0.000001);
+ const currentWallet=document.getElementById('tWallet')?.value||null;
+ return state.transactions.filter(t=>t.type==='custody_in'&&(!currentWallet||t.walletId===currentWallet)).map(f=>({id:f.id,person:f.counterparty||'',source:f.counterparty||'',description:f.description||'',remaining:outstandingForFund(f.id,excludeId)})).filter(f=>f.remaining>0.000001);
 }
 function fingerprint(t){return [t.type,Number(t.amount).toFixed(2),t.walletId,t.toWalletId||'',t.categoryId||'',t.loanId||'',t.fundId||'',JSON.stringify(disbursementAllocations(t)),String(t.counterparty||'').trim().toLowerCase(),dateInputValue(t.date),String(t.description||'').trim().toLowerCase()].join('|')}
 function saveTransaction(){
@@ -584,6 +593,8 @@ function saveTransaction(){
  if(type==='disbursement'){
    const selected=selectedDisbursementFundIds();
    if(!selected.length)return toast('Select at least one funds source');
+   const selectedFunds=selected.map(id=>state.transactions.find(x=>x.id===id&&x.type==='custody_in')).filter(Boolean);
+   if(selectedFunds.some(f=>f.walletId!==walletId))return toast('All selected fund sources must belong to the disbursement wallet');
    const result=getSelectedDisbursementAllocations(amount);
    if(result.remaining>0.000001)return toast(`Selected sources have only ${money(result.totalAvailable)} available`);
    allocations=result.allocations;
@@ -592,7 +603,7 @@ function saveTransaction(){
  let now=new Date().toISOString();
  let index=editingId?state.transactions.findIndex(x=>x.id===editingId):-1;
  let existingTx=index>=0?state.transactions[index]:null;
- let obj={id:editingId||id('t'),type,amount,walletId,toWalletId,categoryId,loanId,fundId,allocations,counterparty,date:transactionDateISO(dateValue),description,createdAt:existingTx?.createdAt||now,updatedAt:now};
+ let obj={id:editingId||id('t'),type,amount,walletId,toWalletId,categoryId,loanId,fundId,allocations,counterparty,date:transactionDateISO(dateValue),description,recurringId:existingTx?.recurringId||null,createdAt:existingTx?.createdAt||now,updatedAt:now};
  let dup=state.transactions.find(x=>fingerprint(x)===fingerprint(obj)&&x.id!==editingId);
  if(dup&&!confirm(`A matching transaction already exists (${money(dup.amount)}). Save this as a separate transaction anyway?`))return;
  if(index>=0)state.transactions[index]=obj;else state.transactions.push(obj);
@@ -635,6 +646,40 @@ function exportReportPDF(){
 function exportReportWord(){
  let blob=new Blob([buildReportHTML()],{type:'application/msword'});
  let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='flowtrack-financial-report-'+new Date().toISOString().slice(0,10)+'.doc';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Word report exported');
+}
+
+function exportJSON(){
+ const payload=JSON.stringify(normalizeState(state),null,2);
+ const blob=new Blob([payload],{type:'application/json;charset=utf-8'});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');
+ a.href=url;
+ a.download='flowtrack-backup-'+new Date().toISOString().slice(0,10)+'.json';
+ document.body.appendChild(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+ toast('JSON backup exported');
+}
+function importJSONFile(file){
+ if(!file)return;
+ const reader=new FileReader();
+ reader.onload=()=>{
+  try{
+   const raw=JSON.parse(reader.result);
+   if(!raw||typeof raw!=='object'||!Array.isArray(raw.transactions)||!Array.isArray(raw.wallets))throw new Error('This file is not a valid FlowTrack backup');
+   if(!confirm('Import this JSON backup? Your current local data will be replaced.'))return;
+   const backupKey=KEY+'_before_import';
+   localStorage.setItem(backupKey,localStorage.getItem(KEY)||'');
+   state=normalizeState(raw);
+   state.meta={...(state.meta||{}),appVersion:BUILD_VERSION,updatedAt:new Date().toISOString()};
+   localStorage.setItem(KEY,JSON.stringify(state));
+   render();
+   toast(`Imported ${state.transactions.length} transactions`);
+   if(driveToken){clearTimeout(driveSyncTimer);driveSyncTimer=setTimeout(()=>driveSave(),300);}
+  }catch(e){console.error('JSON import error',e);toast('Import failed: '+e.message)}
+  finally{document.getElementById('jsonFile').value='';}
+ };
+ reader.onerror=()=>{document.getElementById('jsonFile').value='';toast('Could not read the JSON file')};
+ reader.readAsText(file);
 }
 
 function saveSettings(){state.profile.name=document.getElementById('profileName').value.trim()||'My Finance';state.profile.currency=document.getElementById('currency').value||'₵';state.profile.clientId=FLOWTRACK_GOOGLE_CLIENT_ID;save();toast('Settings saved')}
@@ -752,6 +797,9 @@ function mergeStates(local,remote){
  const mergeCollection=(a,b)=>{const out=[...a.map(x=>({...x}))];(b||[]).forEach(x=>{if(!x?.name)return;let i=out.findIndex(y=>y.id===x.id||String(y.name).toLowerCase()===String(x.name).toLowerCase());if(i<0)out.push({...x});else if(x.updatedAt && (!out[i].updatedAt || Date.parse(x.updatedAt)>Date.parse(out[i].updatedAt)))out[i]={...out[i],...x};});return out};
  merged.wallets=mergeCollection(local.wallets||[],remote.wallets||[]);
  merged.categories=mergeCollection(local.categories||[],remote.categories||[]);
+ merged.budgets=mergeCollection(local.budgets||[],remote.budgets||[]);
+ merged.goals=mergeCollection(local.goals||[],remote.goals||[]);
+ merged.recurring=mergeCollection(local.recurring||[],remote.recurring||[]);
  merged.profile={...(remote.profile||{}),...(local.profile||{})};
  merged.meta={...(remote.meta||{}),...(local.meta||{}),appVersion:BUILD_VERSION,updatedAt:new Date().toISOString(),lastDriveSyncAt:new Date().toISOString()};
  return merged;
@@ -796,6 +844,7 @@ if('serviceWorker' in navigator){
   .catch(()=>{});
 }
 
+document.getElementById('jsonFile').addEventListener('change',e=>importJSONFile(e.target.files?.[0]));
 render();
 restoreGoogleUI();
 </script>
